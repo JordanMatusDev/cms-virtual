@@ -1,0 +1,18 @@
+* {
+   box-sizing: border-box;
+   margin: 0;
+   padding: 0;
+}
+
+html,
+body,
+#root {
+   /* Cambiamos height fijo por min-height para que pueda crecer hacia abajo */
+   min-height: 100vh; 
+   width: 100%;
+}
+
+/* ELIMINAMOS O COMENTAMOS EL OVERFLOW HIDDEN */
+/* body {
+   overflow: hidden; 
+} */
