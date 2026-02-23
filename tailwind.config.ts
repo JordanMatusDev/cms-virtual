@@ -10,6 +10,6 @@ export default {
     require("tailwindcss-animate")
   ],
   corePlugins: {
-    preflight: false, 
+    preflight: true,
   }
 }
