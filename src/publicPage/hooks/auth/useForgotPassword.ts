@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { requestPasswordReset } from '../../services/email/resetPasswService';
+import { checkEmailExists } from '../../services/email/checkEmailService';
 
 const useForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +12,14 @@ const useForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    // Verificar si el correo existe
+    const exists = await checkEmailExists(email);
+    if (!exists) {
+      setLoading(false);
+      setError('El correo no está registrado.');
+      return false;
+    }
+    // Si existe, enviar solicitud
     const success = await requestPasswordReset(email);
     setLoading(false);
     if (success) {
@@ -18,6 +27,7 @@ const useForgotPassword = () => {
     } else {
       setError('No se pudo enviar el email. Intenta de nuevo.');
     }
+    return success;
   };
 
   return {
