@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Mail, Loader2, X } from 'lucide-react';
-import { useTrapFocus } from '../../hooks/useTrapFocus';
+import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 import logoImg from '../../assets/virtualz.png';
 import useForgotPassword from '../../hooks/auth/useForgotPassword';
 import ForgotPasswordResultModal from './ForgotPasswordResultModal';

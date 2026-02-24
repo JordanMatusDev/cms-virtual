@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useLogin } from '../../hooks/auth/useLogin';
 import { Eye, EyeOff, X, User, Lock } from 'lucide-react';
-import { useTrapFocus } from '../../hooks/useTrapFocus';
+import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 import logoImg from '../../assets/virtualz.png';
 
 interface LoginModalProps {

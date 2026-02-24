@@ -1,6 +1,6 @@
 import  { useRef, useState } from 'react';
 import { useRegister } from '../../hooks/auth/useRegister';
-import { useTrapFocus } from '../../hooks/useTrapFocus';
+import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 import { X, User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import logoImg from '../../assets/virtualz.png';
 import RegisterResultModal from './RegisterResultModal';

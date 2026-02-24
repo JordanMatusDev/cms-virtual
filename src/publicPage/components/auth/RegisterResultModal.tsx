@@ -1,7 +1,7 @@
 import { Mail, X } from 'lucide-react';
 import logoImg from '../../assets/virtualz.png';
 import { useRef } from 'react';
-import { useTrapFocus } from '../../hooks/useTrapFocus';
+import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 
 interface RegisterResultModalProps {
   isOpen: boolean;

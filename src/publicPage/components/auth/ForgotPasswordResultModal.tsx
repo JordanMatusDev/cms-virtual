@@ -1,7 +1,7 @@
 import { Mail, X } from 'lucide-react';
 import logoImg from '../../assets/virtualz.png'; // Asegúrate de que la ruta sea correcta
 import { useRef } from 'react';
-import { useTrapFocus } from '../../hooks/useTrapFocus';
+import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 
 interface ForgotPasswordResultModalProps {
   isOpen: boolean;

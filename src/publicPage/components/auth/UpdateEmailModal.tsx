@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useTrapFocus } from '../../hooks/useTrapFocus';
+import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 import { sendVerificationEmail } from '../../services/auth/registerService';
 import { updatePendingUserEmail } from '../../services/auth/updatePendingUserEmail';
 import { checkEmailExists } from '../../services/auth/checkExistsService';
