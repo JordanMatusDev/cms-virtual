@@ -42,6 +42,11 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
     handleSubmit,
   } = useRegister(initialData);
 
+  // Usar solo loading del proceso async, igual que 'Crear Cuenta'
+  const handleNextStepWithLoading = () => {
+    handleNextStep();
+  };
+
   if (!isOpen && !localExiting) return null;
   // Limpiar datos
   const resetFields = () => {
@@ -59,8 +64,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
     if (fieldErrors) {
       Object.keys(fieldErrors).forEach(k => fieldErrors[k] = undefined);
     }
-    // Si hay setter para error, usarlo aquí (ejemplo: setError && setError(''));
-    // Si no, ignorar porque error es solo lectura.
+    
   };
 
   // Cambiar a Login con transición
@@ -208,8 +212,9 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
                   )}
                 </div>
                 <div className="pt-2">
-                  <button type="button" onClick={handleNextStep} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                    Siguiente <ArrowRight size={18} />
+                  <button type="button" onClick={handleNextStepWithLoading} disabled={isLoading} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                    {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Siguiente'}
+                    {!isLoading && <ArrowRight size={18} />}
                   </button>
                 </div>
               </div>
