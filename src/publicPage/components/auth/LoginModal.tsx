@@ -15,7 +15,7 @@ interface LoginModalProps {
 
 const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToRegister, onSwitchToForgot }: LoginModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  useTrapFocus(modalRef);
+  useTrapFocus(modalRef, isOpen);
 
   // Estado local solo para transición entre modales
   const [localExiting, setLocalExiting] = useState(false);

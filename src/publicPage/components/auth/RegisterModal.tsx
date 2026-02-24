@@ -15,7 +15,7 @@ interface RegisterModalProps {
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: RegisterModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  useTrapFocus(modalRef);
+  useTrapFocus(modalRef, isOpen);
   const emailInputRef = useRef<HTMLInputElement | null>(null);
 
   // Estados locales para manejar los resultados

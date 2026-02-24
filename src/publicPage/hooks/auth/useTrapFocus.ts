@@ -4,8 +4,9 @@ import { useEffect} from 'react';
  * Hook para atrapar el tab y mantener el foco dentro del modal.
  * Recibe un ref al contenedor principal del modal.
  */
-export function useTrapFocus(modalRef: React.RefObject<HTMLElement | null>) {
+export function useTrapFocus(modalRef: React.RefObject<HTMLElement | null>, isOpen: boolean) {
   useEffect(() => {
+    if (!isOpen) return;
     const node = modalRef.current;
     if (!node) return;
 
@@ -14,6 +15,14 @@ export function useTrapFocus(modalRef: React.RefObject<HTMLElement | null>) {
       'input:not([disabled])', 'select:not([disabled])', '[tabindex]:not([tabindex="-1"])'
     ];
     const getFocusable = () => Array.from(node.querySelectorAll(focusableSelectors.join(','))) as HTMLElement[];
+
+    // Enfocar el primer elemento interactivo al abrir el modal
+    const focusableEls = getFocusable();
+    if (focusableEls.length > 0) {
+      setTimeout(() => {
+        focusableEls[0].focus();
+      }, 0);
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
@@ -36,9 +45,10 @@ export function useTrapFocus(modalRef: React.RefObject<HTMLElement | null>) {
       }
     };
 
-    node.addEventListener('keydown', handleKeyDown);
-    return () => node.removeEventListener('keydown', handleKeyDown);
-  }, [modalRef]);
+    // Adjuntar el evento al document para mayor robustez
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [modalRef, isOpen]);
 
   // Devuelve el ref para usarlo en el modal
   return modalRef;

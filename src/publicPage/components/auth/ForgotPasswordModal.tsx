@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Mail, Loader2, X } from 'lucide-react';
 import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 import logoImg from '../../assets/virtualz.png';
@@ -13,7 +13,7 @@ interface ForgotPasswordModalProps {
 
 const ForgotPasswordModal = ({ isOpen, onClose, onSwitchToLogin }: ForgotPasswordModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  useTrapFocus(modalRef);
+  useTrapFocus(modalRef, isOpen);
 
   const [showResult, setShowResult] = useState(false);
   const [successEmail, setSuccessEmail] = useState('');
@@ -34,6 +34,14 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSwitchToLogin }: ForgotPasswor
     setEmailError(null);
     // No se puede limpiar error general porque el hook no provee setter.
   };
+
+  // Limpiar campos al abrir/cerrar el modal
+  useEffect(() => {
+    if (isOpen) {
+      resetFields();
+    }
+
+  }, [isOpen]);
 
   // Validar email
   const validateEmail = (value: string) => {
