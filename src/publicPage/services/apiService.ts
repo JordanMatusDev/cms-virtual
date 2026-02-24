@@ -13,8 +13,32 @@ api.interceptors.request.use(
   (config) => {
     const userToken = localStorage.getItem('authToken');
     if (userToken) {
+      // Verifica expiración del JWT
+      try {
+        const payload = JSON.parse(atob(userToken.split('.')[1]));
+        if (payload && payload.exp) {
+          const now = Math.floor(Date.now() / 1000);
+          if (payload.exp < now) {
+            // Token expirado: limpiar sesión
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('token');
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('username');
+            localStorage.removeItem('userNombre');
+            localStorage.removeItem('userApellido');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userAvatar');
+            localStorage.removeItem('userId');
+            window.location.reload();
+            throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+          }
+        }
+      } catch (e) {
+        // Si el token no es válido, lo eliminamos por seguridad
+        localStorage.removeItem('authToken');
+      }
       config.headers['Authorization'] = `Bearer ${userToken}`;
-      // Elimina X-API-Key si existe
       if (config.headers['X-API-Key']) delete config.headers['X-API-Key'];
     } else {
       const staticToken = import.meta.env.VITE_SERVICE_TOKEN;

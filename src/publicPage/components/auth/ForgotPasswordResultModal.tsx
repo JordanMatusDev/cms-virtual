@@ -14,12 +14,12 @@ const ForgotPasswordResultModal = ({ isOpen, onClose, email }: ForgotPasswordRes
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-transparent backdrop-blur-md transition-opacity" 
+        className="absolute inset-0 bg-black/95 backdrop-blur-md transition-opacity" 
         onClick={onClose}
       />
 
       {/* Container Principal */}
-      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_50px_-12px_rgba(6,182,212,0.2)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
         {/* Botón X para cerrar (idéntico a AuthModal) */}
         <button
           onClick={onClose}

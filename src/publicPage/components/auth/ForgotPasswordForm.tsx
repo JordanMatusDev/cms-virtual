@@ -1,41 +1,37 @@
 import { Mail, Loader2 } from 'lucide-react';
-import ForgotPasswordResultModal from './ForgotPasswordResultModal';
 import type { AuthView } from './types';
 import useForgotPassword from '../../hooks/auth/useForgotPassword';
 
 interface ForgotPasswordFormProps {
   onSwitchView: (view: AuthView) => void;
+  onResult?: (email: string) => void;
 }
 
-const ForgotPasswordForm = ({ onSwitchView }: ForgotPasswordFormProps) => {
+const ForgotPasswordForm = ({ onResult }: ForgotPasswordFormProps) => {
   const {
     email,
     setEmail,
-    showResult,
-    setShowResult,
+    loading,
     handleSubmit,
-    loading
+    error
   } = useForgotPassword();
 
-  if (showResult) {
-    return (
-      <ForgotPasswordResultModal
-        isOpen={true}
-        onClose={() => {
-          setShowResult(false);
-          onSwitchView('login');
-        }}
-        email={email}
-      />
-    );
-  }
+  // Handler para submit
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await handleSubmit(e);
+    if (success && typeof onResult === 'function') {
+      onResult(email);
+    }
+  };
+
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 relative">
       <div className="text-center px-2 mb-6">
         <p className="text-gray-400 text-sm">Ingresa tu correo asociado y te enviaremos un enlace de recuperación.</p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleFormSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-gray-400 ml-1">Correo Electrónico</label>
           <div className="relative group">
@@ -48,6 +44,9 @@ const ForgotPasswordForm = ({ onSwitchView }: ForgotPasswordFormProps) => {
               onChange={e => setEmail(e.target.value)}
             />
           </div>
+          {error && (
+            <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2">{error}</div>
+          )}
         </div>
         <div className="pt-2">
           <button
