@@ -23,7 +23,7 @@ const UpdateEmailModal = ({ isOpen, onClose, onEmailUpdated, initialEmail, usern
 
   if (!isOpen) return null;
   const modalRef = useRef<HTMLDivElement>(null);
-  useTrapFocus(modalRef);
+  useTrapFocus(modalRef, isOpen);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
