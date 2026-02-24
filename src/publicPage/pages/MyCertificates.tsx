@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-    Award, Search, Download, Calendar, ExternalLink, Filter, Loader2,
+    Award, Search, Download, Calendar, Filter, Loader2,
     Trophy, ChevronLeft, ChevronRight, ChevronDown, Check, Star
 } from 'lucide-react';
-import { Link } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { useCertificates } from '../hooks/pages/useCertificates';
 
 const MyCertificates = () => {
@@ -16,6 +16,21 @@ const MyCertificates = () => {
         categoryFilter, setCategoryFilter,
         downloadingIds, downloadCertificate
     } = useCertificates();
+
+    // Para navegación y scroll
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleGoToCourses = () => {
+        if (location.pathname === '/') {
+            const target = document.getElementById('course-grid');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+        }
+        navigate('/#course-grid');
+    };
 
     // 2. Lógica puramente visual (UI State)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -256,10 +271,13 @@ const MyCertificates = () => {
                         <p className="text-gray-400 max-w-md mb-8">
                             {searchTerm ? `No hay resultados para "${searchTerm}" en la categoría seleccionada.` : "Completa cursos al 100% para desbloquear tus diplomas y verlos reflejados en tu muro de éxito."}
                         </p>
-                        <Link to="/catalogo" className="px-8 py-3 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black font-bold rounded-xl border border-cyan-500/20 hover:border-cyan-500 transition-all flex items-center gap-2">
-                            <ExternalLink size={20} />
+                        <button
+                            type="button"
+                            onClick={handleGoToCourses}
+                            className="px-8 py-3 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black font-bold rounded-xl border border-cyan-500/20 hover:border-cyan-500 transition-all flex items-center gap-2"
+                        >
                             Explorar Catálogo de Cursos
-                        </Link>
+                        </button>
                     </div>
                 )}
             </main>
