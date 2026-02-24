@@ -4,7 +4,7 @@ import {
     Users, Star, Unlock, BookOpen, Loader2, Trophy, Sparkles
 } from 'lucide-react';
 import { useCoursePlayer } from '../hooks/pages/useCoursePlayer';
-import AuthModal from '../components/auth/AuthModal';
+// import AuthModal from '../components/auth/AuthModal';
 
 declare global {
     interface Window {
@@ -505,11 +505,11 @@ const CoursePlayer = () => {
             </main>
 
             {/* MODALES */}
-            <AuthModal
+            {/* <AuthModal
                 isOpen={showLoginModal}
                 onClose={() => setShowLoginModal(false)}
                 onLoginSuccess={handleLoginSuccess}
-            />
+            /> */}
 
             {showConfirmModal && (
   <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">

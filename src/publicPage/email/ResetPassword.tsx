@@ -1,14 +1,14 @@
 import { useState} from 'react';
 import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { confirmPasswordReset } from '../services/authService';
+import { confirmPasswordReset } from '../services/email/resetPasswordService';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams(); // Por si necesitas leer el token de la URL
   
   // Estados para los inputs
-  const [passwords, setPasswords] = useState({ new: '', confirm: '' });
+  const [passwords, setPasswords] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
   
   // Estados de visibilidad (Ojo)
   const [showNew, setShowNew] = useState(false);
@@ -21,7 +21,11 @@ export default function ResetPassword() {
 
   // Manejar cambios en inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswords({ ...passwords, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    setPasswords(prev => ({
+      new: id === 'new' ? value : prev.new || '',
+      confirm: id === 'confirm' ? value : prev.confirm || ''
+    }));
     setErrorMsg(''); // Limpiar error al escribir
   };
 

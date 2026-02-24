@@ -7,9 +7,10 @@ interface ForgotPasswordResultModalProps {
   isOpen: boolean;
   onClose: () => void;
   email?: string;
+  onGoToLogin?: () => void;
 }
 
-const ForgotPasswordResultModal = ({ isOpen, onClose, email }: ForgotPasswordResultModalProps) => {
+const ForgotPasswordResultModal = ({ isOpen, onClose, email, onGoToLogin }: ForgotPasswordResultModalProps) => {
   if (!isOpen) return null;
   const modalRef = useRef<HTMLDivElement>(null);
   useTrapFocus(modalRef);
@@ -52,7 +53,13 @@ const ForgotPasswordResultModal = ({ isOpen, onClose, email }: ForgotPasswordRes
               Revisa tu bandeja de entrada o la carpeta de spam para restablecer tu contraseña.            </p>
             <div className="flex flex-col items-center w-full max-w-xs mt-2 gap-2">
               <button 
-                onClick={onClose} 
+                onClick={() => {
+                  if (onGoToLogin) {
+                    onGoToLogin();
+                  } else {
+                    onClose();
+                  }
+                }}
                 className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 Volver al inicio
