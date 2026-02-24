@@ -1,10 +1,22 @@
 import { 
   PlayCircle, Award, Trash2, Clock, AlertTriangle, 
-  Search, ChevronLeft, ChevronRight, Filter, ChevronDown, Check,
+  ChevronLeft, ChevronRight, Filter, ChevronDown, Check,
   BookOpen
 } from 'lucide-react';
 import { useMyCourses } from '../hooks/pages/useMyCourses';
+
 const MyCourses = () => {
+    const handleGoToCourses = () => {
+      if (window.location.pathname === '/') {
+        const target = document.getElementById('course-grid');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+      }
+      navigate('/#course-grid');
+    };
+    
   // Efecto mouse para el banner
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!bannerRef.current) return;
@@ -219,18 +231,20 @@ const MyCourses = () => {
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-             <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10">
-                <Search className="text-gray-600" size={40}/>
-             </div>
-             <h3 className="text-xl font-bold text-white mb-2">No se encontraron cursos</h3>
-             <p className="text-gray-500 max-w-md mb-8">
-               {filterStatus !== 'all' ? 'No hay cursos que coincidan con este filtro.' : 'Aún no te has inscrito en ningún curso.'}
-             </p>
-             <button onClick={() => navigate('/')} className="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-xl transition-transform hover:scale-105">
-               Explorar Catálogo
-             </button>
-          </div>
+            <div className="flex flex-col items-center justify-center py-20 px-4 text-center border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
+              <div className="w-24 h-24 bg-gradient-to-tr from-gray-800 to-gray-900 rounded-full flex items-center justify-center mb-6 shadow-inner border border-white/5">
+                <BookOpen size={40} className="text-gray-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                {filterStatus !== 'all' ? 'No se encontraron cursos' : 'Aún no te has inscrito en ningún curso'}
+              </h3>
+              <p className="text-gray-400 max-w-md mb-8">
+                {filterStatus !== 'all' ? `No hay resultados para el filtro seleccionado.` : "Completa cursos para desbloquear tus diplomas y verlos reflejados en tu muro de éxito."}
+              </p>
+              <button onClick={handleGoToCourses} className="px-8 py-3 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black font-bold rounded-xl border border-cyan-500/20 hover:border-cyan-500 transition-all">
+                Explorar Catálogo de Cursos
+              </button>
+            </div>
         )}
 
       </main>
