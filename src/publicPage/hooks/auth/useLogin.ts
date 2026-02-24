@@ -12,6 +12,7 @@ interface UseLoginReturn {
   isSubmitting: boolean;
   isSuccessAnimating: boolean;
   fieldErrors: { identifier?: string; password?: string; general?: string };
+  setFieldErrors: React.Dispatch<React.SetStateAction<{ identifier?: string; password?: string; general?: string }>>;
   handleLogin: (onSuccess: (user: any) => void) => Promise<void>;
 }
 
@@ -125,7 +126,7 @@ export function useLogin(): UseLoginReturn {
       let mensajeFinal = 'Usuario o contraseña incorrectos.';
       if (msgServidor.includes('usuario deshabilitado')) {
         // Traduce el mensaje por experiencia de usuario
-        mensajeFinal = 'Revisa tu correo para activazzr tu cuenta';
+        mensajeFinal = 'Revisa tu correo para activar tu cuenta';
         setFieldErrors({ general: mensajeFinal });
       } else if (msgServidor.includes('incorrect') || msgServidor.includes('inválid') || msgServidor.includes('credentials')) {
         mensajeFinal = 'Usuario o contraseña incorrectos.';
@@ -161,6 +162,7 @@ export function useLogin(): UseLoginReturn {
     isSubmitting,
     isSuccessAnimating,
     fieldErrors,
+    setFieldErrors,
     handleLogin,
   };
 }
