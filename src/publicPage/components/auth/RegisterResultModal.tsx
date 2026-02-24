@@ -1,5 +1,7 @@
 import { Mail, X } from 'lucide-react';
 import logoImg from '../../assets/virtualz.png';
+import { useRef } from 'react';
+import { useTrapFocus } from '../../hooks/useTrapFocus';
 
 interface RegisterResultModalProps {
   isOpen: boolean;
@@ -10,10 +12,12 @@ interface RegisterResultModalProps {
 
 const RegisterResultModal = ({ isOpen, onClose, onGoToLogin, onFixEmail }: RegisterResultModalProps) => {
   if (!isOpen) return null;
+  const modalRef = useRef<HTMLDivElement>(null);
+  useTrapFocus(modalRef);
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity"></div>
-      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+      <div ref={modalRef} className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
         {/* Botón X para cerrar (idéntico a otros modales) */}
         <button
           onClick={onClose}

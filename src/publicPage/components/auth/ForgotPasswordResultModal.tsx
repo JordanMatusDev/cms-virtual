@@ -1,5 +1,7 @@
 import { Mail, X } from 'lucide-react';
 import logoImg from '../../assets/virtualz.png'; // Asegúrate de que la ruta sea correcta
+import { useRef } from 'react';
+import { useTrapFocus } from '../../hooks/useTrapFocus';
 
 interface ForgotPasswordResultModalProps {
   isOpen: boolean;
@@ -9,7 +11,8 @@ interface ForgotPasswordResultModalProps {
 
 const ForgotPasswordResultModal = ({ isOpen, onClose, email }: ForgotPasswordResultModalProps) => {
   if (!isOpen) return null;
-
+  const modalRef = useRef<HTMLDivElement>(null);
+  useTrapFocus(modalRef);
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -18,7 +21,7 @@ const ForgotPasswordResultModal = ({ isOpen, onClose, email }: ForgotPasswordRes
       />
 
       {/* Container Principal */}
-      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+      <div ref={modalRef} className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
         {/* Botón X para cerrar (idéntico a AuthModal) */}
         <button
           onClick={onClose}

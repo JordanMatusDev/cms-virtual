@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTrapFocus } from '../../hooks/useTrapFocus';
 import { X } from 'lucide-react';
 import logoImg from '../../assets/virtualz.png'; 
 import type { AuthView } from './types';
@@ -30,6 +31,8 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
   const [forgotEmail, setForgotEmail] = useState('');
 
   if (!isOpen) return null;
+  const modalRef = useRef<HTMLDivElement>(null);
+  useTrapFocus(modalRef);
 
   const handleClose = () => {
     setView('login');
@@ -104,6 +107,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
       <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity"></div>
 
       <div
+        ref={modalRef}
         className={`relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden transition-all duration-1000 animate-in fade-in ${isOpen ? 'opacity-100 scale-100 translate-y-0 blur-0' : 'opacity-0 scale-75 translate-y-16 blur-sm'}`}
       >
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
