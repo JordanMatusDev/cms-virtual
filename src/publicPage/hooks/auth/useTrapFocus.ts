@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect} from 'react';
 
 /**
  * Hook para atrapar el tab y mantener el foco dentro del modal.

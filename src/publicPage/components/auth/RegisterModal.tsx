@@ -174,7 +174,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
             
             {/* PASO 1 */}
             {step === 1 && (
-              <div className="space-y-4 animate-in slide-in-from-left-4 fade-in duration-300">
+              <div className="space-y-4 animate-in fade-in duration-300">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-400 ml-1">Nombre</label>
