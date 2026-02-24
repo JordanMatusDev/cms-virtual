@@ -31,12 +31,18 @@ export function useRegister(initialData?: any): UseRegisterReturn {
 
   const handleNextStep = async () => {
     let errors: any = {};
+    // Validar campos obligatorios primero
     if (!formData.firstName.trim()) errors.firstName = 'El nombre es obligatorio.';
     if (!formData.lastName.trim()) errors.lastName = 'El apellido es obligatorio.';
     if (!formData.email.trim()) errors.email = 'El correo es obligatorio.';
+    // Si falta algún campo requerido, mostrar solo esos errores
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+    // Validaciones adicionales solo si todos los obligatorios están completos
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) errors.email = 'Ingresa un correo electrónico válido.';
-    // Verificar si el correo ya existe antes de pasar al siguiente paso
     if (!errors.email) {
       const exists = await checkEmailExists(formData.email);
       if (exists) errors.email = 'El correo ya está registrado.';
@@ -51,12 +57,19 @@ export function useRegister(initialData?: any): UseRegisterReturn {
     setIsLoading(true);
     setError(null);
     let errors: any = {};
+    // Validar campos obligatorios primero
     if (!formData.username.trim()) errors.username = 'El usuario es obligatorio.';
     if (!formData.password.trim()) errors.password = 'La contraseña es obligatoria.';
     if (!formData.confirmPassword.trim()) errors.confirmPassword = 'Confirma tu contraseña.';
+    // Si falta algún campo requerido, mostrar solo esos errores
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setIsLoading(false);
+      return;
+    }
+    // Validaciones adicionales solo si todos los obligatorios están completos
     if (formData.password !== formData.confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden.';
     if (formData.password.length > 0 && formData.password.length < 8) errors.password = 'La contraseña debe tener al menos 8 caracteres.';
-    // Verificar si el usuario ya existe antes de crear la cuenta
     if (!errors.username) {
       const exists = await checkUsernameExists(formData.username);
       if (exists) errors.username = 'El usuario ya está registrado.';
