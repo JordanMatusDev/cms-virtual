@@ -12,8 +12,8 @@ const RegisterResultModal = ({ isOpen, onClose, onGoToLogin, onFixEmail }: Regis
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-transparent backdrop-blur-md transition-opacity" onClick={onClose}></div>
-      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_50px_-12px_rgba(6,182,212,0.2)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity" onClick={onClose}></div>
+      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
         {/* Botón X para cerrar (idéntico a otros modales) */}
         <button
           onClick={onClose}
