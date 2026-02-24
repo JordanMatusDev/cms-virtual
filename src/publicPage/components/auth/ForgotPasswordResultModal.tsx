@@ -15,7 +15,6 @@ const ForgotPasswordResultModal = ({ isOpen, onClose, email }: ForgotPasswordRes
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/95 backdrop-blur-md transition-opacity" 
-        onClick={onClose}
       />
 
       {/* Container Principal */}

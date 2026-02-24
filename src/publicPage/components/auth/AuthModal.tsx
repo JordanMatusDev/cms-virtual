@@ -101,7 +101,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
   // Modal original completo
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity" onClick={handleClose}></div>
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity"></div>
 
       <div
         className={`relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden transition-all duration-1000 animate-in fade-in ${isOpen ? 'opacity-100 scale-100 translate-y-0 blur-0' : 'opacity-0 scale-75 translate-y-16 blur-sm'}`}
