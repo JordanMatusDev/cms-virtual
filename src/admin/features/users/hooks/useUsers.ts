@@ -47,3 +47,13 @@ export const useDeleteUser = () => {
       }
    })
 }
+
+export const useUploadUserAvatar = () => {
+   const queryClient = useQueryClient();
+   return useMutation({
+      mutationFn: ({ user_id, file } : { user_id: string, file: File }) => usersService.postUserAvatar(user_id, file),
+      onSuccess: (_, variables) => {
+         queryClient.invalidateQueries({ queryKey: ['User', variables.user_id] });
+      }
+   })
+}
