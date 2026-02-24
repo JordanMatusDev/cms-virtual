@@ -104,6 +104,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
         isOpen={showRegisterResult}
         onClose={() => {
           setShowRegisterResult(false);
+          resetFields();
         }}
         onGoToLogin={() => {
           handleFullClose();
