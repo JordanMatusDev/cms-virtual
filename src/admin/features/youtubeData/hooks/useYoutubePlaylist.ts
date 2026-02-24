@@ -6,8 +6,8 @@ const useYoutubePlaylist = (id?: string) => {
       queryKey: ['YoutubePlaylist', id],
       queryFn: () => youtubeService.getPlaylists(id!),
       enabled: !!id
-   })
-}
+   });
+};
 
 const useYoutubePlaylistItems = (playlistId?: string) => {
    return useQuery({
@@ -16,15 +16,28 @@ const useYoutubePlaylistItems = (playlistId?: string) => {
       enabled: !!playlistId,
       retry: 1,
       refetchOnWindowFocus: false,
-   })
-}
+   });
+};
+
+const useYoutubeVideoDetails = (videoIds?: string[]) => {
+   return useQuery({
+      queryKey: ['YoutubeVideoDetails', videoIds], 
+      queryFn: () => youtubeService.getVideoDetails(videoIds!),
+      enabled: !!videoIds && videoIds.length > 0, 
+      retry: 1,
+      refetchOnWindowFocus: false,
+   });
+};
 
 export const useYoutubeData = (playlistId?: string) => {
    const playlist = useYoutubePlaylist(playlistId);
    const playlistItems = useYoutubePlaylistItems(playlistId);
+   
+   const videoDetails = useYoutubeVideoDetails(playlistItems.data);
 
    return {
       playlist,
-      playlistItems
-   }
-}
+      playlistItems,
+      videoDetails
+   };
+};

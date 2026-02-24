@@ -1,6 +1,8 @@
 export const parseISODuration = (isoDuration: string): number => {
+
    const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
-   const matches = isoDuration.match(regex);
+   // Agregamos un fallback (|| "") por si YouTube manda undefined y evitar que el .match truene
+   const matches = (isoDuration || "").match(regex);
 
    if (!matches) return 0;
 
