@@ -47,7 +47,7 @@ const RegisterResultModal = ({ isOpen, onClose, onGoToLogin, onFixEmail }: Regis
                 className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
                 onClick={onGoToLogin}           
               >
-                Ir a iniciar sesión
+                Ir a Iniciar Sesión
               </button>
             </div>
           </div>

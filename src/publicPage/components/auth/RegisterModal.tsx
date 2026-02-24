@@ -1,4 +1,4 @@
-import  { useRef, useState } from 'react';
+import  { useRef, useState, useEffect } from 'react';
 import { useRegister } from '../../hooks/auth/useRegister';
 import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 import { X, User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
@@ -14,6 +14,15 @@ interface RegisterModalProps {
 }
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: RegisterModalProps) => {
+    useEffect(() => {
+      if (isOpen) {
+        setShowRegisterResult(false);
+        setShowUpdateEmail(false);
+        setRegisteredData(null);
+        resetFields();
+      }
+    }, [isOpen]);
+    
   const modalRef = useRef<HTMLDivElement>(null);
   useTrapFocus(modalRef, isOpen);
   const emailInputRef = useRef<HTMLInputElement | null>(null);
@@ -79,13 +88,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
 
   // Cambiar a Login con transición
   const handleSwitchToLogin = () => {
+    resetFields(); // Limpiar campos y errores antes de la animación
     setLocalExiting(true);
     setTimeout(() => {
-      resetFields(); // Limpiar campos y errores después de la animación
       setLocalExiting(false);
       onSwitchToLogin();
     }, 250);
-  };
+  }
 
   const handleFullClose = () => {
     setShowRegisterResult(false);
@@ -120,10 +129,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
           setShowRegisterResult(false);
           resetFields();
         }}
-        onGoToLogin={() => {
-          handleFullClose();
-          onSwitchToLogin();
-        }}
+        onGoToLogin={handleSwitchToLogin}
         onFixEmail={() => {
           setShowUpdateEmail(true);
         }}
