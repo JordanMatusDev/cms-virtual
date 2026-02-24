@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLogin } from '../../hooks/auth/useLogin';
 import { Eye, EyeOff, X, User, Lock } from 'lucide-react';
 import { useTrapFocus } from '../../hooks/useTrapFocus';
@@ -6,15 +6,19 @@ import logoImg from '../../assets/virtualz.png';
 
 interface LoginModalProps {
   isOpen: boolean;
+  isExiting?: boolean;
   onClose: () => void;
   onSuccess: (user: any) => void;
   onSwitchToRegister: () => void;
   onSwitchToForgot: () => void;
 }
 
-const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister, onSwitchToForgot }: LoginModalProps) => {
+const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToRegister, onSwitchToForgot }: LoginModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   useTrapFocus(modalRef);
+
+  // Estado local solo para transición entre modales
+  const [localExiting, setLocalExiting] = useState(false);
 
   const {
     identifier,
@@ -26,10 +30,20 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister, onSwitchTo
     isSubmitting,
     isSuccessAnimating,
     fieldErrors,
+    setFieldErrors,
     handleLogin,
   } = useLogin();
 
-  if (!isOpen) return null;
+  // Limpiar campos y errores
+  const resetFields = () => {
+    setIdentifier('');
+    setPassword('');
+    setShowPass(false);
+    if (setFieldErrors) setFieldErrors({});
+  };
+
+  // Controlar visibilidad para animación
+  if (!isOpen && !isExiting && !localExiting) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +51,28 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister, onSwitchTo
       onSuccess(user);
       window.dispatchEvent(new Event('auth:login'));
       onClose();
+      resetFields();
     });
+  };
+
+  // Cambiar a registro
+  const handleSwitchToRegister = () => {
+    setLocalExiting(true);
+    setTimeout(() => {
+      resetFields();
+      setLocalExiting(false);
+      onSwitchToRegister();
+    }, 250);
+  };
+
+  // Cambiar a recuperar contraseña
+  const handleSwitchToForgot = () => {
+    setLocalExiting(true);
+    setTimeout(() => {
+      resetFields();
+      setLocalExiting(false);
+      onSwitchToForgot();
+    }, 250);
   };
 
   return (
@@ -48,7 +83,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister, onSwitchTo
       {/* Contenedor Modal */}
       <div
         ref={modalRef}
-        className={`relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden transition-all duration-1000 animate-in fade-in opacity-100 scale-100 translate-y-0 blur-0`}
+        className={`relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden transition-all duration-300 ${(isExiting || localExiting) ? 'opacity-0 scale-95' : 'opacity-100 scale-100'} animate-in fade-in translate-y-0 blur-0`}
       >
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white p-1 rounded-full hover:bg-white/10 z-10 transition-colors">
@@ -101,7 +136,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister, onSwitchTo
 
             {/* Olvidaste Contraseña */}
             <div className="flex justify-end pt-1">
-              <button type="button" onClick={onSwitchToForgot} className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline">
+              <button type="button" onClick={handleSwitchToForgot} className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline">
                 ¿Olvidaste tu contraseña?
               </button>
             </div>
@@ -130,7 +165,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToRegister, onSwitchTo
         <div className="bg-white/5 p-4 text-center border-t border-white/10">
           <p className="text-sm text-gray-400">
             ¿No tienes cuenta?{' '}
-            <button onClick={onSwitchToRegister} className="text-white font-medium hover:text-cyan-400 transition-colors">
+            <button onClick={handleSwitchToRegister} className="text-white font-medium hover:text-cyan-400 transition-colors">
               Crear una cuenta
             </button>
           </p>

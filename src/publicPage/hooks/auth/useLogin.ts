@@ -12,6 +12,7 @@ interface UseLoginReturn {
   isSubmitting: boolean;
   isSuccessAnimating: boolean;
   fieldErrors: { identifier?: string; password?: string; general?: string };
+  setFieldErrors: React.Dispatch<React.SetStateAction<{ identifier?: string; password?: string; general?: string }>>;
   handleLogin: (onSuccess: (user: any) => void) => Promise<void>;
 }
 
@@ -161,6 +162,7 @@ export function useLogin(): UseLoginReturn {
     isSubmitting,
     isSuccessAnimating,
     fieldErrors,
+    setFieldErrors,
     handleLogin,
   };
 }

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import  { useRef, useState } from 'react';
 import { useRegister } from '../../hooks/auth/useRegister';
 import { useTrapFocus } from '../../hooks/useTrapFocus';
 import { X, User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
@@ -23,6 +23,9 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
   const [showUpdateEmail, setShowUpdateEmail] = useState(false);
   const [registeredData, setRegisteredData] = useState<any>(null);
 
+  // Estado local para transición de salida
+  const [localExiting, setLocalExiting] = useState(false);
+
   const {
     step,
     setStep,
@@ -39,7 +42,15 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
     handleSubmit,
   } = useRegister(initialData);
 
-  if (!isOpen) return null;
+  if (!isOpen && !localExiting) return null;
+  // Cambiar a Login con transición
+  const handleSwitchToLogin = () => {
+    setLocalExiting(true);
+    setTimeout(() => {
+      setLocalExiting(false);
+      onSwitchToLogin();
+    }, 250);
+  };
 
   const handleFullClose = () => {
     setShowRegisterResult(false);
@@ -91,7 +102,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
 
       <div
         ref={modalRef}
-        className={`relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden transition-all duration-1000 animate-in fade-in opacity-100 scale-100 translate-y-0 blur-0`}
+        className={`relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden transition-all duration-300 ${localExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'} animate-in fade-in translate-y-0 blur-0`}
       >
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
         <button onClick={handleFullClose} className="absolute top-4 right-4 text-gray-500 hover:text-white p-1 rounded-full hover:bg-white/10 z-10 transition-colors">
@@ -247,7 +258,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
         <div className="bg-white/5 p-4 text-center border-t border-white/10">
           <p className="text-sm text-gray-400">
             ¿Ya tienes cuenta?{' '}
-            <button onClick={onSwitchToLogin} className="text-white font-medium hover:text-cyan-400 transition-colors" type="button">
+            <button onClick={handleSwitchToLogin} className="text-white font-medium hover:text-cyan-400 transition-colors" type="button">
               Inicia Sesión
             </button>
           </p>
