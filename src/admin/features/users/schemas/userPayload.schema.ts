@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { boolean, z } from "zod";
 
 export const UserPayloadSchema = z.object({
    "username": z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres."),
@@ -10,5 +10,6 @@ export const UserPayloadSchema = z.object({
    "rol": z.string().min(1, "El rol es obligatorio."),
    "status": z.boolean(),
    "img": z.string().nullable(),
+   "verification": boolean().optional(),
 });
 export type UserPayload = z.infer<typeof UserPayloadSchema>;

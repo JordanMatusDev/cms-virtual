@@ -29,7 +29,7 @@ export const ERROR_MSGS = {
 
 export const ADMIN_PANEL_TEXTS = {
    PAGE_TITLE: "Admin Panel - Virtual",
-   WELCOME_MESSAGE: "¡Bienvenido de nuevo, Admin!",
+   WELCOME_MESSAGE: "¡Bienvenido de nuevo: ",
    SUBTITLE_TEXT: "Gestiona tu plataforma desde aquí.",
    HOME: "Inicio",
    USERS: "Usuarios",
