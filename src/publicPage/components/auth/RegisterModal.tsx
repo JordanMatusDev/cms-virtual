@@ -61,17 +61,27 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
     });
     setShowPass(false);
     setShowConfirm(false);
+    // Limpiar todos los errores
     if (fieldErrors) {
       Object.keys(fieldErrors).forEach(k => fieldErrors[k] = undefined);
     }
-    
+    // Si hay setter para errores, usarlo
+    if (typeof fieldErrors === 'object' && fieldErrors !== null) {
+      if ('general' in fieldErrors) fieldErrors.general = undefined;
+      if ('username' in fieldErrors) fieldErrors.username = undefined;
+      if ('password' in fieldErrors) fieldErrors.password = undefined;
+      if ('confirmPassword' in fieldErrors) fieldErrors.confirmPassword = undefined;
+      if ('email' in fieldErrors) fieldErrors.email = undefined;
+      if ('firstName' in fieldErrors) fieldErrors.firstName = undefined;
+      if ('lastName' in fieldErrors) fieldErrors.lastName = undefined;
+    }
   };
 
   // Cambiar a Login con transición
   const handleSwitchToLogin = () => {
-    resetFields();
     setLocalExiting(true);
     setTimeout(() => {
+      resetFields(); // Limpiar campos y errores después de la animación
       setLocalExiting(false);
       onSwitchToLogin();
     }, 250);
@@ -285,7 +295,11 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
         <div className="bg-white/5 p-4 text-center border-t border-white/10">
           <p className="text-sm text-gray-400">
             ¿Ya tienes cuenta?{' '}
-            <button onClick={handleSwitchToLogin} className="text-white font-medium hover:text-cyan-400 transition-colors" type="button">
+            <button
+              onClick={handleSwitchToLogin}
+              className="text-white font-medium hover:text-cyan-400 transition-colors"
+              type="button"
+            >
               Inicia Sesión
             </button>
           </p>
