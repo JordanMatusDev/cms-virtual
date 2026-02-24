@@ -40,6 +40,7 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
     setPassword('');
     setShowPass(false);
     if (setFieldErrors) setFieldErrors({});
+    if (fieldErrors && typeof fieldErrors.general === 'string') fieldErrors.general = undefined;
   };
 
   // Controlar visibilidad para animación
@@ -57,9 +58,9 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
 
   // Cambiar a registro
   const handleSwitchToRegister = () => {
+    resetFields();
     setLocalExiting(true);
     setTimeout(() => {
-      resetFields();
       setLocalExiting(false);
       onSwitchToRegister();
     }, 250);
@@ -67,9 +68,9 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
 
   // Cambiar a recuperar contraseña
   const handleSwitchToForgot = () => {
+    resetFields();
     setLocalExiting(true);
     setTimeout(() => {
-      resetFields();
       setLocalExiting(false);
       onSwitchToForgot();
     }, 250);
@@ -78,7 +79,7 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity"></div>
 
       {/* Contenedor Modal */}
       <div
@@ -104,7 +105,10 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
                 <input
                   type="text"
                   value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
+                  onChange={(e) => {
+                    setIdentifier(e.target.value);
+                    if (fieldErrors.identifier) setFieldErrors((prev: any) => ({ ...prev, identifier: undefined }));
+                  }}
                   className={`w-full bg-[#050505] border rounded-xl py-3 pl-10 pr-4 text-white focus:border-cyan-500/50 outline-none transition-all placeholder:text-gray-600 ${(fieldErrors.identifier || (fieldErrors.password && !fieldErrors.identifier)) ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
                 />
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={18} />
@@ -121,7 +125,10 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
                 <input
                   type={showPass ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) setFieldErrors((prev: any) => ({ ...prev, password: undefined }));
+                  }}
                   className={`w-full bg-[#050505] border rounded-xl py-3 pl-10 pr-10 text-white focus:border-cyan-500/50 outline-none transition-all placeholder:text-gray-600 ${fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
                 />
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={18} />

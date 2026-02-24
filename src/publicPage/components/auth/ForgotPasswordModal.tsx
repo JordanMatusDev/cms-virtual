@@ -17,20 +17,32 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSwitchToLogin }: ForgotPasswor
 
   const [showResult, setShowResult] = useState(false);
   const [successEmail, setSuccessEmail] = useState('');
-  // Estado local para transición de salida
   const [localExiting, setLocalExiting] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const {
     email,
     setEmail,
     loading,
     handleSubmit,
-    error
+    error,
   } = useForgotPassword();
 
-  if (!isOpen && !localExiting) return null;
+  // Limpiar datos
+  const resetFields = () => {
+    setEmail('');
+    setEmailError(null);
+    // No se puede limpiar error general porque el hook no provee setter.
+  };
+
+  // Validar email
+  const validateEmail = (value: string) => {
+    return /^\S+@\S+\.\S+$/.test(value);
+  };
+
   // Cambiar a Login con transición
   const handleSwitchToLogin = () => {
+    resetFields();
     setLocalExiting(true);
     setTimeout(() => {
       setLocalExiting(false);
@@ -43,6 +55,8 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSwitchToLogin }: ForgotPasswor
     setSuccessEmail('');
     onClose();
   };
+
+  if (!isOpen && !localExiting) return null;
 
   // 1. Mostrar Resultado de Envío Exitoso
   if (showResult) {
@@ -60,6 +74,12 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSwitchToLogin }: ForgotPasswor
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateEmail(email)) {
+      setEmailError('Ingresa un correo electrónico válido.');
+      return;
+    } else {
+      setEmailError(null);
+    }
     const success = await handleSubmit(e);
     if (success) {
       setSuccessEmail(email);
@@ -97,15 +117,23 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSwitchToLogin }: ForgotPasswor
               <div className="relative group">
                 <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400" />
                 <input 
-                  type="email" 
-                  className="w-full bg-[#050505] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:border-cyan-500/50 outline-none transition-all" 
-                  required 
+                  type="text"
+                  className={`w-full bg-[#050505] border rounded-xl py-3 pl-10 pr-4 text-white focus:border-cyan-500/50 outline-none transition-all ${emailError ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
+                  autoComplete="off"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={e => {
+                    setEmail(e.target.value);
+                    if (emailError) setEmailError(null);
+                  }}
                 />
               </div>
               {error && (
-                <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2">{error}</div>
+                (typeof error === 'string' && error.trim() !== '' && (
+                  <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2">{error}</div>
+                ))
+              )}
+              {emailError && (
+                <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2">{emailError}</div>
               )}
             </div>
             <div className="pt-2">

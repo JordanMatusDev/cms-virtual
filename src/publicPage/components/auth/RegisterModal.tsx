@@ -43,8 +43,29 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
   } = useRegister(initialData);
 
   if (!isOpen && !localExiting) return null;
+  // Limpiar datos
+  const resetFields = () => {
+    setStep(1);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      username: '',
+      password: '',
+      confirmPassword: '',
+    });
+    setShowPass(false);
+    setShowConfirm(false);
+    if (fieldErrors) {
+      Object.keys(fieldErrors).forEach(k => fieldErrors[k] = undefined);
+    }
+    // Si hay setter para error, usarlo aquí (ejemplo: setError && setError(''));
+    // Si no, ignorar porque error es solo lectura.
+  };
+
   // Cambiar a Login con transición
   const handleSwitchToLogin = () => {
+    resetFields();
     setLocalExiting(true);
     setTimeout(() => {
       setLocalExiting(false);
