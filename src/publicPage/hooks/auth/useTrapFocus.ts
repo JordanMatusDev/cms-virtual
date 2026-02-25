@@ -46,10 +46,7 @@ export function useTrapFocus(modalRef: React.RefObject<HTMLElement | null>, isOp
     const timer = setTimeout(() => {
       const node = modalRef.current;
       if (node) {
-        const focusable = getFocusableEls(node);
-        if (focusable.length > 0) {
-          focusable[0].focus();
-        }
+        node.focus();
       }
     }, 50);
 
