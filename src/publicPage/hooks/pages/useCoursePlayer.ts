@@ -20,40 +20,40 @@ const parseProgressArray = (raw: string | null | undefined): number[] => {
         if (parsed && Array.isArray(parsed.vistos)) {
             return (parsed.vistos as (number | string)[]).map((n: any) => Number(n)).filter((n: number) => !isNaN(n));
         }
-    } catch {}
+    } catch { }
     return [];
 };
 
 export const useCoursePlayer = () => {
     const { id } = useParams();
     const courseId = id;
-    
+
     // --- REFS ---
     const playerRef = useRef<any>(null);
-    const progressStateRef = useRef<any>(null); 
-    const isPlayingRef = useRef(false); 
+    const progressStateRef = useRef<any>(null);
+    const isPlayingRef = useRef(false);
+    const watchedSecondsRef = useRef<Set<number>>(new Set()); 
+    const apiTimerRef = useRef<number>(0);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [course, setCourse] = useState<any>(null);
     const [lessons, setLessons] = useState<any[]>([]);
-    const lessonsRef = useRef<any[]>([]); 
-    
+    const lessonsRef = useRef<any[]>([]);
+
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [enrollmentId, setEnrollmentId] = useState<number | null>(null);
-    
+
     // --- NUEVOS ESTADOS PARA INICIO EXACTO ---
     const [initialStartSeconds, setInitialStartSeconds] = useState(0);
     const [isReadyToPlay, setIsReadyToPlay] = useState(false); // Bandera para saber cuando ya cargó la posición
-    
+
     const [progressState, setProgressState] = useState<{
         vistos: number[];
         lastPosition?: { videoIndex: number; seconds: number } | null;
     }>({ vistos: [], lastPosition: null });
 
-    useEffect(() => {
-        progressStateRef.current = progressState;
-    }, [progressState]);
+    
 
     const [progressPercentage, setProgressPercentage] = useState(0);
     const isCourseCompleted = lessons.length > 0 && progressState.vistos.length >= lessons.length;
@@ -63,21 +63,28 @@ export const useCoursePlayer = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [isLoadingEnroll, setIsLoadingEnroll] = useState(false);
 
-    // --- DETECTAR LOGOUT ---
+// Limpiar la memoria al cambiar de video
+    useEffect(() => {
+        watchedSecondsRef.current.clear();
+        apiTimerRef.current = 0;
+    }, [currentVideoIndex]);
+
+    useEffect(() => {
+        progressStateRef.current = progressState;
+    }, [progressState]);
+
+ // --- DETECTAR LOGOUT ---
     useEffect(() => {
         const syncAuthState = () => {
             const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
             if (!isLoggedIn) {
                 setIsEnrolled(false);
                 setEnrollmentId(null);
-                // Bloquea el reproductor y limpia la referencia
-                if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
-                    try { playerRef.current.pauseVideo(); } catch(e){}
-                }
-                playerRef.current = null;
+                
+                // Ya no peleamos con playerRef aquí, React destruirá el iframe
                 setCurrentVideoIndex(0);
                 setInitialStartSeconds(0);
-                setIsReadyToPlay(true); // Listo para modo invitado
+                setIsReadyToPlay(true);
             }
         };
         window.addEventListener('auth:logout', syncAuthState);
@@ -117,41 +124,58 @@ export const useCoursePlayer = () => {
     };
 
     // --- HEARTBEAT (Guardado automático) ---
+    // --- HEARTBEAT INTELIGENTE (Guardado automático y Tracking) ---
     useEffect(() => {
         if (!isEnrolled || !enrollmentId) return;
 
+        // Latido cada 1 segundo (1000ms)
         const interval = setInterval(() => {
             if (!playerRef.current || !progressStateRef.current) return;
 
-            const playerState = typeof playerRef.current.getPlayerState === 'function' 
-                ? playerRef.current.getPlayerState() 
+            const playerState = typeof playerRef.current.getPlayerState === 'function'
+                ? playerRef.current.getPlayerState()
                 : -1;
-            
-            const isPlayingActually = playerState === 1;
 
-            if (isPlayingActually) {
-                const currentTime = playerRef.current.getCurrentTime();
-                if (typeof currentTime !== 'number' || currentTime < 1) return;
+            if (playerState === 1) { // 1 = PLAYING (Reproduciendo)
+                const currentTime = Math.floor(playerRef.current.getCurrentTime() || 0);
+                const duration = Math.floor(playerRef.current.getDuration() || 0);
 
-                const currentVistos = progressStateRef.current.vistos || [];
-                const totalVideos = lessonsRef.current.length;
-                const isComplete = currentVistos.length >= totalVideos && totalVideos > 0;
+                if (currentTime > 0 && duration > 0) {
+                    // 1. Guardamos el segundo actual en la memoria (El Set ignora duplicados)
+                    watchedSecondsRef.current.add(currentTime);
 
-                apiUpdateProgress(enrollmentId, {
-                    progress: JSON.stringify(currentVistos),
-                    completed: isComplete ? 1 : 0,
-                    last_position_seconds: JSON.stringify({ 
-                        videoIndex: currentVideoIndex + 1, 
-                        seconds: Math.floor(currentTime) 
-                    }),
-                    end_at: isComplete ? new Date().toISOString() : null
-                });
+                    const currentVistos = progressStateRef.current.vistos || [];
+                    const isAlreadyCompleted = currentVistos.includes(currentVideoIndex + 1);
+                    const percentWatched = watchedSecondsRef.current.size / duration;
+
+                    // 2. Si ya vio el 90% real, lo marcamos automáticamente como completado
+                    if (percentWatched >= 0.9 && !isAlreadyCompleted) {
+                        toggleLessonComplete(currentVideoIndex, true);
+                    }
+
+                    // 3. Guardar en la API la última posición (solo cada 5 segundos para no saturar)
+                    apiTimerRef.current += 1;
+                    if (apiTimerRef.current >= 5) {
+                        apiTimerRef.current = 0;
+                        const totalVideos = lessonsRef.current.length;
+                        const isComplete = currentVistos.length >= totalVideos && totalVideos > 0;
+
+                        apiUpdateProgress(enrollmentId, {
+                            progress: JSON.stringify(currentVistos),
+                            completed: isComplete ? 1 : 0,
+                            last_position_seconds: JSON.stringify({
+                                videoIndex: currentVideoIndex + 1,
+                                seconds: currentTime
+                            }),
+                            end_at: isComplete ? new Date().toISOString() : null
+                        });
+                    }
+                }
             }
-        }, 5000); 
+        }, 1000);
 
         return () => clearInterval(interval);
     }, [isEnrolled, enrollmentId, currentVideoIndex]);
-
     // --- CARGA DE DATOS (AQUÍ ESTÁ LA LÓGICA CRÍTICA) ---
     const updateEnrollmentState = async (userId: string | null, lessonList: { videoId: string }[] = []) => {
         // Reseteamos bandera de listo para mostrar loading si es necesario
@@ -168,22 +192,22 @@ export const useCoursePlayer = () => {
             const enrollment = enrollments.find((e: any) =>
                 String(e.curso_id ?? e.curso?.id) === String(courseId)
             );
-            
+
             if (enrollment) {
                 // Datos recibidos de la API
                 const foundId = enrollment.id;
                 setIsEnrolled(true);
                 setEnrollmentId(foundId);
-                
+
                 const vistosArr = parseProgressArray(enrollment.progreso);
                 let restoredLastPosition = null;
-                
+
                 if (enrollment.last_position_seconds) {
                     try {
                         const parsed = typeof enrollment.last_position_seconds === 'string'
                             ? JSON.parse(enrollment.last_position_seconds)
                             : enrollment.last_position_seconds;
-                        
+
                         if (typeof parsed?.videoIndex === 'number') {
                             restoredLastPosition = {
                                 videoIndex: Number(parsed.videoIndex),
@@ -192,9 +216,9 @@ export const useCoursePlayer = () => {
                         }
                     } catch (e) { /* Error parseando last_position */ }
                 }
-                
+
                 setProgressState({ vistos: vistosArr, lastPosition: restoredLastPosition });
-                
+
                 // RESTAURACIÓN EXACTA
                 if (restoredLastPosition?.videoIndex) {
                     const idx = restoredLastPosition.videoIndex - 1;
@@ -212,7 +236,7 @@ export const useCoursePlayer = () => {
                     else setCurrentVideoIndex(0);
                     setInitialStartSeconds(0);
                 }
-                
+
                 setIsReadyToPlay(true); // DATOS LISTOS: RENDERIZA EL PLAYER AHORA
                 return true;
             } else {
@@ -220,7 +244,7 @@ export const useCoursePlayer = () => {
                 setIsReadyToPlay(true); // Invitado listo
             }
         } catch (err) { setIsReadyToPlay(true); }
-        
+
         setIsEnrolled(false);
         setEnrollmentId(null);
         return false;
@@ -258,7 +282,7 @@ export const useCoursePlayer = () => {
 
                 initialLessons = vList.map((vid, i) => ({
                     id: i,
-                    title: titles[i] || `Lección ${i+1}`,
+                    title: titles[i] || `Lección ${i + 1}`,
                     completed: false,
                     locked: i > 0,
                     videoId: vid.trim()
@@ -274,7 +298,7 @@ export const useCoursePlayer = () => {
                     setIsReadyToPlay(true); // Si no hay usuario, listo de una vez
                 }
 
-            } catch (e: any) { setError(e.message || "Error"); } 
+            } catch (e: any) { setError(e.message || "Error"); }
             finally { setLoading(false); }
         };
         fetchData();
@@ -294,9 +318,7 @@ export const useCoursePlayer = () => {
     // --- MANEJO DE YOUTUBE ---
     const handleReady = (e: YouTubeEvent) => {
         playerRef.current = e.target;
-        // Ya no necesitamos lógica compleja aquí porque el 'start' param lo hace solo.
-        // Solo pausamos por seguridad si quieres que arranque pausado.
-        // e.target.pauseVideo(); 
+         
     };
 
     const handleStateChange = async (e: YouTubeEvent) => {
@@ -306,51 +328,58 @@ export const useCoursePlayer = () => {
 
         if (status === 2 && isEnrolled && enrollmentId) {
             const time = e.target.getCurrentTime();
-            const duration = e.target.getDuration?.();
             const currentIndex = currentVideoIndex;
-            
-            const shouldComplete = duration > 0 ? time / duration >= 0.9 : false;
-            const nextVistos = shouldComplete 
-                ? Array.from(new Set([...progressState.vistos, currentIndex + 1]))
-                : progressState.vistos;
-            
-            setProgressState({
-                vistos: nextVistos,
+
+            setProgressState(prev => ({
+                ...prev,
                 lastPosition: { videoIndex: currentIndex + 1, seconds: time }
-            });
-            
+            }));
+
             await apiUpdateProgress(enrollmentId, {
-                progress: JSON.stringify(nextVistos),
-                completed: nextVistos.length >= lessons.length ? 1 : 0,
+                progress: JSON.stringify(progressState.vistos),
+                completed: progressState.vistos.length >= lessons.length ? 1 : 0,
                 last_position_seconds: JSON.stringify({ videoIndex: currentIndex + 1, seconds: Math.floor(time) }),
-                end_at: nextVistos.length >= lessons.length ? new Date().toISOString() : null
+                end_at: progressState.vistos.length >= lessons.length ? new Date().toISOString() : null
             });
         }
     };
 
     const handleVideoEnd = async (_event?: any) => {
         if (!isEnrolled || !enrollmentId) return;
-        isPlayingRef.current = false; 
+        isPlayingRef.current = false;
 
         const currentIndex = currentVideoIndex;
-        const newVistos = Array.from(new Set([...progressState.vistos, currentIndex + 1]));
-        const isComplete = newVistos.length >= lessons.length;
+        const currentVistos = progressStateRef.current.vistos || [];
+        const isAlreadyCompleted = currentVistos.includes(currentIndex + 1);
         
+        const duration = Math.floor(playerRef.current?.getDuration() || 1);
+        const percentWatched = watchedSecondsRef.current.size / duration;
+
+        // ¿Le damos el check? Solo si ya estaba completado antes O si vio el 90%
+        let newVistos = currentVistos;
+        if (!isAlreadyCompleted && percentWatched >= 0.9) {
+            newVistos = Array.from(new Set([...currentVistos, currentIndex + 1]));
+        }
+
+        const isComplete = newVistos.length >= lessons.length;
+
         setProgressState({
             vistos: newVistos,
             lastPosition: { videoIndex: currentIndex + 1, seconds: 0 }
         });
-        
+
         setLessons(prev => prev.map((l, idx) => ({
             ...l,
             completed: newVistos.includes(idx + 1)
         })));
 
+        // Avanzar al siguiente video de forma fluida
         if (currentVideoIndex < lessons.length - 1) {
-             setCurrentVideoIndex(prev => prev + 1);
-             setInitialStartSeconds(0); // Siguiente video empieza en 0
+            setCurrentVideoIndex(prev => prev + 1);
+            setInitialStartSeconds(0); // Siguiente video empieza en 0
         }
 
+        // Actualizamos la base de datos
         await apiUpdateProgress(enrollmentId, {
             progress: JSON.stringify(newVistos),
             completed: isComplete ? 1 : 0,
@@ -363,7 +392,7 @@ export const useCoursePlayer = () => {
         if (!isEnrolled && index > 0) return;
         // Guardar progreso del anterior si es necesario...
         if (playerRef.current && isEnrolled && enrollmentId) {
-             // ... lógica opcional de guardado al salir
+            // ... lógica opcional de guardado al salir
         }
         setCurrentVideoIndex(index);
         setInitialStartSeconds(0); // IMPORTANTE: Reseteamos a 0 si el usuario cambia manualmente
@@ -393,8 +422,8 @@ export const useCoursePlayer = () => {
                 });
                 console.log('Respuesta inscripción:', data);
                 if (data) {
-                     await updateEnrollmentState(userId, lessonsRef.current);
-                     setShowConfirmModal(false);
+                    await updateEnrollmentState(userId, lessonsRef.current);
+                    setShowConfirmModal(false);
                 }
             } catch (error) {
                 console.error('Error al procesar inscripción:', error);
@@ -410,19 +439,19 @@ export const useCoursePlayer = () => {
         const enrolled = await updateEnrollmentState(userId, lessonsRef.current);
         if (!enrolled) setTimeout(() => setShowConfirmModal(true), 200);
     };
-    
+
     const toggleLessonComplete = async (videoIndex: number, isChecked: boolean) => {
         if (!isEnrolled || !enrollmentId) return;
         const num = videoIndex + 1;
         const nextVistos = isChecked
             ? Array.from(new Set([...progressState.vistos, num]))
             : progressState.vistos.filter((n) => n !== num);
-        
+
         const nextProgress = { ...progressState, vistos: nextVistos };
         setProgressState(nextProgress);
 
         const time = playerRef.current ? playerRef.current.getCurrentTime() : 0;
-        
+
         await apiUpdateProgress(enrollmentId, {
             progress: JSON.stringify(nextVistos),
             completed: nextVistos.length >= lessons.length ? 1 : 0,
@@ -432,18 +461,17 @@ export const useCoursePlayer = () => {
     };
 
     return {
-        loading, error, course, lessons, isEnrolled, 
+        loading, error, course, lessons, isEnrolled,
         currentVideoIndex, setCurrentVideoIndex,
-        currentLesson: lessons[currentVideoIndex], 
+        currentLesson: lessons[currentVideoIndex],
         isLocked: !isEnrolled,
         activeTab, setActiveTab,
-        handleVideoClick, handleEnrollClick, 
+        handleVideoClick, handleEnrollClick,
         showLoginModal, setShowLoginModal, handleLoginSuccess,
         showConfirmModal, setShowConfirmModal, confirmEnrollment, isLoadingEnroll,
         handleVideoEnd, handleStateChange, handleReady, progressPercentage,
         toggleLessonComplete, isCourseCompleted,
-        // ESTOS SON LOS NUEVOS VALORES QUE DEBES USAR EN EL COMPONENTE
         initialStartSeconds,
-        isReadyToPlay 
+        isReadyToPlay
     };
 };

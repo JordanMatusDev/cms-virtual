@@ -25,11 +25,22 @@ const UpdateEmailModal = ({ isOpen, onClose, onEmailUpdated, initialEmail, usern
   const modalRef = useRef<HTMLDivElement>(null);
   useTrapFocus(modalRef, isOpen);
 
+  const validateEmailFormat = (email: string) => {
+    // Simple regex for email validation
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     setFieldError(null);
+    // Validar formato de correo
+    if (!validateEmailFormat(email.trim())) {
+      setFieldError('Ingresa un correo electrónico válido.');
+      setIsLoading(false);
+      return;
+    }
     try {
       // Validar si el correo ya existe
       if (email.trim() !== currentEmail.trim()) {
@@ -85,12 +96,11 @@ const UpdateEmailModal = ({ isOpen, onClose, onEmailUpdated, initialEmail, usern
               <label className="text-sm font-medium text-gray-400 ml-1">Correo electrónico</label>
               <div className="relative group">
                 <input
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={e => { setEmail(e.target.value); setFieldError(null); }}
                   autoComplete="off"
                   className={`w-full bg-[#050505] border rounded-xl py-3 pl-9 pr-3 text-base text-white focus:border-cyan-500/50 outline-none transition-all placeholder:text-gray-600 ${fieldError ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                  required
                 />
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={18} />
               </div>

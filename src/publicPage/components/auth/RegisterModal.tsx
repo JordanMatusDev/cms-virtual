@@ -88,9 +88,9 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
 
   // Cambiar a Login con transición
   const handleSwitchToLogin = () => {
-    resetFields(); // Limpiar campos y errores antes de la animación
     setLocalExiting(true);
     setTimeout(() => {
+      resetFields(); // Limpiar campos y errores después de la animación
       setLocalExiting(false);
       onSwitchToLogin();
     }, 250);
