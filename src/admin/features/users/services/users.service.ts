@@ -26,5 +26,16 @@ export const usersService = {
 
    deleteUser: async (id: string): Promise<void> => {
       await api.delete(`${API_BASE_URL}${API_ENDPOINTS.USERS}${id}`);
+   },
+
+   postUserAvatar: async (user_id: string, file: File): Promise<User> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const { data } = await api.post(`${API_BASE_URL}${API_ENDPOINTS.AVATAR.replace('{userId}', user_id)}`, formData, {
+         headers: {
+            'Content-Type': 'multipart/form-data',
+         },
+      });
+      return UserSchema.parse(data);
    }
 }

@@ -14,6 +14,7 @@ vi.mock("@/admin/core/config/apiConfig", () => ({
 	API_BASE_URL: "https://api-main.virtual-edu.lat/",
 	API_ENDPOINTS: {
 		USERS: "api/v1/users/",
+		AVATAR: "api/v1/users/{userId}/avatar/",
 	},
 }));
 
@@ -104,5 +105,34 @@ describe("usersService", () => {
 
 		await expect(usersService.deleteUser("1")).resolves.toBeUndefined();
 		expect(mockApi.delete).toHaveBeenCalledWith("https://api-main.virtual-edu.lat/api/v1/users/1");
+	});
+
+	it("postUserAvatar envía multipart/form-data al endpoint de avatar y parsea la respuesta", async () => {
+		const file = new File(["avatar-content"], "avatar.png", { type: "image/png" });
+
+		mockApi.post.mockResolvedValueOnce({ data: rawUser });
+
+		const result = await usersService.postUserAvatar("1", file);
+
+		expect(mockApi.post).toHaveBeenCalledTimes(1);
+		const [url, body, config] = mockApi.post.mock.calls[0];
+
+		expect(url).toBe("https://api-main.virtual-edu.lat/api/v1/users/1/avatar/");
+		expect(body).toBeInstanceOf(FormData);
+		expect((body as FormData).get("file")).toBe(file);
+		expect(config).toEqual({
+			headers: {
+				"Content-Type": "multipart/form-data",
+			},
+		});
+		expect(result.id).toBe(1);
+		expect(result.created_at).toBeInstanceOf(Date);
+	});
+
+	it("postUserAvatar falla cuando la respuesta no cumple el schema", async () => {
+		const file = new File(["avatar-content"], "avatar.png", { type: "image/png" });
+		mockApi.post.mockResolvedValueOnce({ data: { ...rawUser, email: "correo-invalido" } });
+
+		await expect(usersService.postUserAvatar("1", file)).rejects.toThrow();
 	});
 });

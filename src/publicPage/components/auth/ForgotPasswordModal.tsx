@@ -12,6 +12,13 @@ interface ForgotPasswordModalProps {
 }
 
 const ForgotPasswordModal = ({ isOpen, onClose, onSwitchToLogin }: ForgotPasswordModalProps) => {
+    useEffect(() => {
+      if (isOpen) {
+        setShowResult(false);
+        setSuccessEmail('');
+        resetFields();
+      }
+    }, [isOpen]);
   const modalRef = useRef<HTMLDivElement>(null);
   useTrapFocus(modalRef, isOpen);
 
@@ -76,6 +83,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSwitchToLogin }: ForgotPasswor
           onSwitchToLogin(); // Lo mandamos al login al cerrar el éxito
         }}
         email={successEmail}
+        onGoToLogin={handleSwitchToLogin}
       />
     );
   }

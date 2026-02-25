@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
    USERS: "api/v1/users/",
    COURSES: "api/v1/courses/",
    CATEGORIES: "api/v1/categories/",
+   AVATAR: "api/v1/users/{userId}/avatar",
 };
 
 // Configuración de Axios para manejar las solicitudes a la API

@@ -3,34 +3,17 @@ import { useParams, useNavigate } from 'react-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-   Box,
-   Button,
-   Stack,
-   TextField,
-   Typography,
-   FormControlLabel,
-   FormControl,
-   Switch,
-   InputLabel,
-   Select,
-   MenuItem,
-   Avatar,
-   CircularProgress,
-   Grid,
-   Paper,
-   IconButton,
-   Tooltip,
-   Divider
+   Box, Button, Stack, TextField, Typography, FormControlLabel,
+   FormControl, Switch, InputLabel, Select, MenuItem, Avatar,
+   CircularProgress, Grid, Paper, IconButton, Tooltip, Divider
 } from '@mui/material';
 import { inputSx, switchSx } from '@/admin/theme/Input.styles'
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
-import { FaEdit } from "react-icons/fa";
-import { FaSave } from 'react-icons/fa';
-import { MdDeleteForever } from "react-icons/md";
+import { FaEdit, FaSave } from "react-icons/fa";
+import { MdDeleteForever, MdArrowBack } from "react-icons/md";
 import { IoIosCloseCircle } from "react-icons/io";
-import { MdArrowBack } from 'react-icons/md';
 
-import { useGetUserById, useCreateUser, useUpdateUser, useDeleteUser } from '../hooks/useUsers'; 
+import { useGetUserById, useCreateUser, useUpdateUser, useDeleteUser, useUploadUserAvatar } from '../hooks/useUsers'; 
 import { UserPayloadSchema, type UserPayload } from '../schemas/userPayload.schema';
 import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
 
@@ -41,43 +24,37 @@ function UsersForm() {
    const isEditMode = id && id !== 'nuevo';
    const [isEditable, setIsEditable] = useState(!isEditMode);
    const [mainError, setMainError] = useState('');
-   const [avatarPreview, setAvatarPreview] = useState<string>('');
+   
+   // --- ESTADOS INDEPENDIENTES PARA LA IMAGEN ---
+   // URL para mostrar la vista previa (ya sea de la API o la recién seleccionada)
+   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+   // El archivo real que enviaremos, totalmente separado de react-hook-form
+   const [avatarFileToUpload, setAvatarFileToUpload] = useState<File | null>(null);
 
    const { data: userData, isLoading: isFetchingUser } = useGetUserById(isEditMode ? id : undefined);
    const createMutation = useCreateUser();
    const updateMutation = useUpdateUser();
    const deleteMutation = useDeleteUser();
-   const isSaving = createMutation.isPending || updateMutation.isPending;
+   const uploadAvatarMutation = useUploadUserAvatar();
+   
+   const isSaving = createMutation.isPending || updateMutation.isPending || uploadAvatarMutation.isPending;
 
-   const{
-      register,
-      handleSubmit,
-      control,
-      reset,
-      setValue,
-      setError,
-      formState: { errors }
+   const {
+      register, handleSubmit, control, reset, setError, formState: { errors }
    } = useForm<UserPayload>({
       resolver: zodResolver(UserPayloadSchema),
       defaultValues: {
-         username: '',
-         email: '',
-         password: '',
-         rol: 'estudiante',
-         name: '',
-         surnames: '',
-         status: true,
-         img: ''
+         username: '', email: '', password: '', rol: 'estudiante',
+         name: '', surnames: '', status: true
+         // OJO: Ya no ponemos 'img' aquí
       }
-   })
+   });
 
    useEffect(() => {
       if (isEditMode && userData) {
-         reset({
-            ...userData,
-            password: ''
-         });
-         setAvatarPreview(userData.img || '');
+         // Cuando cargan los datos, llenamos el formulario y la preview
+         reset({ ...userData, password: '' });
+         setAvatarPreview(userData.img || null);
       }
    }, [userData, isEditMode, reset]);
 
@@ -85,67 +62,86 @@ function UsersForm() {
       const file = event.target.files?.[0];
       if (!file) return;
       
+      // Mostramos la vista previa local
       setAvatarPreview(URL.createObjectURL(file));
-      setValue('img', file as any, { shouldValidate: true, shouldDirty: true }); 
+      // Guardamos el archivo para enviarlo después
+      setAvatarFileToUpload(file);
    };
 
    const onFormError = (errores: any) => {
       window.scrollTo({ top: -5, behavior: 'smooth' });
-      setMainError('Por favor, corrige los errores en el formulario: ' 
-         + Object.values(errores).map((err: any) => err.message).join(', ')
-      );
+      const errorMsg = errores.general 
+         ? errores.general.message 
+         : Object.values(errores).map((err: any) => err.message).join(', ');
+         
+      setMainError('Error: ' + errorMsg);
    };
 
-   const onSubmit = (data: UserPayload) => {
+   const onSubmit = async (data: UserPayload) => {
       setMainError('');
 
       if (isEditMode) {
-         const payloadToUpdate = cleanPatchPayload(data, userData, ['password']);
-
-         if (Object.keys(payloadToUpdate).length === 0) {
-            onFormError({ general: { message: 'No se han realizado cambios para actualizar.' } });
-            return;
-         }
-
-         console.log('Payload a actualizar:', payloadToUpdate);
-
-         updateMutation.mutate(
-            { id: id!, data: payloadToUpdate },
-            {
-               onSuccess: () => navigate(ROUTES_PATHS.ADMIN_USERS),
-               onError: (error: Error) => onFormError({ general: { message: error.message } })
+         try {
+            const payloadToUpdate = cleanPatchPayload(data, userData, ['password']);
+            
+            if (Object.keys(payloadToUpdate).length > 0) {
+               await updateMutation.mutateAsync({ id: id!, data: payloadToUpdate });
             }
-         );
+
+            if (avatarFileToUpload) {
+               await uploadAvatarMutation.mutateAsync({ user_id: id!, file: avatarFileToUpload });
+            }
+
+            navigate(ROUTES_PATHS.ADMIN_USERS);
+         } catch (error: any) {
+            onFormError({ general: { message: error.message } });
+         }
       } else {
          if (!data.password) {
             setError('password', { type: 'manual', message: 'La contraseña es requerida para crear un usuario' });
             return;
          }
-         else if (!data.name) {
-            setError('name', { type: 'manual', message: 'El nombre es requerido para crear un usuario' });
+         if (!data.name) {
+            setError('name', {type: 'manual', message: 'El nombre es requerido para crear un usuario'})
             return;
          }
-         else if (!data.surnames) {
-            setError('surnames', { type: 'manual', message: 'Los apellidos son requeridos para crear un usuario' });
+         if (!data.surnames) {
+            setError('surnames', {type: 'manual', message: 'Los apellidos son requeridos para crear un usuario'})
             return;
          }
 
-         console.log('Payload a crear:', data);
+         try {
+            const response = await createMutation.mutateAsync(data);
+            const newUserId = response.id; 
 
-         createMutation.mutate(data, {
-            onSuccess: (response) => {
-               const newUserId = response.id; // Asumiendo que la respuesta tiene el nuevo ID en response.id
-               updateMutation.mutate(
-                  { id: newUserId.toString(), data: { verification: true, status: data.status } },
-                  {
-                     onSuccess: () => navigate(ROUTES_PATHS.ADMIN_USERS),
-                     onError: (error: Error) => 
-                        onFormError({ general: { message: 'Usuario creado pero no se pudo verificar: ' + error.message } })
-                  }
+            if (!newUserId) {
+               throw new Error('Usuario creado, pero no se pudo obtener el ID del servidor.');
+            }
+
+            const tareasExtra = [];
+
+            tareasExtra.push(
+               updateMutation.mutateAsync({ 
+                  id: newUserId.toString(), 
+                  data: { verification: true, status: data.status } 
+               })
+            );
+
+            if (avatarFileToUpload) {
+               tareasExtra.push(
+                  uploadAvatarMutation.mutateAsync({ 
+                     user_id: newUserId.toString(), 
+                     file: avatarFileToUpload 
+                  })
                );
-            },
-            onError: (error: Error) => onFormError({ general: { message: error.message } })
-         });
+            }
+
+            await Promise.all(tareasExtra);
+            navigate(ROUTES_PATHS.ADMIN_USERS);
+
+         } catch (error: any) {
+            onFormError({ general: { message: 'Hubo un problema en el proceso: ' + error.message } });
+         }
       }
    };
 
@@ -158,9 +154,7 @@ function UsersForm() {
       }
    };
 
-   const handleCancel = () => {
-      navigate(ROUTES_PATHS.ADMIN_USERS);
-   }
+   const handleCancel = () => navigate(ROUTES_PATHS.ADMIN_USERS);
 
    if (isFetchingUser) {
       return (
@@ -223,9 +217,7 @@ function UsersForm() {
 
          <Box
             sx={{
-               bgcolor: '#1E293B',
-               p: 3,
-               borderRadius: '12px',
+               bgcolor: '#1E293B', p: 3, borderRadius: '12px',
                border: '1px solid rgba(255, 255, 255, 0.1)',
                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
             }}
@@ -234,32 +226,20 @@ function UsersForm() {
                <Grid size={{ xs: 12, md: 7 }}>
                   <Stack spacing={2.5}>
                      <TextField
-                        label='Usuario'
-                        fullWidth
-                        sx={inputSx}
-                        {...register('username')}
-                        error={!!errors.username}
-                        helperText={errors.username?.message}
-                        disabled={!isEditable}
+                        label='Usuario' fullWidth sx={inputSx}
+                        {...register('username')} error={!!errors.username}
+                        helperText={errors.username?.message} disabled={!isEditable}
                      />
 
                      <TextField
-                        label='Correo Electrónico'
-                        fullWidth
-                        sx={inputSx}
-                        {...register('email')}
-                        error={!!errors.email}
-                        helperText={errors.email?.message}
-                        disabled={!isEditable}
+                        label='Correo Electrónico' fullWidth sx={inputSx}
+                        {...register('email')} error={!!errors.email}
+                        helperText={errors.email?.message} disabled={!isEditable}
                      />
 
                      <TextField
-                        type='password'
-                        label='Contraseña'
-                        fullWidth
-                        sx={inputSx}
-                        {...register('password')}
-                        error={!!errors.password}
+                        type='password' label='Contraseña' fullWidth sx={inputSx}
+                        {...register('password')} error={!!errors.password}
                         helperText={isEditMode ? 'Dejar vacío para mantener la contraseña actual' : errors.password?.message}
                         disabled={!isEditable}
                      />
@@ -271,8 +251,7 @@ function UsersForm() {
                      <FormControl fullWidth sx={inputSx} error={!!errors.rol} disabled={!isEditable}>
                         <InputLabel>Rol</InputLabel>
                         <Controller
-                           name='rol'
-                           control={control}
+                           name='rol' control={control}
                            render={({ field }) => (
                               <Select {...field} label='Rol'>
                                  <MenuItem value='estudiante'>Estudiante</MenuItem>
@@ -289,23 +268,15 @@ function UsersForm() {
                      )}
 
                      <TextField
-                        label='Nombre'
-                        fullWidth
-                        sx={inputSx}
-                        {...register('name')}
-                        error={!!errors.name}
-                        helperText={errors.name?.message}
-                        disabled={!isEditable}
+                        label='Nombre' fullWidth sx={inputSx}
+                        {...register('name')} error={!!errors.name}
+                        helperText={errors.name?.message} disabled={!isEditable}
                      />
 
                      <TextField
-                        label='Apellido'
-                        fullWidth
-                        sx={inputSx}
-                        {...register('surnames')}
-                        error={!!errors.surnames}
-                        helperText={errors.surnames?.message}
-                        disabled={!isEditable}
+                        label='Apellido' fullWidth sx={inputSx}
+                        {...register('surnames')} error={!!errors.surnames}
+                        helperText={errors.surnames?.message} disabled={!isEditable}
                      />
                   </Stack>
                </Grid>
@@ -318,17 +289,14 @@ function UsersForm() {
                         <Stack direction='row' justifyContent='space-between' alignItems='center' sx={{ bgcolor: 'rgba(255,255,255,0.02)', p: 1.5, borderRadius: '8px', minHeight: '120px' }}>
                            <Typography sx={{ color: '#F8FAFC', fontSize: '14px' }}>Estado del usuario</Typography>
                            <Controller
-                           name='status'
-                           control={control}
+                           name='status' control={control}
                            render={({ field: { value, onChange, ...rest } }) => (
                               <FormControlLabel
                                  control={
                                     <Switch
-                                       {...rest}
-                                       checked={!!value}
+                                       {...rest} checked={!!value}
                                        onChange={(e) => onChange(e.target.checked)}
-                                       disabled={!isEditable}
-                                       sx={switchSx}
+                                       disabled={!isEditable} sx={switchSx}
                                     />
                                  }
                                  label={value ? 'Activo' : 'Inactivo'}
@@ -347,10 +315,7 @@ function UsersForm() {
                               sx={{ width: 96, height: 96, border: '1px solid rgba(255,255,255,0.15)' }}
                            />
                            <Button
-                              component='label'
-                              variant='outlined'
-                              size='small'
-                              disabled={!isEditable}
+                              component='label' variant='outlined' size='small' disabled={!isEditable}
                               sx={{ color: '#F8FAFC', borderColor: 'rgba(255,255,255,0.2)', textTransform: 'none' }}
                            >
                               Subir imagen
@@ -364,26 +329,12 @@ function UsersForm() {
          </Box>
 
          <Stack direction='row' spacing={2} justifyContent='flex-end' sx={{ mt: 1 }}>
-            <Button
-               onClick={handleCancel}
-               sx={{ color: '#94A3B8', textTransform: 'none' }}
-               disabled={isSaving}
-            >
+            <Button onClick={handleCancel} sx={{ color: '#94A3B8', textTransform: 'none' }} disabled={isSaving}>
                Cancelar
             </Button>
             <Button
-               type='submit'
-               variant='contained'
-               startIcon={<FaSave />}
-               disabled={isSaving || !isEditable}
-               sx={{
-                  color: 'white',
-                  bgcolor: '#4F46E5',
-                  px: 3,
-                  borderRadius: '6px',
-                  textTransform: 'none',
-                  '&:hover': { bgcolor: '#4338CA' }
-               }}
+               type='submit' variant='contained' startIcon={<FaSave />} disabled={isSaving || !isEditable}
+               sx={{ color: 'white', bgcolor: '#4F46E5', px: 3, borderRadius: '6px', textTransform: 'none', '&:hover': { bgcolor: '#4338CA' } }}
             >
                {isSaving ? 'Guardando...' : isEditMode ? 'Guardar Cambios' : 'Crear Usuario'}
             </Button>
