@@ -71,11 +71,14 @@ function CoursesForm() {
    });
 
    // Observadores
+   const titleWatch = watch('title');
+   const descriptionWatch = watch('description');
+   const authorWatch = watch('author');
    const videoUrlWatch = watch('video_url');
    const imgWatch = watch('img');
    const modulesWatch = watch('modules');
    const playlistIdWatch = watch('playlist_id'); 
-   const durationWatch = watch('duration_minutes'); // <--- Observamos la duración para mostrarla
+   const durationWatch = watch('duration_minutes');
 
    // Array calculado como "Plan B" por si no hay detalles de video aún (ej. al abrir modo edición)
    const modulesList = (typeof playlistIdWatch === 'string' && playlistIdWatch) 
@@ -202,7 +205,7 @@ function CoursesForm() {
                            variant="contained"
                            onClick={() => setIsEditable(!isEditable)}
                            disabled={isSaving}
-                           sx={{ bgcolor: isEditable ? '#64748B' : '#4F46E5', minWidth: '40px', p: 1 }}
+                           sx={{ bgcolor: isEditable ? '#64748B' : '#4F46E5', minWidth: '40px', p: 1, color: 'white' }}
                         >
                            {isEditable ? <IoIosCloseCircle size={20} /> : <FaEdit size={18} />}
                         </Button>
@@ -212,7 +215,7 @@ function CoursesForm() {
                            variant="contained"
                            onClick={handleDelete}
                            disabled={deleteMutation.isPending || isSaving}
-                           sx={{ bgcolor: '#EF4444', '&:hover': { bgcolor: '#DC2626' }, minWidth: '40px', p: 1 }}
+                           sx={{ bgcolor: '#EF4444', '&:hover': { bgcolor: '#DC2626' }, minWidth: '40px', p: 1, color: 'white' }}
                         >
                            <MdDeleteForever size={20} />
                         </Button>
@@ -243,6 +246,7 @@ function CoursesForm() {
                         disabled={!isEditable}
                         error={!!errors.title}
                         helperText={errors.title?.message}
+                        slotProps={{ inputLabel: { shrink: !!titleWatch } }}
                      />
                      <TextField 
                         label="Descripción" fullWidth multiline rows={4} sx={inputSx} 
@@ -250,6 +254,7 @@ function CoursesForm() {
                         disabled={!isEditable}
                         error={!!errors.description}
                         helperText={errors.description?.message}
+                        slotProps={{ inputLabel: { shrink: !!descriptionWatch } }}
                      />
                      <TextField 
                         label="Autor / Canal" fullWidth sx={inputSx} 
@@ -257,6 +262,7 @@ function CoursesForm() {
                         disabled={!isEditable}
                         error={!!errors.author}
                         helperText={errors.author?.message}
+                        slotProps={{ inputLabel: { shrink: !!authorWatch } }}
                      />
                   </Stack>
                </Grid>
