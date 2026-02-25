@@ -167,6 +167,7 @@ Esto levanta un servidor estático usando el contenido de `dist/`.
 - `npm run dev` → inicia entorno de desarrollo con Vite.
 - `npm run build` → compila TypeScript y genera build de producción.
 - `npm run preview` → sirve localmente la build generada.
+- `npm ci` → sirve para instalar las dependencias exactas del proyecto.
 ---
 
 ## 10) Documentación técnica adicional recomendada

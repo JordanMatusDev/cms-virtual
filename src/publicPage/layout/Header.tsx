@@ -3,7 +3,9 @@ import { Link } from 'react-router';
 import { Bell, Menu, X, Plus } from 'lucide-react';
 import NotificationsMenu from './header/NotificationsMenu';
 import logoText from '../assets/virtualz.png';
-import AuthModal from '../components/auth/AuthModal';
+import LoginModal from '../components/auth/LoginModal';
+import RegisterModal from '../components/auth/RegisterModal';
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 import SearchBar from './header/SearchBar';
 import UserMenu from './header/UserMenu';
 import MobileMenu from './header/MobileMenu';
@@ -14,6 +16,8 @@ const Header = () => {
   const isScrolled = useScroll();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authView, setAuthView] = useState<'login' | 'register' | 'forgot'>('login');
+  const [registerData,] = useState<any>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsContainerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +29,7 @@ const Header = () => {
       setIsDropdownOpen(open => !open);
     } else {
       setIsAuthOpen(true);
+      setAuthView('login');
     }
   };
 
@@ -112,13 +117,34 @@ const Header = () => {
           onProfileClick={handleProfileClick}
         />
       </header>
-      {/* MODAL DE LOGIN */}
-      <AuthModal
-        isOpen={isAuthOpen}
+      {/* MODALES DE AUTENTICACIÓN */}
+      <LoginModal
+        isOpen={isAuthOpen && authView === 'login'}
         onClose={() => setIsAuthOpen(false)}
-        onLoginSuccess={(userData) => {
+        onSuccess={(userData) => {
           setUser(userData);
           setIsAuthOpen(false);
+        }}
+        onSwitchToRegister={() => {
+          setAuthView('register');
+        }}
+        onSwitchToForgot={() => {
+          setAuthView('forgot');
+        }}
+      />
+      <RegisterModal
+        isOpen={isAuthOpen && authView === 'register'}
+        onClose={() => setIsAuthOpen(false)}
+        onSwitchToLogin={() => {
+          setAuthView('login');
+        }}
+        initialData={registerData}
+      />
+      <ForgotPasswordModal
+        isOpen={isAuthOpen && authView === 'forgot'}
+        onClose={() => setIsAuthOpen(false)}
+        onSwitchToLogin={() => {
+          setAuthView('login');
         }}
       />
     </>

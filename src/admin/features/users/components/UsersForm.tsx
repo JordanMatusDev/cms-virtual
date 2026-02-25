@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
    Box, Button, Stack, TextField, Typography, FormControlLabel,
-   FormControl, Switch, InputLabel, Select, MenuItem, Avatar, CircularProgress
+   FormControl, Switch, InputLabel, Select, MenuItem, Avatar,
+   CircularProgress, Grid, Paper, IconButton, Tooltip, Divider
 } from '@mui/material';
 import { inputSx, switchSx } from '@/admin/theme/Input.styles'
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
-import { FaEdit } from "react-icons/fa";
-import { MdDeleteForever } from "react-icons/md";
+import { FaEdit, FaSave } from "react-icons/fa";
+import { MdDeleteForever, MdArrowBack } from "react-icons/md";
 import { IoIosCloseCircle } from "react-icons/io";
 
-import { useGetUserById, useCreateUser, useUpdateUser, useDeleteUser } from '../hooks/useUsers'; 
+import { useGetUserById, useCreateUser, useUpdateUser, useDeleteUser, useUploadUserAvatar } from '../hooks/useUsers'; 
 import { UserPayloadSchema, type UserPayload } from '../schemas/userPayload.schema';
 import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
 
@@ -20,92 +23,125 @@ function UsersForm() {
    
    const isEditMode = id && id !== 'nuevo';
    const [isEditable, setIsEditable] = useState(!isEditMode);
-   const [formData, setFormData] = useState<Partial<UserPayload>>({
-      username: '',
-      email: '',
-      password: '',
-      name: '',
-      surnames: '',
-      rol: '',
-      status: false,
-      img: null,
-   });
-   const [fieldsErrors, setFieldsErrors] = useState<Record<string, string>>({});
    const [mainError, setMainError] = useState('');
+   
+   // --- ESTADOS INDEPENDIENTES PARA LA IMAGEN ---
+   // URL para mostrar la vista previa (ya sea de la API o la recién seleccionada)
+   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+   // El archivo real que enviaremos, totalmente separado de react-hook-form
+   const [avatarFileToUpload, setAvatarFileToUpload] = useState<File | null>(null);
 
    const { data: userData, isLoading: isFetchingUser } = useGetUserById(isEditMode ? id : undefined);
-
    const createMutation = useCreateUser();
    const updateMutation = useUpdateUser();
    const deleteMutation = useDeleteUser();
+   const uploadAvatarMutation = useUploadUserAvatar();
+   
+   const isSaving = createMutation.isPending || updateMutation.isPending || uploadAvatarMutation.isPending;
+
+   const {
+      register, handleSubmit, control, reset, setError, formState: { errors }
+   } = useForm<UserPayload>({
+      resolver: zodResolver(UserPayloadSchema),
+      defaultValues: {
+         username: '', email: '', password: '', rol: 'estudiante',
+         name: '', surnames: '', status: true
+         // OJO: Ya no ponemos 'img' aquí
+      }
+   });
 
    useEffect(() => {
       if (isEditMode && userData) {
-         setFormData({
-            username: userData.username,
-            email: userData.email,
-            password: '',
-            name: userData.name,
-            surnames: userData.surnames,
-            rol: userData.rol,
-            status: userData.status,
-            img: userData.img,
-         });
+         // Cuando cargan los datos, llenamos el formulario y la preview
+         reset({ ...userData, password: '' });
+         setAvatarPreview(userData.img || null);
       }
-   }, [userData, isEditMode]);
+   }, [userData, isEditMode, reset]);
 
-   const handleInputChange = (field: keyof UserPayload, value: any) => {
-      setFormData(prev => ({ ...prev, [field]: value }));
-      if (fieldsErrors[field]) setFieldsErrors(prev => ({ ...prev, [field]: '' }));
+   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      
+      // Mostramos la vista previa local
+      setAvatarPreview(URL.createObjectURL(file));
+      // Guardamos el archivo para enviarlo después
+      setAvatarFileToUpload(file);
    };
 
-   const handleCancel = () => navigate(ROUTES_PATHS.ADMIN_USERS);
+   const onFormError = (errores: any) => {
+      window.scrollTo({ top: -5, behavior: 'smooth' });
+      const errorMsg = errores.general 
+         ? errores.general.message 
+         : Object.values(errores).map((err: any) => err.message).join(', ');
+         
+      setMainError('Error: ' + errorMsg);
+   };
 
-   const handleSave = () => {
+   const onSubmit = async (data: UserPayload) => {
       setMainError('');
-      setFieldsErrors({});
-
-      const result = UserPayloadSchema.safeParse(formData);
-      if (!result.success) {
-         const formattedErrors: Record<string, string> = {};
-         result.error.issues.forEach((issue) => {
-            const fieldName = String(issue.path[0]);
-            formattedErrors[fieldName] = issue.message;
-         });
-
-         setFieldsErrors(formattedErrors);
-         return;
-      }
 
       if (isEditMode) {
-         const payloadToUpdate = cleanPatchPayload(result.data, userData, ['password']);
+         try {
+            const payloadToUpdate = cleanPatchPayload(data, userData, ['password']);
+            
+            if (Object.keys(payloadToUpdate).length > 0) {
+               await updateMutation.mutateAsync({ id: id!, data: payloadToUpdate });
+            }
 
-         if (Object.keys(payloadToUpdate).length === 0) {;
+            if (avatarFileToUpload) {
+               await uploadAvatarMutation.mutateAsync({ user_id: id!, file: avatarFileToUpload });
+            }
+
             navigate(ROUTES_PATHS.ADMIN_USERS);
+         } catch (error: any) {
+            onFormError({ general: { message: error.message } });
+         }
+      } else {
+         if (!data.password) {
+            setError('password', { type: 'manual', message: 'La contraseña es requerida para crear un usuario' });
+            return;
+         }
+         if (!data.name) {
+            setError('name', {type: 'manual', message: 'El nombre es requerido para crear un usuario'})
+            return;
+         }
+         if (!data.surnames) {
+            setError('surnames', {type: 'manual', message: 'Los apellidos son requeridos para crear un usuario'})
             return;
          }
 
-         updateMutation.mutate(
-            { id: id!, data: payloadToUpdate },
-            {
-               onSuccess: () => navigate(ROUTES_PATHS.ADMIN_USERS),
-               onError: (error: Error) => setMainError(error.message)
-            }
-         );
-      } 
-      else {
-         if (result.data.password === '') {
-            setFieldsErrors({ password: 'La contraseña es requerida para crear un usuario' });
-            return;
-         }
+         try {
+            const response = await createMutation.mutateAsync(data);
+            const newUserId = response.id; 
 
-         createMutation.mutate(
-            result.data,
-            {
-               onSuccess: () => navigate(ROUTES_PATHS.ADMIN_USERS),
-               onError: (error: Error) => setMainError(error.message)
+            if (!newUserId) {
+               throw new Error('Usuario creado, pero no se pudo obtener el ID del servidor.');
             }
-         );
+
+            const tareasExtra = [];
+
+            tareasExtra.push(
+               updateMutation.mutateAsync({ 
+                  id: newUserId.toString(), 
+                  data: { verification: true, status: data.status } 
+               })
+            );
+
+            if (avatarFileToUpload) {
+               tareasExtra.push(
+                  uploadAvatarMutation.mutateAsync({ 
+                     user_id: newUserId.toString(), 
+                     file: avatarFileToUpload 
+                  })
+               );
+            }
+
+            await Promise.all(tareasExtra);
+            navigate(ROUTES_PATHS.ADMIN_USERS);
+
+         } catch (error: any) {
+            onFormError({ general: { message: 'Hubo un problema en el proceso: ' + error.message } });
+         }
       }
    };
 
@@ -113,120 +149,194 @@ function UsersForm() {
       if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
          deleteMutation.mutate(id!, {
             onSuccess: () => navigate(ROUTES_PATHS.ADMIN_USERS),
-            onError: (error: Error) => setMainError(error.message)
+            onError: (error: Error) => onFormError({ general: { message: error.message } })
          });
       }
    };
 
-   // Variable para saber si alguna mutación está cargando y bloquear botones
-   const isSaving = createMutation.isPending || updateMutation.isPending;
+   const handleCancel = () => navigate(ROUTES_PATHS.ADMIN_USERS);
 
-   // PANTALLA DE CARGA INICIAL
    if (isFetchingUser) {
       return (
-         <Box sx={{ height: '600px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', 
-         bgcolor: 'rgba(20, 20, 20, 0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.5)', 
-         borderRadius: 1, boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)', p: 4 }}>
-            <Typography variant='h6' sx={{ color: 'white', fontWeight: 600 }}>Cargando...</Typography>
-            <CircularProgress color='primary' sx={{ ml: 2 }} />
+         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
+            <CircularProgress sx={{ color: '#4F46E5' }} />
+            <Typography sx={{ color: '#94A3B8', mt: 2 }}>Cargando información del usuario...</Typography>
          </Box>
       );
    }
 
    return (
-      <Box sx={{ height: '600px', width: '100%', maxHeight: '100%', bgcolor: 'rgba(20, 20, 20, 0.6)', 
-         backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.5)', borderRadius: 1,
-         display: 'flex', flexDirection: 'column', p: 2, boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
-         justifyContent: 'space-between', alignItems: 'center', position: 'relative'}}>
-         
-         <Typography variant='h5' sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}>
-            {isEditMode ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
-         </Typography>
-         
-         {isEditMode && (
-         <Stack sx={{position: 'absolute', top: 0, right: 0, p: 2, gap: 2}}>
-            <Button sx={{ color: 'white', bgcolor: 'rgb(72, 177, 121)', boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.5)',
-               aspectRatio: '1 / 1', borderRadius: '5%' }} onClick={() => setIsEditable(prev => !prev)} disabled={isSaving}>
-               {isEditable ? <IoIosCloseCircle size={24}/> : <FaEdit size={24}/>}
-            </Button>
-            <Button sx={{ color: 'white', bgcolor: 'rgba(255, 0, 0, 1)', boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.5)',
-               aspectRatio: '1 / 1', borderRadius: '5%' }} onClick={handleDelete} disabled={deleteMutation.isPending || isSaving}>
-               <MdDeleteForever size={24}/>
-            </Button>
-         </Stack>)}
-
-         {mainError &&
-            <Box sx={{ height: 'auto', width: 'auto', maxWidth: '500px', display: 'flex', justifyContent: 'center', alignItems: 'center',
-               bgcolor: 'rgba(20, 20, 20, 0.6)', backdropFilter: 'blur(10px)',
-               border: '1px solid rgba(255, 255, 255, 0.5)', borderRadius: 1, 
-               boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.5)', p: 2, position: 'absolute', zIndex: 10 }}>
-               <Typography sx={{ color: 'red', fontWeight: 600 }}>{mainError}</Typography>
-            </Box>
-         }
-
-         <Stack maxWidth={'60%'} width={'100%'} direction={'column'} alignItems={'center'} gap={2} mb={2}>
-            <Stack width={'100%'} direction={'row'} gap={2}>
-               {/* Campos de usuario y contraseña */}
-               <Stack sx={{ width: '100%' }}>
-                  <TextField name='username' label='Usuario' fullWidth sx={inputSx} value={formData?.username || ''} 
-                  onChange={(e) => handleInputChange('username', e.target.value)} 
-                  error={!!fieldsErrors.username} helperText={fieldsErrors.username} disabled={!isEditable}/>
-
-                  <TextField name='password' type='password' label='Contraseña' fullWidth sx={inputSx} 
-                  value={formData?.password || ''} 
-                  onChange={(e) => handleInputChange('password', e.target.value)} 
-                  error={!!fieldsErrors.password} helperText={fieldsErrors.password} disabled={!isEditable}/>
-               </Stack>
-
-               {/* Avatar */}
-               <Stack sx={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                  <Avatar src={formData.img || '/default-avatar.png'} 
-                  sx={{ width: 100, height: 100, mb: 1, border: '2px solid rgba(255, 255, 255, 0.5)' }} />
-                  <Button color="secondary" variant="contained" size="small" disabled={!isEditable}>Cambiar foto</Button>
-               </Stack>
+      <Box component="form" onSubmit={handleSubmit(onSubmit, onFormError)} 
+      sx={{ p: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+               <IconButton onClick={handleCancel} sx={{ color: '#94A3B8' }}>
+                  <MdArrowBack />
+               </IconButton>
+               <Box>
+                  <Typography variant="h5" sx={{ color: '#F8FAFC', fontWeight: 'bold' }}>
+                     {isEditMode ? 'Detalles del Usuario' : 'Nuevo Usuario'}
+                  </Typography>
+               </Box>
             </Stack>
 
-            <Stack width={'100%'} direction={'row'} gap={2}>
-               <Stack sx={{ width: '100%' }}>
-                  <TextField name='email' label='Correo Electrónico' fullWidth sx={inputSx} value={formData?.email || ''} 
-                  onChange={(e) => handleInputChange('email', e.target.value)} 
-                  error={!!fieldsErrors.email} helperText={fieldsErrors.email} disabled={!isEditable}/>
+            {mainError && (
+               <Paper sx={{ p: 1.5, bgcolor: 'rgba(239, 68, 68, 0.1)', border: '1px solid #EF4444', borderRadius: '8px' }}>
+                  <Typography sx={{ color: '#EF4444', fontSize: '13px', textAlign: 'center' }}>{mainError}</Typography>
+               </Paper>
+            )}
 
-                  <FormControl sx={inputSx} error={!!fieldsErrors.rol}>
-                     <InputLabel sx={{ fontWeight: 600 }}>Rol</InputLabel>
-                     <Select name='rol' value={formData?.rol || ''} label="Rol" disabled={!isEditable}
-                        onChange={(e) => handleInputChange('rol', e.target.value)}>
-                        <MenuItem value={'estudiante'}>Estudiante</MenuItem>
-                        <MenuItem value={'admin'}>Administrador</MenuItem>
-                     </Select>
-                     {fieldsErrors.rol && <Typography variant="caption" color="error" sx={{ml: 2, mt: 0.5}}>{fieldsErrors.rol}</Typography>}
-                  </FormControl>
-               </Stack>
-               
-               <Stack sx={{ width: '100%' }}>
-                  <TextField name='name' label='Nombre' fullWidth sx={inputSx} value={formData?.name || ''} 
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  error={!!fieldsErrors.name} helperText={fieldsErrors.name} disabled={!isEditable}/>
-
-                  <TextField name='surnames' label='Apellido' fullWidth sx={inputSx} value={formData?.surnames || ''} 
-                  onChange={(e) => handleInputChange('surnames', e.target.value)} 
-                  error={!!fieldsErrors.surnames} helperText={fieldsErrors.surnames} disabled={!isEditable}/>
-               </Stack>
+            <Stack direction="row" spacing={1}>
+               {isEditMode && (
+                  <>
+                     <Tooltip title={isEditable ? 'Cancelar edición' : 'Editar usuario'}>
+                        <Button
+                           variant="contained"
+                           onClick={() => setIsEditable((prev) => !prev)}
+                           disabled={isSaving}
+                           sx={{ bgcolor: isEditable ? '#64748B' : '#4F46E5', minWidth: '40px', p: 1, color: 'white' }}
+                        >
+                           {isEditable ? <IoIosCloseCircle size={20} /> : <FaEdit size={18} />}
+                        </Button>
+                     </Tooltip>
+                     <Tooltip title="Eliminar usuario">
+                        <Button
+                           variant="contained"
+                           onClick={handleDelete}
+                           disabled={deleteMutation.isPending || isSaving}
+                           sx={{ bgcolor: '#EF4444', '&:hover': { bgcolor: '#DC2626' }, minWidth: '40px', p: 1,
+                           color: 'white' }}
+                        >
+                           <MdDeleteForever size={20} />
+                        </Button>
+                     </Tooltip>
+                  </>
+               )}
             </Stack>
-            
-            <FormControlLabel 
-            control={<Switch color='primary' sx={switchSx} checked={formData?.status || false} 
-            onChange={(e) => handleInputChange('status', e.target.checked)} />} 
-            label={<Typography sx={{ fontWeight: 600, width: '100%', mx: 1 }}>¿Activo?</Typography>}
-            disabled={!isEditable} />
-         </Stack>
+         </Box>
 
-         <Stack direction={'row'} gap={2} justifyContent={'center'} alignItems={'center'}>
-            <Button onClick={handleSave} variant='contained' color='primary' disabled={isSaving || !isEditable}>
-               {isSaving ? 'Guardando...' : 'Guardar Usuario'}
-            </Button>
-            <Button variant='contained' color='warning' onClick={handleCancel} disabled={isSaving}>
+         <Box
+            sx={{
+               bgcolor: '#1E293B', p: 3, borderRadius: '12px',
+               border: '1px solid rgba(255, 255, 255, 0.1)',
+               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }}
+         >
+            <Grid container spacing={3}>
+               <Grid size={{ xs: 12, md: 7 }}>
+                  <Stack spacing={2.5}>
+                     <TextField
+                        label='Usuario' fullWidth sx={inputSx}
+                        {...register('username')} error={!!errors.username}
+                        helperText={errors.username?.message} disabled={!isEditable}
+                     />
+
+                     <TextField
+                        label='Correo Electrónico' fullWidth sx={inputSx}
+                        {...register('email')} error={!!errors.email}
+                        helperText={errors.email?.message} disabled={!isEditable}
+                     />
+
+                     <TextField
+                        type='password' label='Contraseña' fullWidth sx={inputSx}
+                        {...register('password')} error={!!errors.password}
+                        helperText={isEditMode ? 'Dejar vacío para mantener la contraseña actual' : errors.password?.message}
+                        disabled={!isEditable}
+                     />
+                  </Stack>
+               </Grid>
+
+               <Grid size={{ xs: 12, md: 5 }}>
+                  <Stack spacing={2.5}>
+                     <FormControl fullWidth sx={inputSx} error={!!errors.rol} disabled={!isEditable}>
+                        <InputLabel>Rol</InputLabel>
+                        <Controller
+                           name='rol' control={control}
+                           render={({ field }) => (
+                              <Select {...field} label='Rol'>
+                                 <MenuItem value='estudiante'>Estudiante</MenuItem>
+                                 <MenuItem value='admin'>Administrador</MenuItem>
+                              </Select>
+                           )}
+                        />
+                     </FormControl>
+
+                     {errors.rol && (
+                        <Typography variant='caption' color='error' sx={{ ml: 2, mt: -1.5 }}>
+                           {errors.rol?.message}
+                        </Typography>
+                     )}
+
+                     <TextField
+                        label='Nombre' fullWidth sx={inputSx}
+                        {...register('name')} error={!!errors.name}
+                        helperText={errors.name?.message} disabled={!isEditable}
+                     />
+
+                     <TextField
+                        label='Apellido' fullWidth sx={inputSx}
+                        {...register('surnames')} error={!!errors.surnames}
+                        helperText={errors.surnames?.message} disabled={!isEditable}
+                     />
+                  </Stack>
+               </Grid>
+
+               <Grid size={{ xs: 12 }}>
+                  <Divider sx={{ borderColor: 'rgba(255,255,255,0.05)', mb: 2, mt: 1 }} />
+                  <Grid container spacing={2}>
+                     <Grid size={{ xs: 12, md: 5 }}>
+                        <Typography variant='caption' sx={{ color: '#94A3B8', mb: 1, display: 'block' }}>ESTADO</Typography>
+                        <Stack direction='row' justifyContent='space-between' alignItems='center' sx={{ bgcolor: 'rgba(255,255,255,0.02)', p: 1.5, borderRadius: '8px', minHeight: '120px' }}>
+                           <Typography sx={{ color: '#F8FAFC', fontSize: '14px' }}>Estado del usuario</Typography>
+                           <Controller
+                           name='status' control={control}
+                           render={({ field: { value, onChange, ...rest } }) => (
+                              <FormControlLabel
+                                 control={
+                                    <Switch
+                                       {...rest} checked={!!value}
+                                       onChange={(e) => onChange(e.target.checked)}
+                                       disabled={!isEditable} sx={switchSx}
+                                    />
+                                 }
+                                 label={value ? 'Activo' : 'Inactivo'}
+                                 sx={{ color: value ? '#22C55E' : '#EF4444', ml: 0 }}
+                              />
+                           )}
+                           />
+                        </Stack>
+                     </Grid>
+
+                     <Grid size={{ xs: 12, md: 7 }}>
+                        <Typography variant='caption' sx={{ color: '#94A3B8', mb: 1, display: 'block' }}>IMAGEN DE PERFIL</Typography>
+                        <Stack direction='column' alignItems='center' justifyContent='center' spacing={1.5} sx={{ bgcolor: 'rgba(0,0,0,0.2)', borderRadius: '8px', p: 2, minHeight: '120px' }}>
+                           <Avatar
+                              src={avatarPreview || '/default-avatar.png'}
+                              sx={{ width: 96, height: 96, border: '1px solid rgba(255,255,255,0.15)' }}
+                           />
+                           <Button
+                              component='label' variant='outlined' size='small' disabled={!isEditable}
+                              sx={{ color: '#F8FAFC', borderColor: 'rgba(255,255,255,0.2)', textTransform: 'none' }}
+                           >
+                              Subir imagen
+                              <input type='file' hidden accept='image/*' onChange={handleAvatarChange} />
+                           </Button>
+                        </Stack>
+                     </Grid>
+                  </Grid>
+               </Grid>
+            </Grid>
+         </Box>
+
+         <Stack direction='row' spacing={2} justifyContent='flex-end' sx={{ mt: 1 }}>
+            <Button onClick={handleCancel} sx={{ color: '#94A3B8', textTransform: 'none' }} disabled={isSaving}>
                Cancelar
+            </Button>
+            <Button
+               type='submit' variant='contained' startIcon={<FaSave />} disabled={isSaving || !isEditable}
+               sx={{ color: 'white', bgcolor: '#4F46E5', px: 3, borderRadius: '6px', textTransform: 'none', '&:hover': { bgcolor: '#4338CA' } }}
+            >
+               {isSaving ? 'Guardando...' : isEditMode ? 'Guardar Cambios' : 'Crear Usuario'}
             </Button>
          </Stack>
       </Box>

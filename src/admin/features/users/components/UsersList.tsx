@@ -6,16 +6,25 @@ import
    Button,
    Typography,
    Avatar,
-   Tooltip
+   Tooltip,
+   TextField,
+   FormControl,
+   InputLabel,
+   Select,
+   type SelectChangeEvent,
+   MenuItem,
+   InputAdornment
 }
 from '@mui/material';
 import { DataGrid, type GridColDef, type GridRowParams } from '@mui/x-data-grid';
 import { type User } from '../schemas/user.schema';
 import { useGetUsers } from '../hooks/useUsers';
+import { useUsersFilter } from '../hooks/useUsersFilter';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
 import { USERS_PAGE_HEADERS } from '@/admin/core/constants/appConstants';
 import { IoReloadCircle } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
+import { FaSearch } from 'react-icons/fa';
 
 const PAGINATION_MODEL = { paginationModel: { pageSize: 10 } };
 const PAGE_SIZE_OPTIONS = [10, 15];
@@ -23,6 +32,24 @@ const PAGE_SIZE_OPTIONS = [10, 15];
 function UsersList() {
    const { data: users, isError, isLoading, error, refetch, isFetching } = useGetUsers();
    const navigate = useNavigate();
+   const {
+      searchTerm,
+      setSearchTerm,
+      statusFilter,
+      setStatusFilter,
+      roleFilter,
+      setRoleFilter,
+      roles,
+      filteredUsers,
+   } = useUsersFilter(users ?? []);
+
+   const handleStatusFilterChange = (event: SelectChangeEvent) => {
+      setStatusFilter(event.target.value as 'all' | 'active' | 'inactive');
+   };
+
+   const handleRoleFilterChange = (event: SelectChangeEvent) => {
+      setRoleFilter(event.target.value);
+   };
 
    const columns: GridColDef[] = [
       { field: 'id', headerName: USERS_PAGE_HEADERS.ID, width: 100},
@@ -102,7 +129,7 @@ function UsersList() {
       { field: 'lastAccess', headerName: USERS_PAGE_HEADERS.LAST_ACCESS, width: 150 },
    ];
 
-   const rows = users?.map((user: User) => ({
+   const rows = filteredUsers.map((user: User) => ({
       username: user.username,
       name: user.name || 'N/A',
       lastName: user.surnames || 'N/A',
@@ -173,6 +200,78 @@ function UsersList() {
             </Stack>
          </Box>
 
+         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
+            <TextField
+               value={searchTerm}
+               onChange={(event) => setSearchTerm(event.target.value)}
+               placeholder="Buscar por nombre, email, usuario o rol"
+               size="small"
+               fullWidth
+               sx={{
+                  '& .MuiOutlinedInput-root': {
+                     color: '#F8FAFC',
+                     bgcolor: '#1E293B',
+                     '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
+                     '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.30)' },
+                     '&.Mui-focused fieldset': { borderColor: '#4F46E5' },
+                  },
+                  '& .MuiInputBase-input::placeholder': { color: '#94A3B8', opacity: 1 },
+               }}
+               slotProps={{
+                  input: {
+                     startAdornment: (
+                        <InputAdornment position="start">
+                           <FaSearch size={14} color="#94A3B8" />
+                        </InputAdornment>
+                     )
+                  }
+               }}
+            />
+
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+               <InputLabel sx={{ color: '#94A3B8' }}>Estado</InputLabel>
+               <Select
+                  value={statusFilter}
+                  label="Estado"
+                  onChange={handleStatusFilterChange}
+                  sx={{
+                     color: '#F8FAFC',
+                     bgcolor: '#1E293B',
+                     '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' },
+                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.30)' },
+                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4F46E5' },
+                     '& .MuiSvgIcon-root': { color: '#94A3B8' },
+                  }}
+               >
+                  <MenuItem value="all">Todos</MenuItem>
+                  <MenuItem value="active">Activos</MenuItem>
+                  <MenuItem value="inactive">Inactivos</MenuItem>
+               </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+               <InputLabel sx={{ color: '#94A3B8' }}>Rol</InputLabel>
+               <Select
+                  value={roleFilter}
+                  label="Rol"
+                  onChange={handleRoleFilterChange}
+                  sx={{
+                     color: '#F8FAFC',
+                     bgcolor: '#1E293B',
+                     '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' },
+                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.30)' },
+                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4F46E5' },
+                     '& .MuiSvgIcon-root': { color: '#94A3B8' },
+                  }}
+               >
+                  <MenuItem value="all">Todos los roles</MenuItem>
+                  {roles.map((role) => (
+                     <MenuItem key={role} value={role}>{role}</MenuItem>
+                  ))}
+               </Select>
+            </FormControl>
+         </Stack>
+
          {/* MENSAJE DE ERROR */}
          {error && 
             <Typography sx={{ color: '#EF4444', fontWeight: 600, mb: 2 }}>
@@ -200,6 +299,7 @@ function UsersList() {
                   pageSizeOptions={PAGE_SIZE_OPTIONS}
                   isCellEditable={() => false}
                   disableRowSelectionOnClick
+                  localeText={{ noRowsLabel: 'No se encontraron usuarios con los filtros aplicados.' }}
                />
             </Box>
          )}

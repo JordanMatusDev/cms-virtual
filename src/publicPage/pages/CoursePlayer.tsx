@@ -4,8 +4,7 @@ import {
     Users, Star, Unlock, BookOpen, Loader2, Trophy, Sparkles
 } from 'lucide-react';
 import { useCoursePlayer } from '../hooks/pages/useCoursePlayer';
-import AuthModal from '../components/auth/AuthModal';
-
+import LoginModal from '../components/auth/LoginModal';
 declare global {
     interface Window {
         YT?: any;
@@ -504,11 +503,13 @@ const CoursePlayer = () => {
                 </div>
             </main>
 
-            {/* MODALES */}
-            <AuthModal
+            {/* Y agrega tu nuevo LoginModal usando el estado que ya tienes: */}
+            <LoginModal
                 isOpen={showLoginModal}
                 onClose={() => setShowLoginModal(false)}
-                onLoginSuccess={handleLoginSuccess}
+                onSuccess={handleLoginSuccess} 
+                onSwitchToRegister={() => setShowLoginModal(false)}
+                onSwitchToForgot={() => setShowLoginModal(false)}
             />
 
             {showConfirmModal && (

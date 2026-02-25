@@ -123,7 +123,7 @@ function AdminPanel() {
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', py: 1 }}>           
                <Box sx={{ mb: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 'bold', color: colors.accentAlt, mb: 1 }}> 
-                     {ADMIN_PANEL_TEXTS.WELCOME_MESSAGE}
+                     {ADMIN_PANEL_TEXTS.WELCOME_MESSAGE + (usuario?.username || 'Admin User') + '!'}
                   </Typography>
                   <Typography variant="body1" sx={{ color: colors.textSecondary }}>
                      {ADMIN_PANEL_TEXTS.SUBTITLE_TEXT}

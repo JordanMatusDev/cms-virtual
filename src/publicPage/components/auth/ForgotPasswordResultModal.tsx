@@ -1,33 +1,28 @@
 import { Mail, X } from 'lucide-react';
 import logoImg from '../../assets/virtualz.png'; // Asegúrate de que la ruta sea correcta
+import { useRef } from 'react';
+import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 
 interface ForgotPasswordResultModalProps {
   isOpen: boolean;
   onClose: () => void;
   email?: string;
+  onGoToLogin?: () => void;
 }
 
-const ForgotPasswordResultModal = ({ isOpen, onClose, email }: ForgotPasswordResultModalProps) => {
+const ForgotPasswordResultModal = ({ isOpen, onClose, email, onGoToLogin }: ForgotPasswordResultModalProps) => {
   if (!isOpen) return null;
-
+  const modalRef = useRef<HTMLDivElement>(null);
+  useTrapFocus(modalRef, isOpen);
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-transparent backdrop-blur-md transition-opacity" 
-        onClick={onClose}
+        className="absolute inset-0 bg-black/95 backdrop-blur-md transition-opacity" 
       />
 
       {/* Container Principal */}
-      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_50px_-12px_rgba(6,182,212,0.2)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-        {/* Botón X para cerrar (idéntico a AuthModal) */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-white p-1 rounded-full hover:bg-white/10 z-10 transition-colors"
-          aria-label="Cerrar"
-        >
-          <X size={20} />
-        </button>
+      <div ref={modalRef} className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
         {/* Línea Superior Gradiente */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500" />
         <div className="p-8 pt-10">
@@ -50,14 +45,28 @@ const ForgotPasswordResultModal = ({ isOpen, onClose, email }: ForgotPasswordRes
               Revisa tu bandeja de entrada o la carpeta de spam para restablecer tu contraseña.            </p>
             <div className="flex flex-col items-center w-full max-w-xs mt-2 gap-2">
               <button 
-                onClick={onClose} 
+                onClick={() => {
+                  if (onGoToLogin) {
+                    onGoToLogin();
+                  } else {
+                    onClose();
+                  }
+                }}
                 className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
               >
-                Volver al inicio
+                Ir a Iniciar Sesión
               </button>
             </div>
           </div>
         </div>
+        {/* Botón X para cerrar (idéntico a AuthModal) */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-white p-1 rounded-full hover:bg-white/10 z-10 transition-colors"
+          aria-label="Cerrar"
+        >
+          <X size={20} />
+        </button>
         {/* Footer eliminado, solo mensaje principal */}
       </div>
     </div>

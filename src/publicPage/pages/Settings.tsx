@@ -280,7 +280,7 @@ const Settings = () => {
                                                             {/* Textos */}
                                                             <h3 className="text-xl font-bold text-white mb-2">¿Eliminar foto?</h3>
                                                             <p className="text-sm text-gray-400 mb-8 leading-relaxed">
-                                                                Esta acción no se puede deshacer. Tu perfil volverá a tener el avatar por defecto.
+                                                                Tu perfil volverá a tener el avatar por defecto.
                                                             </p>
 
                                                             {/* Botones */}
@@ -457,7 +457,7 @@ const Settings = () => {
                                                 </div>
                                                 <h3 className="text-xl font-bold text-white mb-2">¿Eliminar foto?</h3>
                                                 <p className="text-sm text-gray-400 mb-8 leading-relaxed">
-                                                    Esta acción no se puede deshacer. Tu perfil volverá a tener el avatar por defecto.
+                                                    Tu perfil volverá a tener el avatar por defecto.
                                                 </p>
                                                 <div className="flex items-center gap-3 w-full">
                                                     <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/5 text-white text-sm font-medium hover:bg-white/10 transition-all active:scale-95">
@@ -589,6 +589,7 @@ const Settings = () => {
                                                             />
                                                             <button
                                                                 type="button"
+                                                                tabIndex={-1}
                                                                 onClick={() => setShowNewPass(prev => !prev)}
                                                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-400"
                                                                 aria-label={showNewPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
@@ -614,6 +615,7 @@ const Settings = () => {
                                                             />
                                                             <button
                                                                 type="button"
+                                                                tabIndex={-1}
                                                                 onClick={() => setShowConfirmPass(prev => !prev)}
                                                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-400"
                                                                 aria-label={showConfirmPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}

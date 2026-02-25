@@ -1,15 +1,15 @@
-import * as z from "zod";
+import { z } from "zod";
 
 export const CoursePayloadSchema = z.object({
-   "titulo": z.string().min(1, "El título es requerido"),
-   "descripcion": z.string().min(1, "La descripción es requerida"),
-   "categoria_id": z.number().min(1, "La categoría es requerida"),
+   "title": z.string().min(1, "El título es requerido"),
+   "description": z.string().min(1, "La descripción es requerida"),
+   "category_id": z.number().min(1, "La categoría es requerida"),
    "video_url": z.string().min(1, "La URL de la playlist es requerida"),
-   "duracion_minutos": z.number().min(1, "La duración es requerida"),
-   "activo": z.boolean().default(false),
+   "duration_minutes": z.number().min(1, "La duración es requerida"),
+   "status": z.boolean(),
    "img": z.string().nullable(),
-   "modulos": z.number().nullable(),
+   "modules": z.number().nullable(),
    "playlist_id": z.string().nullable(),
-   "autor": z.string().min(1, "El autor es requerido"),
+   "author": z.string().min(1, "El autor es requerido"),
 });
 export type CoursePayload = z.infer<typeof CoursePayloadSchema>;

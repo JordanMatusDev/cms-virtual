@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 import { sendVerificationEmail } from '../../services/auth/registerService';
 import { updatePendingUserEmail } from '../../services/auth/updatePendingUserEmail';
 import { checkEmailExists } from '../../services/auth/checkExistsService';
@@ -21,6 +22,8 @@ const UpdateEmailModal = ({ isOpen, onClose, onEmailUpdated, initialEmail, usern
   const [currentEmail, setCurrentEmail] = useState(initialEmail);
 
   if (!isOpen) return null;
+  const modalRef = useRef<HTMLDivElement>(null);
+  useTrapFocus(modalRef, isOpen);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +58,8 @@ const UpdateEmailModal = ({ isOpen, onClose, onEmailUpdated, initialEmail, usern
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-transparent backdrop-blur-md transition-opacity" onClick={onClose}></div>
-      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-300 min-w-[350px] min-h-[440px] flex flex-col justify-center">
+      <div className="absolute inset-0 bg-black/95 backdrop-blur-md transition-opacity"></div>
+      <div ref={modalRef} className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-[0_0_80px_-8px_rgba(6,182,212,0.45)] overflow-hidden animate-in fade-in zoom-in-95 duration-300 min-w-[350px] min-h-[440px] flex flex-col justify-center">
         {/* Línea superior de colores */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
         {/* Botón Cerrar */}

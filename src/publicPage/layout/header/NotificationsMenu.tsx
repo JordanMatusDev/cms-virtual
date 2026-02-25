@@ -1,7 +1,8 @@
 // src/components/header/NotificationsMenu.tsx
 import React, { useRef, useState } from 'react';
-import { Award, PlayCircle, Gift, BellRing, CheckCircle2 } from 'lucide-react';
+import { Award, PlayCircle, Gift, BellRing, CheckCircle2, X } from 'lucide-react';
 import { useClickOutside } from '../../hooks/header/useClickOutside';
+
 
 interface NotificationsMenuProps {
   isOpen: boolean;
@@ -69,6 +70,11 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
     setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
+  const deleteNotification = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation(); 
+    setNotifications(notifications.filter(n => n.id !== id));
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   if (!isOpen) return null;
@@ -76,7 +82,6 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
   return (
     <div
       ref={menuRef}
-      // Un poco más ancho que el UserMenu (w-80 o w-96) para que quepa el texto
       className="absolute top-full right-0 mt-4 w-80 sm:w-96 bg-[#050505]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_10px_50px_-10px_rgba(0,0,0,0.8)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2"
     >
       {/* CABECERA DEL MENÚ */}
@@ -117,7 +122,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
                 </div>
 
                 {/* Contenido */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 pr-6"> {/* pr-6 para dejar espacio a la X */}
                   <div className="flex justify-between items-start gap-2">
                     <h4 className={`text-sm font-semibold truncate ${!notification.read ? 'text-white' : 'text-gray-300'}`}>
                       {notification.title}
@@ -134,6 +139,16 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
                     {notification.time}
                   </span>
                 </div>
+
+                {/* BOTÓN ELIMINAR (Aparece en hover) */}
+                <button
+                  onClick={(e) => deleteNotification(notification.id, e)}
+                  className="absolute top-2 right-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-200 p-1.5 rounded-full hover:bg-red-500/10"
+                  title="Eliminar notificación"
+                >
+                  <X size={14} />
+                </button>
+
               </div>
             );
           })
