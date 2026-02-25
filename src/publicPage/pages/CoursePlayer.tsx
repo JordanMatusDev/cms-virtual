@@ -45,6 +45,7 @@ const CoursePlayer = () => {
     const handleStateChangeRef = useRef(handleStateChange);
     const handleReadyRef = useRef(handleReady);
 
+
     // Sincronizar refs con las funciones del hook
     useEffect(() => {
         handleVideoEndRef.current = handleVideoEnd;
@@ -538,8 +539,9 @@ const CoursePlayer = () => {
                             <div className="overflow-y-auto p-2 space-y-3 custom-scrollbar scrollbar-hide scroll-smooth">
                                 {lessons.length > 0 ? lessons.map((lesson: any, index: number) => {
                                     const isActive = currentVideoIndex === index;
-                                    const isLockedItem = !isLoggedIn;
-                                    const isCheckboxDisabled = isLockedItem || (isCourseCompleted && !lesson.completed);
+                                    // El candado debe mostrarse si el usuario no está inscrito
+                                    const isLockedItem = !isEnrolled;
+                                    const isCheckboxDisabled = isLockedItem || isCourseCompleted;
 
                                     return (
                                         <button
@@ -600,6 +602,8 @@ const CoursePlayer = () => {
                                                         checked={lesson.completed}
                                                         disabled={isCheckboxDisabled}
                                                         onChange={(e) => {
+                                                            // Si el curso está completado, no permitir cambios
+                                                            if (isCourseCompleted) return;
                                                             toggleLessonComplete(index, e.target.checked);
                                                             if (e.target.checked && index < lessons.length - 1) {
                                                                 handleVideoClickWithScroll(index + 1);
