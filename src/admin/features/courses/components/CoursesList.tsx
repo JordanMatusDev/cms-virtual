@@ -12,21 +12,48 @@ import {
    IconButton,
    Menu,
    MenuItem,
-   Chip
+   Chip,
+   TextField,
+   FormControl,
+   InputLabel,
+   Select,
+   type SelectChangeEvent,
+   InputAdornment
 } from '@mui/material';
 import { useState } from 'react';
 import { type Course } from '../schemas/course.schema';
-import { useGetCourses } from '../hooks/useCourse';
+import { useGetCourses, useUpdateCourse } from '../hooks/useCourse';
+import { useCoursesFilter } from '../hooks/useCoursesFilter';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
 import { IoReloadCircle } from "react-icons/io5";
-import { FaPlus, FaEllipsisV, FaClock, FaBookOpen } from "react-icons/fa";
+import { FaPlus, FaEllipsisV, FaClock, FaBookOpen, FaSearch } from "react-icons/fa";
 
 function CoursesList() {
    const { data: courses, isLoading, error, refetch, isFetching } = useGetCourses();
+   const updateMutation = useUpdateCourse();
    const navigate = useNavigate();
+   const {
+      searchTerm,
+      setSearchTerm,
+      statusFilter,
+      setStatusFilter,
+      categoryFilter,
+      setCategoryFilter,
+      categories,
+      filteredCourses,
+   } = useCoursesFilter(courses ?? []);
 
    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
    const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+   const [actionError, setActionError] = useState('');
+
+   const handleStatusFilterChange = (event: SelectChangeEvent) => {
+      setStatusFilter(event.target.value as 'all' | 'active' | 'inactive');
+   };
+
+   const handleCategoryFilterChange = (event: SelectChangeEvent) => {
+      setCategoryFilter(event.target.value);
+   };
 
    const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement>, id: number) => {
       setAnchorEl(event.currentTarget);
@@ -49,12 +76,26 @@ function CoursesList() {
       handleCloseMenu();
    };
 
-   const handleDeactivate = () => {
-      if (selectedCourseId) {
-      const courseToDeactivate = courses?.find(c => c.id === selectedCourseId);
-      console.log("Curso a desactivar:", courseToDeactivate);
+   const selectedCourse = courses?.find((course) => course.id === selectedCourseId);
+
+   const handleDeactivate = async () => {
+      if (!selectedCourseId || !selectedCourse?.activo) {
+         handleCloseMenu();
+         return;
       }
-      handleCloseMenu();
+
+      setActionError('');
+
+      try {
+         await updateMutation.mutateAsync({
+            id: String(selectedCourseId),
+            data: { status: false },
+         });
+      } catch (mutationError: any) {
+         setActionError(mutationError?.message || 'No se pudo desactivar el curso');
+      } finally {
+         handleCloseMenu();
+      }
    };
 
    return (
@@ -104,9 +145,80 @@ function CoursesList() {
             </Stack>
          </Box>
 
-         {/* GRID DE CARDS CON DATOS REALES */}
+         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
+            <TextField
+               value={searchTerm}
+               onChange={(event) => setSearchTerm(event.target.value)}
+               placeholder="Buscar por título, descripción o categoría"
+               size="small"
+               fullWidth
+               sx={{
+                  '& .MuiOutlinedInput-root': {
+                     color: '#F8FAFC',
+                     bgcolor: '#1E293B',
+                     '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
+                     '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.30)' },
+                     '&.Mui-focused fieldset': { borderColor: '#4F46E5' },
+                  },
+                  '& .MuiInputBase-input::placeholder': { color: '#94A3B8', opacity: 1 },
+               }}
+               slotProps={{
+                  input: {
+                     startAdornment: (
+                        <InputAdornment position="start">
+                           <FaSearch size={14} color="#94A3B8" />
+                        </InputAdornment>
+                     )
+                  }
+               }}
+            />
+
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+               <InputLabel sx={{ color: '#94A3B8' }}>Estado</InputLabel>
+               <Select
+                  value={statusFilter}
+                  label="Estado"
+                  onChange={handleStatusFilterChange}
+                  sx={{
+                     color: '#F8FAFC',
+                     bgcolor: '#1E293B',
+                     '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' },
+                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.30)' },
+                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4F46E5' },
+                     '& .MuiSvgIcon-root': { color: '#94A3B8' },
+                  }}
+               >
+                  <MenuItem value="all">Todos</MenuItem>
+                  <MenuItem value="active">Activos</MenuItem>
+                  <MenuItem value="inactive">Inactivos</MenuItem>
+               </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 220 }}>
+               <InputLabel sx={{ color: '#94A3B8' }}>Categoría</InputLabel>
+               <Select
+                  value={categoryFilter}
+                  label="Categoría"
+                  onChange={handleCategoryFilterChange}
+                  sx={{
+                     color: '#F8FAFC',
+                     bgcolor: '#1E293B',
+                     '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' },
+                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.30)' },
+                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4F46E5' },
+                     '& .MuiSvgIcon-root': { color: '#94A3B8' },
+                  }}
+               >
+                  <MenuItem value="all">Todas</MenuItem>
+                  {categories.map((category) => (
+                     <MenuItem key={category} value={category}>{category}</MenuItem>
+                  ))}
+               </Select>
+            </FormControl>
+         </Stack>
+
          <Grid container spacing={3} sx={{ overflowY: 'auto'}}>
-            {courses?.map((course: Course) => (
+            {filteredCourses.map((course: Course) => (
                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={course.id}>
                   <Card sx={{ 
                      bgcolor: '#1E293B', 
@@ -157,6 +269,9 @@ function CoursesList() {
                            <Typography variant="h6" sx={{ color: '#F8FAFC', fontWeight: 'bold', fontSize: '1rem', mb: 1 }}>
                               {course.titulo}
                            </Typography>
+                           <Typography variant="body2" sx={{ color: '#94A3B8', fontSize: '0.85rem', mb: 1, fontStyle: 'italic' }}>
+                              {course.autor}
+                           </Typography>
                            <Typography variant="body2" sx={{ 
                               color: '#94A3B8', 
                               overflow: 'hidden',
@@ -191,6 +306,12 @@ function CoursesList() {
             ))}
          </Grid>
 
+         {!isLoading && !error && filteredCourses.length === 0 && (
+            <Typography sx={{ color: '#94A3B8', mt: 3, textAlign: 'center' }}>
+               No se encontraron cursos con los filtros aplicados.
+            </Typography>
+         )}
+
          {/* MENÚ DE ACCIONES */}
          <Menu
             anchorEl={anchorEl}
@@ -208,12 +329,24 @@ function CoursesList() {
             }}
          >
             <MenuItem onClick={handleEdit} sx={{ fontSize: '14px' }}>Editar Detalles</MenuItem>
-            <MenuItem onClick={handleDeactivate} sx={{ fontSize: '14px', color: '#EF4444' }}>Desactivar</MenuItem>
+            <MenuItem
+               onClick={handleDeactivate}
+               disabled={updateMutation.isPending || !selectedCourse?.activo}
+               sx={{ fontSize: '14px', color: '#EF4444' }}
+            >
+               {updateMutation.isPending ? 'Desactivando...' : 'Desactivar'}
+            </MenuItem>
          </Menu>
 
          {error && (
             <Typography sx={{ color: '#EF4444', mt: 3, fontWeight: 600, textAlign: 'center' }}>
                {`Error: ${error.message || 'Error desconocido'}`}
+            </Typography>
+         )}
+
+         {actionError && (
+            <Typography sx={{ color: '#EF4444', mt: 2, fontWeight: 600, textAlign: 'center' }}>
+               {actionError}
             </Typography>
          )}
       </Box>
