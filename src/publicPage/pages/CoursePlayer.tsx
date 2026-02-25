@@ -52,23 +52,26 @@ const CoursePlayer = () => {
         handleReadyRef.current = handleReady;
     }, [handleVideoEnd, handleStateChange, handleReady]);
 
-    //scroll playlist al video activo
+  // Scroll automático en la playlist hacia el video activo
     useEffect(() => {
-        if (isReadyToPlay && currentVideoIndex !== null) {
-            // 300ms de gracia para asegurar que el DOM ya pintó la playlist
+        if (isReadyToPlay && currentVideoIndex !== null && lessons.length > 0) {
             const timeoutId = setTimeout(() => {
                 const activeItem = document.getElementById(`lesson-item-${currentVideoIndex}`);
                 if (activeItem) {
-                    activeItem.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center' // Centra el botón activo en la vista
+                    // Detectamos si el video actual es uno de los últimos dos
+                    const isLastTwoVideos = currentVideoIndex >= lessons.length - 2;
+                    
+                    activeItem.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        // Si son los últimos 2, usa 'nearest' (no mueve la página). Si no, usa 'center'.
+                        block: isLastTwoVideos ? 'nearest' : 'center' 
                     });
                 }
-            }, 300);
+            }, 300); 
 
             return () => clearTimeout(timeoutId);
         }
-    }, [currentVideoIndex, isReadyToPlay]);
+    }, [currentVideoIndex, isReadyToPlay, lessons.length]); // Agregamos lessons.length aquí
 
     // Listener para eventos de autenticación
     useEffect(() => {
@@ -114,10 +117,11 @@ const CoursePlayer = () => {
     // Inicialización y control del reproductor
     useEffect(() => {
         if (isLocked) {
-            if (ytPlayerRef.current?.stopVideo) {
-                ytPlayerRef.current.stopVideo();
-            } else if (ytPlayerRef.current?.pauseVideo) {
-                ytPlayerRef.current.pauseVideo();
+            if (ytPlayerRef.current) {
+                try {
+                    ytPlayerRef.current.destroy(); 
+                } catch (e) { }
+                ytPlayerRef.current = null; // Limpiamos la referencia para que nazca limpio si se vuelve a logear
             }
             return;
         }
