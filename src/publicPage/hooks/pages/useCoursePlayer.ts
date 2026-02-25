@@ -442,7 +442,6 @@ export const useCoursePlayer = () => {
         showConfirmModal, setShowConfirmModal, confirmEnrollment, isLoadingEnroll,
         handleVideoEnd, handleStateChange, handleReady, progressPercentage,
         toggleLessonComplete, isCourseCompleted,
-        // ESTOS SON LOS NUEVOS VALORES QUE DEBES USAR EN EL COMPONENTE
         initialStartSeconds,
         isReadyToPlay 
     };

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { 
-    Lock, Download, ChevronRight, 
-    Users, Star, Unlock, BookOpen, Loader2, Trophy, Sparkles
+import {
+    Lock, Download, ChevronRight,
+    Users, Star, Unlock, BookOpen, Loader2, Trophy, Sparkles, Play, Target, CheckCircle2, Info
 } from 'lucide-react';
 import { useCoursePlayer } from '../hooks/pages/useCoursePlayer';
 import LoginModal from '../components/auth/LoginModal';
@@ -30,9 +30,9 @@ const CoursePlayer = () => {
         handleVideoClick,
         showLoginModal, setShowLoginModal, handleLoginSuccess,
         showConfirmModal, setShowConfirmModal, confirmEnrollment, isLoadingEnroll,
-        handleVideoEnd, 
-        handleStateChange, 
-        handleReady, 
+        handleVideoEnd,
+        handleStateChange,
+        handleReady,
         progressPercentage,
         toggleLessonComplete,
         isCourseCompleted,
@@ -51,6 +51,24 @@ const CoursePlayer = () => {
         handleStateChangeRef.current = handleStateChange;
         handleReadyRef.current = handleReady;
     }, [handleVideoEnd, handleStateChange, handleReady]);
+
+    //scroll playlist al video activo
+    useEffect(() => {
+        if (isReadyToPlay && currentVideoIndex !== null) {
+            // 300ms de gracia para asegurar que el DOM ya pintó la playlist
+            const timeoutId = setTimeout(() => {
+                const activeItem = document.getElementById(`lesson-item-${currentVideoIndex}`);
+                if (activeItem) {
+                    activeItem.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center' // Centra el botón activo en la vista
+                    });
+                }
+            }, 300);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [currentVideoIndex, isReadyToPlay]);
 
     // Listener para eventos de autenticación
     useEffect(() => {
@@ -129,7 +147,7 @@ const CoursePlayer = () => {
                     if (typeof event.target.pauseVideo === 'function') {
                         event.target.pauseVideo();
                     }
-                } catch (e) {}
+                } catch (e) { }
             };
 
             if (!ytPlayerRef.current) {
@@ -186,7 +204,7 @@ const CoursePlayer = () => {
         handleVideoClick(index);
         if (playerRef.current) {
             const rect = playerRef.current.getBoundingClientRect();
-            const offset = 140; 
+            const offset = 140;
             window.scrollTo({
                 top: window.scrollY + rect.top - offset,
                 behavior: 'smooth'
@@ -310,10 +328,10 @@ const CoursePlayer = () => {
 
             <main className="relative z-10 flex-grow pt-28 pb-12 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto w-full">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
+
                     {/* IZQUIERDA: PLAYER + INFO */}
                     <div className="lg:col-span-2 space-y-6">
-                        
+
                         {/* REPRODUCTOR */}
                         <div ref={playerRef} className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_40px_-10px_rgba(6,182,212,0.15)] group">
                             <div className="w-full h-full">
@@ -360,10 +378,10 @@ const CoursePlayer = () => {
                             <h1 className="text-3xl font-bold text-white mb-2">{course.nombre}</h1>
                             <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
                                 <span className="flex items-center gap-1 text-cyan-400">
-                                    <Users size={16}/> {typeof course.autor === 'object' ? (course.autor?.username || course.autor?.nombre || 'Autor') : (course.autor || course.instructor || 'Autor')}
+                                    <Users size={16} /> {typeof course.autor === 'object' ? (course.autor?.username || course.autor?.nombre || 'Autor') : (course.autor || course.instructor || 'Autor')}
                                 </span>
                                 <span>•</span>
-                                <span className="flex items-center gap-1"><Star size={14} className="text-yellow-500"/> {course.puntuacion || '4.8'}</span>
+                                <span className="flex items-center gap-1"><Star size={14} className="text-yellow-500" /> {course.puntuacion || '4.8'}</span>
                             </div>
 
                             {/* TABS */}
@@ -376,34 +394,92 @@ const CoursePlayer = () => {
                             </div>
 
                             <div className="min-h-[200px] text-gray-400 leading-relaxed">
-                                {activeTab === 'descripcion' && <p className="animate-in fade-in">{course.descripcion}</p>}
+                                {activeTab === 'descripcion' && (
+                                    <div className="animate-in fade-in space-y-6">
+                                        {/* 1. INFO DE LA LECCIÓN ACTUAL (SOLO SI ESTÁ ENROLADO/LOGUEADO) */}
+                                        {isEnrolled && currentLesson && (
+                                            <div className="bg-gradient-to-r from-cyan-900/10 to-transparent border-l-4 border-cyan-500 p-5 md:p-6 rounded-r-2xl">
+                                                <div className="flex items-start gap-3 mb-3">
+                                                    <div className="bg-cyan-500/20 p-2 rounded-lg mt-1">
+                                                        <Play size={18} className="text-cyan-400 fill-cyan-400" />
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1 block">
+                                                            Reproduciendo ahora
+                                                        </span>
+                                                        <h3 className="text-xl md:text-2xl font-bold text-white leading-tight">
+                                                            {currentLesson.title}
+                                                        </h3>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        )}
+                                        {/* 2. INFO GENERAL DEL CURSO (VISIBLE PARA TODOS) */}
+                                        <div className={`${isEnrolled ? 'pt-4 border-t border-white/5' : ''}`}>
+                                            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                                                <Info size={18} className="text-purple-400" />
+                                                Acerca de este curso
+                                            </h3>
+                                            <p className="text-gray-400 leading-relaxed text-sm md:text-base text-justify">
+                                                {course.descripcion}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {activeTab === 'progreso' && (
-                                    <div className="animate-in fade-in p-6 bg-gradient-to-br from-white/5 to-transparent rounded-xl border border-white/10 relative overflow-hidden">
-                                        <div className="flex items-center justify-between mb-3 relative z-10">
-                                            <h3 className="text-white font-bold">Progreso del curso</h3>
-                                            <span className={`text-sm font-bold transition-colors duration-500 ${progressPercentage === 100 ? 'text-green-400' : 'text-cyan-400'}`}>
-                                                {progressPercentage}%
-                                            </span>
-                                        </div>
-                                        
-                                        <div className="h-2 rounded-full bg-white/10 overflow-hidden relative z-10">
-                                            <div
-                                                className={`h-full transition-all duration-1000 ease-out ${progressPercentage === 100 ? 'bg-gradient-to-r from-cyan-500 to-green-400 shadow-[0_0_15px_rgba(74,222,128,0.5)]' : 'bg-cyan-500'}`}
-                                                style={{ width: `${progressPercentage}%` }}
-                                            ></div>
-                                        </div>
-                                        
-                                        <div className="mt-3 text-sm text-gray-400 relative z-10">
-                                            {lessons.filter((l: any) => l.completed).length} de {lessons.length} lecciones completadas
-                                        </div>
+                                    <div className="animate-in fade-in">
+                                        {isEnrolled ? (
+                                            <div className="p-6 sm:p-8 bg-gradient-to-br from-[#0c101a] to-[#04070f] rounded-2xl border border-cyan-500/20 relative overflow-hidden shadow-[0_0_40px_-15px_rgba(6,182,212,0.15)] group hover:border-cyan-500/40 transition-all duration-500">
+                                                <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-[60px] group-hover:bg-cyan-500/20 transition-all duration-700 pointer-events-none"></div>
 
-                                        <div className="mt-8">
-                                            {!isEnrolled ? (
-                                                <div className="text-center text-sm text-gray-500">
-                                                    Inscríbete para registrar tu progreso y desbloquear el certificado.
+                                                <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4 border-b border-white/5 pb-6">
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <Target size={20} className="text-cyan-400" />
+                                                            <h3 className="text-white font-bold text-xl tracking-tight">Tu Progreso</h3>
+                                                        </div>
+                                                        <p className="text-sm text-gray-400 flex items-center gap-1.5">
+                                                            <CheckCircle2 size={16} className={progressPercentage === 100 ? 'text-green-400' : 'text-gray-500'} />
+                                                            <span>Has completado <strong className="text-gray-200">{lessons.filter((l: any) => l.completed).length}</strong> de <strong className="text-gray-200">{lessons.length}</strong> lecciones</span>
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-baseline gap-1 bg-black/40 px-4 py-2 rounded-xl border border-white/5 shadow-inner">
+                                                        <span className={`text-4xl md:text-5xl font-black tracking-tighter transition-colors duration-500 drop-shadow-lg ${progressPercentage === 100 ? 'text-green-400' : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400'}`}>
+                                                            {progressPercentage}
+                                                        </span>
+                                                        <span className={`text-xl font-bold ${progressPercentage === 100 ? 'text-green-500/70' : 'text-cyan-500/70'}`}>%</span>
+                                                    </div>
                                                 </div>
-                                            ) : progressPercentage >= 100 ? (
+
+                                                <div className="h-4 rounded-full bg-black/80 shadow-inner overflow-hidden relative z-10 border border-white/10 p-0.5 mb-2">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all duration-1000 ease-out relative ${progressPercentage === 100 ? 'bg-gradient-to-r from-cyan-500 to-green-400 shadow-[0_0_20px_rgba(74,222,128,0.5)]' : 'bg-gradient-to-r from-cyan-600 to-cyan-400'}`}
+                                                        style={{ width: `${progressPercentage}%` }}
+                                                    >
+                                                        {progressPercentage > 0 && progressPercentage < 100 && (
+                                                            <div className="absolute top-0 right-0 bottom-0 w-20 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] animate-[shine_2s_infinite_ease-in-out]"></div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="p-8 bg-[#0a0c10] rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[250px]">
+                                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 z-0"></div>
+                                                <div className="bg-white/5 p-4 rounded-full mb-4 z-10 border border-white/10 backdrop-blur-sm shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+                                                    <Lock size={32} className="text-gray-500" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-white mb-2 z-10 tracking-tight">Progreso Bloqueado</h3>
+                                                <p className="text-gray-400 text-sm max-w-sm z-10 leading-relaxed">
+                                                    Inscríbete para registrar tu progreso y desbloquear el certificado.
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* Tu botón de descarga/compra que ya tenías abajo va aquí... */}
+                                        <div className="mt-8">
+                                            {isEnrolled && progressPercentage >= 100 ? (
                                                 <div className="relative animate-in zoom-in-95 slide-in-from-bottom-4 duration-700 ease-out">
                                                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-cyan-500/20 blur-xl opacity-50 animate-pulse rounded-full"></div>
 
@@ -462,20 +538,61 @@ const CoursePlayer = () => {
                                     const isCheckboxDisabled = isLockedItem || (isCourseCompleted && !lesson.completed);
 
                                     return (
-                                        <button 
+                                        <button
                                             key={lesson.id}
+                                            id={`lesson-item-${index}`}
                                             onClick={() => !isLockedItem && handleVideoClickWithScroll(index)}
                                             disabled={isLockedItem}
-                                            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group relative 
-                                            ${isActive ? 'bg-gradient-to-r from-cyan-900/20 to-transparent border border-cyan-500/30' : 'hover:bg-white/5 border border-transparent opacity-80 hover:opacity-100'} ${isLockedItem ? 'cursor-not-allowed opacity-50 hover:bg-transparent' : ''}`}
+                                            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group relative overflow-hidden
+                                            ${isActive ? 'bg-gradient-to-r from-cyan-900/40 to-white/5 border border-cyan-500/30 shadow-[inset_0_0_20px_rgba(6,182,212,0.1)]' : 'hover:bg-white/5 border border-transparent opacity-80 hover:opacity-100'} 
+                                            ${isLockedItem ? 'cursor-not-allowed opacity-40 hover:bg-transparent' : ''}`}
                                         >
-                                            <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                                                {isLockedItem ? (
-                                                    <Lock size={16} className="text-gray-600" />
+                                            {/* 1. Número de lección */}
+                                            <span className={`text-xs font-bold w-4 text-center ${isActive ? 'text-cyan-400' : 'text-gray-600'}`}>
+                                                {index + 1}
+                                            </span>
+
+                                            {/* 2. Miniatura de YouTube */}
+                                            <div className="relative w-24 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-black/50 border border-white/5 shadow-md">
+                                                {lesson.videoId ? (
+                                                    <img
+                                                        src={`https://img.youtube.com/vi/${lesson.videoId}/mqdefault.jpg`}
+                                                        alt={lesson.title}
+                                                        className={`w-full h-full object-cover transition-all duration-500 ${isActive ? 'scale-110 opacity-100' : 'opacity-70 group-hover:scale-105 group-hover:opacity-100'}`}
+                                                    />
                                                 ) : (
+                                                    <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                                                        <Play size={16} className="text-gray-600" />
+                                                    </div>
+                                                )}
+                                                {/* Capa superpuesta sobre la imagen (Candado o Play) */}
+                                                <div className={`absolute inset-0 flex items-center justify-center transition-colors ${isActive ? 'bg-cyan-900/30' : 'bg-black/20'}`}>
+                                                    {isLockedItem && (
+                                                        <div className="bg-black/60 p-1.5 rounded-full backdrop-blur-sm">
+                                                            <Lock size={12} className="text-white" />
+                                                        </div>
+                                                    )}
+                                                    {isActive && !isLockedItem && (
+                                                        <div className="bg-cyan-500 p-1.5 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.8)] animate-pulse">
+                                                            <Play size={12} className="text-white fill-white ml-0.5" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* 3. Título del video */}
+                                            <div className="flex-1 min-w-0 pr-2">
+                                                <p className={`text-sm font-medium line-clamp-2 leading-tight transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`}>
+                                                    {lesson.title}
+                                                </p>
+                                            </div>
+
+                                            {/* 4. Checkbox a la derecha */}
+                                            {!isLockedItem && (
+                                                <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                                                     <input
                                                         type="checkbox"
-                                                        className={`h-4 w-4 rounded-full border border-gray-600 bg-transparent appearance-none cursor-pointer transition-colors checked:bg-cyan-500 checked:border-cyan-400 checked:shadow-[0_0_10px_rgba(6,182,212,0.6)] ${isActive ? 'ring-2 ring-cyan-500/40' : ''}`}
+                                                        className={`h-5 w-5 rounded-full border-2 border-gray-600 bg-[#0a0a0a] appearance-none cursor-pointer transition-all duration-300 checked:bg-cyan-500 checked:border-cyan-400 checked:shadow-[0_0_15px_rgba(6,182,212,0.4)] ${isActive ? 'ring-2 ring-cyan-500/20 ring-offset-2 ring-offset-[#0a0a0a]' : 'hover:border-gray-400'}`}
                                                         checked={lesson.completed}
                                                         disabled={isCheckboxDisabled}
                                                         onChange={(e) => {
@@ -485,12 +602,8 @@ const CoursePlayer = () => {
                                                             }
                                                         }}
                                                     />
-                                                )}
-                                            </div>
-                                            
-                                            <div className="flex-1 min-w-0">
-                                                <p className={`text-sm font-medium truncate ${isActive ? 'text-white' : 'text-gray-400'}`}>{lesson.title}</p>
-                                            </div>
+                                                </div>
+                                            )}
                                         </button>
                                     );
                                 }) : (
@@ -507,67 +620,67 @@ const CoursePlayer = () => {
             <LoginModal
                 isOpen={showLoginModal}
                 onClose={() => setShowLoginModal(false)}
-                onSuccess={handleLoginSuccess} 
+                onSuccess={handleLoginSuccess}
                 onSwitchToRegister={() => setShowLoginModal(false)}
                 onSwitchToForgot={() => setShowLoginModal(false)}
             />
 
             {showConfirmModal && (
-  <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-    {/* Backdrop: Misma oscuridad y desenfoque que el anterior */}
-    <div 
-      className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
-      onClick={() => setShowConfirmModal(false)}
-    />
-    
-    {/* Modal Card */}
-    <div className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-[#151515] border border-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
-      
-      {/* Luz superior Cyan (Indica acción positiva/informativa) */}
-      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50" />
+                <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+                    {/* Backdrop: Misma oscuridad y desenfoque que el anterior */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                        onClick={() => setShowConfirmModal(false)}
+                    />
 
-      <div className="p-6 relative z-10">
-        {/* Icono con Glow Cyan */}
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-cyan-500/10 ring-1 ring-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-          <BookOpen size={26} className="text-cyan-400" />
-        </div>
+                    {/* Modal Card */}
+                    <div className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-[#151515] border border-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
 
-        {/* Textos */}
-        <div className="text-center mb-6 space-y-2">
-          <h2 className="text-xl font-bold text-white tracking-tight">
-            ¿Confirmar inscripción?
-          </h2>
-          <p className="text-sm text-gray-400 leading-relaxed text-balance">
-            Te vas a inscribir en el curso: <br/>
-            <span className="text-cyan-400 font-medium">"{course.titulo || course.nombre}"</span>
-          </p>
-        </div>
+                        {/* Luz superior Cyan (Indica acción positiva/informativa) */}
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50" />
 
-        {/* Botones */}
-        <div className="grid grid-cols-2 gap-3">
-          <button 
-            onClick={() => setShowConfirmModal(false)} 
-            className="flex items-center justify-center py-2.5 rounded-xl bg-white/5 border border-white/5 text-white text-sm font-medium hover:bg-white/10 transition-all active:scale-95"
-          >
-            Cancelar
-          </button>
-          
-          <button 
-            onClick={confirmEnrollment} 
-            disabled={isLoadingEnroll}
-            className="flex items-center justify-center py-2.5 rounded-xl bg-cyan-600 border border-cyan-500 text-white text-sm font-bold shadow-lg shadow-cyan-500/20 hover:bg-cyan-500 transition-all active:scale-95 hover:shadow-cyan-500/30 disabled:opacity-50 disabled:pointer-events-none"
-          >
-            {isLoadingEnroll ? (
-              <Loader2 className="animate-spin w-5 h-5" />
-            ) : (
-              'Confirmar'
+                        <div className="p-6 relative z-10">
+                            {/* Icono con Glow Cyan */}
+                            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-cyan-500/10 ring-1 ring-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                                <BookOpen size={26} className="text-cyan-400" />
+                            </div>
+
+                            {/* Textos */}
+                            <div className="text-center mb-6 space-y-2">
+                                <h2 className="text-xl font-bold text-white tracking-tight">
+                                    ¿Confirmar inscripción?
+                                </h2>
+                                <p className="text-sm text-gray-400 leading-relaxed text-balance">
+                                    Te vas a inscribir en el curso: <br />
+                                    <span className="text-cyan-400 font-medium">"{course.titulo || course.nombre}"</span>
+                                </p>
+                            </div>
+
+                            {/* Botones */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => setShowConfirmModal(false)}
+                                    className="flex items-center justify-center py-2.5 rounded-xl bg-white/5 border border-white/5 text-white text-sm font-medium hover:bg-white/10 transition-all active:scale-95"
+                                >
+                                    Cancelar
+                                </button>
+
+                                <button
+                                    onClick={confirmEnrollment}
+                                    disabled={isLoadingEnroll}
+                                    className="flex items-center justify-center py-2.5 rounded-xl bg-cyan-600 border border-cyan-500 text-white text-sm font-bold shadow-lg shadow-cyan-500/20 hover:bg-cyan-500 transition-all active:scale-95 hover:shadow-cyan-500/30 disabled:opacity-50 disabled:pointer-events-none"
+                                >
+                                    {isLoadingEnroll ? (
+                                        <Loader2 className="animate-spin w-5 h-5" />
+                                    ) : (
+                                        'Confirmar'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
 
             <style>{`
                 .scrollbar-hide::-webkit-scrollbar { display: none; }
