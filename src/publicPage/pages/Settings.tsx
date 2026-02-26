@@ -38,7 +38,7 @@ const Settings = () => {
         passwordValidationError,
         setPasswordValidationError,
         videoRef,
-           /*...*/
+        /*...*/
         setResultModal,
         setShowAvatarOptions,
         setShowCurrentPass,
@@ -441,7 +441,7 @@ const Settings = () => {
                                 {showDeleteConfirm && (
                                     <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
                                         {/* Backdrop */}
-                                        <div 
+                                        <div
                                             className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity"
                                             onClick={() => setShowDeleteConfirm(false)}
                                         />
@@ -701,8 +701,8 @@ const Settings = () => {
             {/* MODAL ELIMINAR CUENTA */}
             {showDeleteModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-                    <div 
-                        className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" 
+                    <div
+                        className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity"
                         onClick={() => {
                             if (!loading) {
                                 setShowDeleteModal(false);
@@ -755,13 +755,13 @@ const Settings = () => {
                                 >
                                     Cancelar
                                 </button>
-                                
+
                                 <button
                                     onClick={handleDeleteAccount}
                                     disabled={deleteConfirmation !== 'ELIMINAR' || loading}
                                     className={`flex-1 py-3 rounded-xl text-white text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2
-                                        ${deleteConfirmation === 'ELIMINAR' 
-                                            ? 'bg-red-600 border border-red-500 shadow-red-600/20 hover:bg-red-500 active:scale-95 cursor-pointer' 
+                                        ${deleteConfirmation === 'ELIMINAR'
+                                            ? 'bg-red-600 border border-red-500 shadow-red-600/20 hover:bg-red-500 active:scale-95 cursor-pointer'
                                             : 'bg-white/5 border border-white/5 text-gray-500 opacity-50 cursor-not-allowed'
                                         }
                                     `}
@@ -801,13 +801,18 @@ const Settings = () => {
                                     onCropChange={setCrop}
                                     onZoomChange={setZoom}
                                     onCropComplete={handleCropComplete}
+                                    restrictPosition={true} 
+                                    minZoom={1}             
+                                    maxZoom={3}             
+                                    onMediaLoaded={() => {
+                                        setZoom(2);         
+                                    }}
                                 />
                             </div>
 
                             <div className="mt-6">
                                 <div className="flex items-center justify-between mb-2 px-1">
                                     <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Zoom</span>
-                                    <span className="text-xs font-bold text-cyan-400">{zoom.toFixed(1)}x</span>
                                 </div>
                                 <div className="flex items-center gap-3 bg-white/5 p-2 rounded-lg border border-white/5">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
