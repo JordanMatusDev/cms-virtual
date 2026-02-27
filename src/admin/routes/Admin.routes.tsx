@@ -1,5 +1,5 @@
 import { ADMIN_PANEL_TEXTS, ADMIN_PANEL_ICONS } from "@/admin/core/constants/appConstants"
-import HomePage from "@/admin/pages/home/HomePage"
+import { HomePage } from "@/admin/features/home"
 import { UsersList, UsersForm } from "@/admin/features/users"
 import { CoursesList, CoursesForm } from "@/admin/features/courses"
 import { ROUTES_PATHS } from "./AdminRoutes.constants"
