@@ -18,7 +18,7 @@ import {
     Paper,
     Tooltip,
 } from '@mui/material';
-import { FaPlus, FaUserPlus, FaBookMedical, FaUsers, FaBookOpen } from 'react-icons/fa';
+import { FaUserPlus, FaBookMedical, FaUsers, FaBookOpen } from 'react-icons/fa';
 import { IoReloadCircle } from 'react-icons/io5';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
 import { useGetUsers } from '@/admin/features/users/hooks/useUsers';
