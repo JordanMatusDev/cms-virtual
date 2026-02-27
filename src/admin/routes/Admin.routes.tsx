@@ -2,6 +2,7 @@ import { ADMIN_PANEL_TEXTS, ADMIN_PANEL_ICONS } from "@/admin/core/constants/app
 import { HomePage } from "@/admin/features/home"
 import { UsersList, UsersForm } from "@/admin/features/users"
 import { CoursesList, CoursesForm } from "@/admin/features/courses"
+import { ProfilePage } from "@/admin/features/profile"
 import { ROUTES_PATHS } from "./AdminRoutes.constants"
 
 export const ADMIN_ROUTES = [
@@ -25,6 +26,13 @@ export const ADMIN_ROUTES = [
       icon: ADMIN_PANEL_ICONS.COURSES, 
       element: <CoursesList />, 
       display: true 
+   },
+   {
+      path: ROUTES_PATHS.ADMIN_PROFILE,
+      label: '',
+      icon: '',
+      element: <ProfilePage />,
+      display: false
    },
 
    { 

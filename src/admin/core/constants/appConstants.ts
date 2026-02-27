@@ -43,6 +43,7 @@ export const ADMIN_PANEL_ICONS = {
 }
 
 export const PROFILE_MENU_OPTIONS = {
+   PROFILE: "Mi perfil",
    LOGOUT: "Cerrar sesión",
 }
 

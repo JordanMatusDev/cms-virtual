@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { Outlet, NavLink } from 'react-router';
+import { Outlet, NavLink, useNavigate } from 'react-router';
 import { 
    Box,
    Avatar,
@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { ADMIN_PANEL_ICONS, ADMIN_PANEL_TEXTS, PROFILE_MENU_OPTIONS, RESOURCE_URLS } from '@/admin/core/constants/appConstants';
 import { ADMIN_ROUTES } from '@/admin/routes/Admin.routes';
+import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
 import { FaUsers, FaHome, FaChevronDown } from "react-icons/fa";
 import { IoIosSchool } from "react-icons/io";
 import usePageTitle from '@/admin/hooks/usePageTitle';
@@ -30,6 +31,7 @@ const drawerWidth = 260;
 function AdminPanel() {
    usePageTitle(ADMIN_PANEL_TEXTS.PAGE_TITLE);
    const { usuario, setLogout } = useContext(AuthContext);
+   const navigate = useNavigate();
    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
    const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
       setAnchorElUser(event.currentTarget);
@@ -37,6 +39,11 @@ function AdminPanel() {
 
    const handleCloseUserMenu = () => {
       setAnchorElUser(null);
+   };
+
+   const handleGoProfile = () => {
+      handleCloseUserMenu();
+      navigate(ROUTES_PATHS.ADMIN_PROFILE);
    };
 
    const colors = {
@@ -181,6 +188,9 @@ function AdminPanel() {
                         }
                      }}
                   >
+                     <MenuItem onClick={handleGoProfile} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' } }}>
+                        <Typography textAlign="center">{PROFILE_MENU_OPTIONS.PROFILE}</Typography>
+                     </MenuItem>
                      <MenuItem onClick={setLogout} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' } }}>
                         <Typography textAlign="center">{PROFILE_MENU_OPTIONS.LOGOUT}</Typography>
                      </MenuItem>
