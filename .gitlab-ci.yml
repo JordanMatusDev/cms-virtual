@@ -1,5 +1,6 @@
 stages:
   - build
+  - deploy
 
 variables:
   IMAGE_NAME: $DOCKERHUB_USERNAME/cms-virtual
@@ -62,3 +63,57 @@ build_tag:
     - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
   only:
     - tags
+
+# --- Deploy en el servidor (GitLab Runner con tag shell) ---
+.deploy_runner: &deploy_runner
+  stage: deploy
+  tags:
+    - shell
+  before_script:
+    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  script:
+    - docker pull $IMAGE_NAME:$IMAGE_TAG_DEPLOY
+    - docker stop $CONTAINER_NAME 2>/dev/null || true
+    - docker rm $CONTAINER_NAME 2>/dev/null || true
+    - |
+      docker run -d --name $CONTAINER_NAME --restart unless-stopped -p ${PORT_HOST}:80 \
+        -e VITE_API_BASE_URL="$VITE_API_BASE_URL" \
+        -e VITE_SERVICE_TOKEN="$VITE_SERVICE_TOKEN" \
+        -e VITE_YOUTUBE_API_KEY="$VITE_YOUTUBE_API_KEY" \
+        $IMAGE_NAME:$IMAGE_TAG_DEPLOY
+
+# Producción (main) → puerto 3000
+deploy_main:
+  <<: *deploy_runner
+  variables:
+    IMAGE_TAG_DEPLOY: "latest"
+    PORT_HOST: "3000"
+    CONTAINER_NAME: "cms-virtual"
+  only:
+    - main
+  needs:
+    - build_main
+
+# Develop → puerto 3001
+deploy_develop:
+  <<: *deploy_runner
+  variables:
+    IMAGE_TAG_DEPLOY: "develop"
+    PORT_HOST: "3001"
+    CONTAINER_NAME: "cms-virtual-develop"
+  only:
+    - develop
+  needs:
+    - build_develop
+
+# Deploy por tag (producción, puerto 3000)
+deploy_tag:
+  <<: *deploy_runner
+  variables:
+    IMAGE_TAG_DEPLOY: $CI_COMMIT_TAG
+    PORT_HOST: "3000"
+    CONTAINER_NAME: "cms-virtual"
+  only:
+    - tags
+  needs:
+    - build_tag
