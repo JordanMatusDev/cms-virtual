@@ -16,9 +16,9 @@ variables:
   script:
     - |
       docker build \
-        --build-arg VITE_API_BASE_URL="${VITE_API_BASE_URL}" \
-        --build-arg VITE_SERVICE_TOKEN="${VITE_SERVICE_TOKEN}" \
-        --build-arg VITE_YOUTUBE_API_KEY="${VITE_YOUTUBE_API_KEY}" \
+        --build-arg VITE_API_BASE_URL=__VITE_API_BASE_URL__ \
+        --build-arg VITE_SERVICE_TOKEN=__VITE_SERVICE_TOKEN__ \
+        --build-arg VITE_YOUTUBE_API_KEY=__VITE_YOUTUBE_API_KEY__ \
         -t "$IMAGE_NAME:$CI_COMMIT_REF_SLUG" \
         -t "$IMAGE_NAME:$IMAGE_TAG" \
         .
@@ -54,9 +54,9 @@ build_tag:
   script:
     - |
       docker build \
-        --build-arg VITE_API_BASE_URL="${VITE_API_BASE_URL}" \
-        --build-arg VITE_SERVICE_TOKEN="${VITE_SERVICE_TOKEN}" \
-        --build-arg VITE_YOUTUBE_API_KEY="${VITE_YOUTUBE_API_KEY}" \
+        --build-arg VITE_API_BASE_URL=__VITE_API_BASE_URL__ \
+        --build-arg VITE_SERVICE_TOKEN=__VITE_SERVICE_TOKEN__ \
+        --build-arg VITE_YOUTUBE_API_KEY=__VITE_YOUTUBE_API_KEY__ \
         -t "$IMAGE_NAME:$CI_COMMIT_TAG" \
         .
     - docker push "$IMAGE_NAME:$CI_COMMIT_TAG"
