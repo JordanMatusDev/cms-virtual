@@ -16,6 +16,8 @@ import { IoIosCloseCircle } from "react-icons/io";
 import { useGetUserById, useCreateUser, useUpdateUser, useDeleteUser, useUploadUserAvatar } from '../hooks/useUsers'; 
 import { UserPayloadSchema, type UserPayload } from '../schemas/userPayload.schema';
 import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
+import { useToast } from '@/admin/core/context/toastContext';
+import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
 
 function UsersForm() {
    const { id } = useParams();
@@ -30,6 +32,7 @@ function UsersForm() {
    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
    // El archivo real que enviaremos, totalmente separado de react-hook-form
    const [avatarFileToUpload, setAvatarFileToUpload] = useState<File | null>(null);
+   const { showToast } = useToast();
 
    const { data: userData, isLoading: isFetchingUser } = useGetUserById(isEditMode ? id : undefined);
    const createMutation = useCreateUser();
@@ -92,8 +95,10 @@ function UsersForm() {
                await uploadAvatarMutation.mutateAsync({ user_id: id!, file: avatarFileToUpload });
             }
 
+            showToast(TOAST_MESSAGES.USERS.UPDATE_SUCCESS, 'success');
             navigate(ROUTES_PATHS.ADMIN_USERS);
          } catch (error: any) {
+            showToast(error.message || TOAST_MESSAGES.USERS.UPDATE_ERROR, 'error');
             onFormError({ general: { message: error.message } });
          }
       } else {
@@ -137,9 +142,11 @@ function UsersForm() {
             }
 
             await Promise.all(tareasExtra);
+            showToast(TOAST_MESSAGES.USERS.CREATE_SUCCESS, 'success');
             navigate(ROUTES_PATHS.ADMIN_USERS);
 
          } catch (error: any) {
+            showToast(error.message || TOAST_MESSAGES.USERS.CREATE_ERROR, 'error');
             onFormError({ general: { message: 'Hubo un problema en el proceso: ' + error.message } });
          }
       }
@@ -148,8 +155,14 @@ function UsersForm() {
    const handleDelete = () => {
       if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
          deleteMutation.mutate(id!, {
-            onSuccess: () => navigate(ROUTES_PATHS.ADMIN_USERS),
-            onError: (error: Error) => onFormError({ general: { message: error.message } })
+            onSuccess: () => {
+               showToast(TOAST_MESSAGES.USERS.DELETE_SUCCESS, 'success');
+               navigate(ROUTES_PATHS.ADMIN_USERS);
+            },
+            onError: (error: Error) => {
+               showToast(error.message || TOAST_MESSAGES.USERS.DELETE_ERROR, 'error');
+               onFormError({ general: { message: error.message } });
+            }
          });
       }
    };

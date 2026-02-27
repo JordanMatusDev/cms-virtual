@@ -20,6 +20,8 @@ import { useYoutubeData } from '@/admin/features/youtubeData';
 import { CoursePayloadSchema, type CoursePayload } from '../schemas/coursePayload.schema';
 import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
 import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
+import { useToast } from '@/admin/core/context/toastContext';
+import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
 
 function CoursesForm() {
    const { id } = useParams();
@@ -41,6 +43,7 @@ function CoursesForm() {
       playlist_id: '',
       author: ''
    });
+   const { showToast } = useToast();
 
    const { data: courseData, isLoading: isFetchingCourse } = useGetCourseById(isEditMode ? id : undefined);
    const { data: categories } = useGetCategories();
@@ -155,12 +158,15 @@ function CoursesForm() {
          if (isEditMode) {
             console.log("Datos a actualizar:", cleanPayload);
             await updateMutation.mutateAsync({ id: id!, data: cleanPayload });
+            showToast(TOAST_MESSAGES.COURSES.UPDATE_SUCCESS, 'success');
          } else {
             console.log("Datos a crear:", data);
             await createMutation.mutateAsync(data);
+            showToast(TOAST_MESSAGES.COURSES.CREATE_SUCCESS, 'success');
          }
          navigate(ROUTES_PATHS.ADMIN_COURSES);
       } catch (error: any) {
+         showToast(error.message || TOAST_MESSAGES.COURSES.CREATE_ERROR, 'error');
          setMainError(error.message || 'Error al guardar el curso');
       }
    };
@@ -168,8 +174,14 @@ function CoursesForm() {
    const handleDelete = () => {
       if (window.confirm('¿Estás seguro de que deseas eliminar este curso?')) {
          deleteMutation.mutate(id!, {
-            onSuccess: () => navigate(ROUTES_PATHS.ADMIN_COURSES),
-            onError: (error: any) => setMainError(error.message || 'Error al eliminar')
+            onSuccess: () => {
+               showToast(TOAST_MESSAGES.COURSES.DELETE_SUCCESS, 'success');
+               navigate(ROUTES_PATHS.ADMIN_COURSES);
+            },
+            onError: (error: any) => {
+               showToast(error.message || TOAST_MESSAGES.COURSES.DELETE_ERROR, 'error');
+               setMainError(error.message || 'Error al eliminar');
+            }
          });
       }
    };

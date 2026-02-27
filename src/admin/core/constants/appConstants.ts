@@ -92,3 +92,33 @@ export const USERS_PAGE_ERRORS = {
    LAST_NAME_REQUIRED: "El apellido es obligatorio.",
    ROLE_REQUIRED: "El rol es obligatorio.",
 }
+
+export const TOAST_MESSAGES = {
+   AUTH: {
+      LOGIN_SUCCESS_PREFIX: "Bienvenido, ",
+      LOGIN_ERROR: "No se pudo iniciar sesión",
+      LOGOUT_SUCCESS: "Sesión cerrada correctamente",
+   },
+   USERS: {
+      CREATE_SUCCESS: "Usuario creado correctamente",
+      CREATE_ERROR: "No se pudo crear el usuario",
+      UPDATE_SUCCESS: "Usuario actualizado correctamente",
+      UPDATE_ERROR: "No se pudo actualizar el usuario",
+      DELETE_SUCCESS: "Usuario eliminado correctamente",
+      DELETE_ERROR: "No se pudo eliminar el usuario",
+   },
+   COURSES: {
+      CREATE_SUCCESS: "Curso creado correctamente",
+      CREATE_ERROR: "No se pudo guardar el curso",
+      UPDATE_SUCCESS: "Curso actualizado correctamente",
+      UPDATE_ERROR: "No se pudo guardar el curso",
+      DELETE_SUCCESS: "Curso eliminado correctamente",
+      DELETE_ERROR: "No se pudo eliminar el curso",
+      DEACTIVATE_SUCCESS: "Curso desactivado correctamente",
+      DEACTIVATE_ERROR: "No se pudo desactivar el curso",
+   },
+   PROFILE: {
+      UPDATE_SUCCESS: "Perfil actualizado correctamente",
+      UPDATE_ERROR: "No se pudo actualizar el perfil",
+   },
+} as const;

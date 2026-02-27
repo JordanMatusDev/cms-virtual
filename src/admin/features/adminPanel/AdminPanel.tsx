@@ -19,18 +19,21 @@ import {
    MenuItem
 } from '@mui/material';
 import { ADMIN_PANEL_ICONS, ADMIN_PANEL_TEXTS, PROFILE_MENU_OPTIONS, RESOURCE_URLS } from '@/admin/core/constants/appConstants';
+import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
 import { ADMIN_ROUTES } from '@/admin/routes/Admin.routes';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
 import { FaUsers, FaHome, FaChevronDown } from "react-icons/fa";
 import { IoIosSchool } from "react-icons/io";
 import usePageTitle from '@/admin/hooks/usePageTitle';
 import { AuthContext } from '@/admin/core/context/authContext';
+import { useToast } from '@/admin/core/context/toastContext';
 
 const drawerWidth = 260; 
 
 function AdminPanel() {
    usePageTitle(ADMIN_PANEL_TEXTS.PAGE_TITLE);
    const { usuario, setLogout } = useContext(AuthContext);
+   const { showToast } = useToast();
    const navigate = useNavigate();
    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
    const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -44,6 +47,12 @@ function AdminPanel() {
    const handleGoProfile = () => {
       handleCloseUserMenu();
       navigate(ROUTES_PATHS.ADMIN_PROFILE);
+   };
+
+   const handleLogout = () => {
+      handleCloseUserMenu();
+      setLogout();
+      showToast(TOAST_MESSAGES.AUTH.LOGOUT_SUCCESS, 'info');
    };
 
    const colors = {
@@ -193,7 +202,7 @@ function AdminPanel() {
                             {PROFILE_MENU_OPTIONS.PROFILE}
                         </Typography>
                      </MenuItem>
-                     <MenuItem onClick={setLogout} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' } }}>
+                      <MenuItem onClick={handleLogout} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' } }}>
                         <Typography textAlign="center" sx={{ color: colors.accentAlt }}>
                             {PROFILE_MENU_OPTIONS.LOGOUT}
                         </Typography>

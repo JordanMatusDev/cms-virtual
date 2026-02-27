@@ -23,6 +23,8 @@ import { useGetUserByUsername, useUpdateUser, useUploadUserAvatar } from '@/admi
 import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
 import { z } from 'zod';
 import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
+import { useToast } from '@/admin/core/context/toastContext';
+import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
 
 const ProfilePayloadSchema = z.object({
    username: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres.'),
@@ -45,6 +47,7 @@ function ProfilePage() {
    const [mainError, setMainError] = useState('');
    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
    const [avatarFileToUpload, setAvatarFileToUpload] = useState<File | null>(null);
+   const { showToast } = useToast();
 
    const username = usuario?.username;
 
@@ -152,8 +155,10 @@ function ProfilePage() {
             );
          }
 
+         showToast(TOAST_MESSAGES.PROFILE.UPDATE_SUCCESS, 'success');
          navigate(ROUTES_PATHS.ADMIN_HOME);
       } catch (error: any) {
+         showToast(error.message || TOAST_MESSAGES.PROFILE.UPDATE_ERROR, 'error');
          onFormError({ general: { message: error.message } });
       }
    };
