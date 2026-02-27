@@ -1,75 +1,46 @@
-// import React from 'react';
-import Cropper from 'react-easy-crop';
+import React, { useState, useRef } from 'react';
 import {
     User, Mail, AtSign, Camera, Lock, Trash2,
     Save, AlertTriangle, CheckCircle, Loader2,
     Shield, Upload, Settings as SettingsIcon,
     ArrowRight, Eye, EyeOff, X, Edit2
 } from 'lucide-react';
+import { CircleStencil, ImageRestriction, FixedCropper } from 'react-advanced-cropper';
+import type { FixedCropperRef } from 'react-advanced-cropper';
+import 'react-advanced-cropper/dist/style.css'
+
 import useSettings from '../hooks/pages/useSettings';
 
-import React, { useState } from 'react';
+
+
 const Settings = () => {
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const [showPasswordError, setShowPasswordError] = useState(false);
+
+    // --- NUEVOS ESTADOS LOCALES PARA EL RECORTADOR Y ROTACIÓN ---
+    const cropperRef = useRef<FixedCropperRef>(null);
+    // ...existing code...
+
     const {
-        user,
-        activeTab,
-        loading,
-        resultModal,
-        profileError,
-        fieldErrors,
-        fieldErrorMessages,
-        passwords,
-        showCurrentPass,
-        showNewPass,
-        showConfirmPass,
-        passVerified,
-        showDeleteModal,
-        showAvatarOptions,
-        showCameraModal,
-        showCropModal,
-        cropImageSrc,
-        crop,
-        zoom,
-        cropSaving,
-        isProfileDirty,
-        fileInputRef,
-        passwordValidationError,
-        setPasswordValidationError,
-        videoRef,
-           /*...*/
-        setResultModal,
-        setShowAvatarOptions,
-        setShowCurrentPass,
-        setShowNewPass,
-        setShowConfirmPass,
-        setShowDeleteModal,
-        setCrop,
-        setZoom,
-        handleInputChange,
-        handlePassChange,
-        handleAvatarUpload,
-        handleRemoveAvatarClick,
-        confirmRemoveAvatar,
-        handleOpenCamera,
-        handleCloseCamera,
-        handleCapturePhoto,
-        handleCropComplete,
-        handleConfirmCrop,
-        handleCancelCrop,
-        handleSaveProfile,
-        handleCancelProfileChanges,
-        handleVerifyCurrentPass,
-        handleChangePassword,
-        handleCancelPasswordChange,
-        handleCancelPasswordVerify,
-        handleDeleteAccount,
-        handleTabChange,
-        //showError,
-        showDeleteConfirm,
-        setShowDeleteConfirm
+        user, activeTab, loading, resultModal, profileError, fieldErrors,
+        fieldErrorMessages, passwords, showCurrentPass, showNewPass,
+        showConfirmPass, passVerified, showDeleteModal, showAvatarOptions,
+        showCameraModal, showCropModal, cropImageSrc, cropSaving,
+        isProfileDirty, fileInputRef, passwordValidationError,
+        setPasswordValidationError, videoRef, setResultModal,
+        setShowAvatarOptions, setShowCurrentPass, setShowNewPass,
+        setShowConfirmPass, setShowDeleteModal,
+        handleInputChange, handlePassChange, handleAvatarUpload,
+        handleRemoveAvatarClick, confirmRemoveAvatar, handleOpenCamera,
+        handleCloseCamera, handleCapturePhoto,
+        //handleCropComplete, // Ya no lo usaremos en la vista
+        handleConfirmCrop, handleCancelCrop, handleSaveProfile,
+        handleCancelProfileChanges, handleVerifyCurrentPass,
+        handleChangePassword, handleCancelPasswordChange,
+        handleCancelPasswordVerify, handleDeleteAccount, handleTabChange,
+        showDeleteConfirm, setShowDeleteConfirm
     } = useSettings();
+
 
     // Efecto mouse para el banner (como en MyCourse)
     const bannerRef = React.useRef<HTMLDivElement>(null);
@@ -88,6 +59,8 @@ const Settings = () => {
         setPasswordValidationError(null);
         handleTabChange(tab);
     };
+
+
 
     return (
         <div className="min-h-screen bg-[#04070f] text-white font-sans selection:bg-cyan-500/30">
@@ -210,7 +183,7 @@ const Settings = () => {
                                         {/* Botón Principal - Estilo Sólido para confirmar la lectura */}
                                         <button
                                             onClick={() => setResultModal(null)}
-                                            className={`w-full py-3 mt-8 rounded-xl text-sm font-bold text-white shadow-lg transition-all active:scale-95 flex items-center justify-center ${resultModal.type === 'success'
+                                            className={`px-10 py-3 mt-8 rounded-xl text-sm font-bold text-white shadow-lg transition-all active:scale-95 flex items-center justify-center ${resultModal.type === 'success'
                                                 ? 'bg-green-600 hover:bg-green-500 shadow-green-500/20 hover:shadow-green-500/30 border border-green-500'
                                                 : 'bg-red-600 hover:bg-red-500 shadow-red-500/20 hover:shadow-red-500/30 border border-red-500'
                                                 }`}
@@ -441,7 +414,7 @@ const Settings = () => {
                                 {showDeleteConfirm && (
                                     <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
                                         {/* Backdrop */}
-                                        <div 
+                                        <div
                                             className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity"
                                             onClick={() => setShowDeleteConfirm(false)}
                                         />
@@ -701,8 +674,8 @@ const Settings = () => {
             {/* MODAL ELIMINAR CUENTA */}
             {showDeleteModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-                    <div 
-                        className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" 
+                    <div
+                        className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity"
                         onClick={() => {
                             if (!loading) {
                                 setShowDeleteModal(false);
@@ -755,13 +728,13 @@ const Settings = () => {
                                 >
                                     Cancelar
                                 </button>
-                                
+
                                 <button
                                     onClick={handleDeleteAccount}
                                     disabled={deleteConfirmation !== 'ELIMINAR' || loading}
                                     className={`flex-1 py-3 rounded-xl text-white text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2
-                                        ${deleteConfirmation === 'ELIMINAR' 
-                                            ? 'bg-red-600 border border-red-500 shadow-red-600/20 hover:bg-red-500 active:scale-95 cursor-pointer' 
+                                        ${deleteConfirmation === 'ELIMINAR'
+                                            ? 'bg-red-600 border border-red-500 shadow-red-600/20 hover:bg-red-500 active:scale-95 cursor-pointer'
                                             : 'bg-white/5 border border-white/5 text-gray-500 opacity-50 cursor-not-allowed'
                                         }
                                     `}
@@ -774,87 +747,107 @@ const Settings = () => {
                 </div>
             )}
 
+            {/* MODAL AJUSTAR IMAGEN */}
             {showCropModal && cropImageSrc && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+                    {/* Fondo oscuro con blur */}
                     <div
                         className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity"
                         onClick={() => !cropSaving && handleCancelCrop()}
                     />
 
-                    <div className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-[#151515] border border-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
+                    {/* Contenedor principal del Modal */}
+                    <div className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-[#151515] border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
 
+                        {/* Brillo superior Cyan */}
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50" />
 
+                        {/* NUEVO: Botón Cerrar (X) estilo flotante arriba a la derecha */}
+                        <button
+                            onClick={handleCancelCrop}
+                            disabled={cropSaving}
+                            className="absolute right-4 top-4 z-20 p-2 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50"
+                        >
+                            <X size={20} />
+                        </button>
+
                         <div className="p-6">
-                            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400"><path d="M6 2v14a2 2 0 0 0 2 2h14" /><path d="M18 22V8a2 2 0 0 0-2-2H2" /></svg>
-                                Recortar Foto
-                            </h3>
-                            <div className="relative h-80 w-full bg-black rounded-xl overflow-hidden ring-1 ring-white/10 shadow-inner">
-                                <Cropper
-                                    image={cropImageSrc}
-                                    crop={crop}
-                                    zoom={zoom}
-                                    aspect={1}
-                                    cropShape="round"
-                                    showGrid={false}
-                                    onCropChange={setCrop}
-                                    onZoomChange={setZoom}
-                                    onCropComplete={handleCropComplete}
+                            {/* Cabecera (ajustada para la X) */}
+                            <div className="flex items-center mb-6">
+                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400">
+                                        <path d="M6 2v14a2 2 0 0 0 2 2h14" />
+                                        <path d="M18 22V8a2 2 0 0 0-2-2H2" />
+                                    </svg>
+                                    Ajustar Foto
+                                </h3>
+                            </div>
+
+                            {/* Área del Cropper */}
+                            <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 shadow-inner mb-6">
+                                <FixedCropper
+                                    ref={cropperRef}
+                                    src={cropImageSrc}
+                                    className="h-[400px] w-full"
+                                    stencilComponent={CircleStencil}
+                                    imageRestriction={ImageRestriction.stencil}
+                                    stencilSize={{ width: 256, height: 256 }}
                                 />
                             </div>
 
-                            <div className="mt-6">
-                                <div className="flex items-center justify-between mb-2 px-1">
-                                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Zoom</span>
-                                    <span className="text-xs font-bold text-cyan-400">{zoom.toFixed(1)}x</span>
-                                </div>
-                                <div className="flex items-center gap-3 bg-white/5 p-2 rounded-lg border border-white/5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
+                            {/* NUEVO: Botones de Acción Minimalistas (Girar y Guardar) */}
+                            <div className="flex justify-center gap-12">
 
-                                    <input
-                                        autoComplete="off"
-                                        type="range"
-                                        min={1}
-                                        max={3}
-                                        step={0.1}
-                                        value={zoom}
-                                        onChange={(e) => setZoom(Number(e.target.value))}
-                                        className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 hover:accent-cyan-400 transition-all"
-                                    />
-
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 flex gap-3">
+                                {/* Botón Girar */}
                                 <button
-                                    onClick={handleCancelCrop}
+                                    type="button"
+                                    onClick={() => cropperRef.current?.rotateImage(90)}
                                     disabled={cropSaving}
-                                    className="flex-1 py-3 rounded-xl bg-white/5 border border-white/5 text-white text-sm font-medium hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50"
+                                    className="flex flex-col items-center justify-center gap-2 group transition-all active:scale-95 disabled:opacity-50"
                                 >
-                                    Cancelar
+                                    <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-white/10 group-hover:text-white transition-colors shadow-sm ring-1 ring-white/5 group-hover:ring-white/20">
+                                        {/* SVG Custom: Flecha circular */}
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                                            <path d="M21 3v5h-5" />
+                                            <rect x="9" y="9" width="6" height="6" rx="1" transform="rotate(45 12 12)" />
+                                        </svg>
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-400 group-hover:text-white transition-colors">Girar</span>
                                 </button>
+
+                                {/* Botón Guardar */}
                                 <button
-                                    onClick={handleConfirmCrop}
+                                    onClick={async () => {
+                                        if (cropperRef.current) {
+                                            const canvas = cropperRef.current.getCanvas();
+                                            if (canvas) {
+                                                const base64Image = canvas.toDataURL('image/jpeg');
+                                                await handleConfirmCrop(base64Image);
+                                            }
+                                        }
+                                    }}
                                     disabled={cropSaving}
-                                    className="flex-1 py-3 rounded-xl bg-cyan-600 border border-cyan-500 text-white text-sm font-bold shadow-lg shadow-cyan-500/20 hover:bg-cyan-500 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex flex-col items-center justify-center gap-2 group transition-all active:scale-95 disabled:opacity-50"
                                 >
-                                    {cropSaving ? (
-                                        <Loader2 className="animate-spin" size={18} />
-                                    ) : (
-                                        <>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M17 21v-2a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2" /><rect x="7" y="3" width="14" height="18" rx="2" ry="2" /><path d="M7 3v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V3" /></svg>
-                                            Guardar Foto
-                                        </>
-                                    )}
+                                    <div className="w-14 h-14 rounded-full bg-cyan-600 flex items-center justify-center text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] group-hover:bg-cyan-500 transition-colors ring-2 ring-cyan-500/50 group-hover:ring-cyan-400">
+                                        {cropSaving ? (
+                                            <Loader2 className="animate-spin" size={24} />
+                                        ) : (
+                                            <Save size={24} />
+                                        )}
+                                    </div>
+                                    <span className="text-xs font-medium text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                                        {cropSaving ? 'Guardando...' : 'Guardar'}
+                                    </span>
                                 </button>
+
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-
+            {/* MODAL ACTUALIZAR FOTO */}
             {showAvatarOptions && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
                     {/* Backdrop */}
@@ -901,29 +894,29 @@ const Settings = () => {
                                 </div>
                             </div>
 
-                            {/* Botones de Acción - Estilo Grid de Tarjetas */}
-                            <div className="grid grid-cols-2 gap-4 mb-6">
+                            {/* Botones de Acción - Estilo Íconos Flotantes (Minimalistas) */}
+                            <div className="flex justify-center gap-12 mb-6">
                                 <button
                                     onClick={() => {
                                         setShowAvatarOptions(false);
                                         fileInputRef.current?.click();
                                     }}
-                                    className="flex flex-col items-center justify-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-cyan-500/30 group transition-all active:scale-95"
+                                    className="flex flex-col items-center justify-center gap-3 w-24 group transition-all active:scale-95"
                                 >
-                                    <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
-                                        <Upload size={20} />
+                                    <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500/10 group-hover:text-cyan-300 transition-colors shadow-sm ring-1 ring-white/5 group-hover:ring-cyan-500/30">
+                                        <Upload size={24} />
                                     </div>
-                                    <span className="text-sm font-medium text-gray-300 group-hover:text-white">Subir foto</span>
+                                    <span className="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">Subir foto</span>
                                 </button>
 
                                 <button
                                     onClick={handleOpenCamera}
-                                    className="flex flex-col items-center justify-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-purple-500/30 group transition-all active:scale-95"
+                                    className="flex flex-col items-center justify-center gap-3 w-24 group transition-all active:scale-95"
                                 >
-                                    <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
-                                        <Camera size={20} />
+                                    <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-purple-400 group-hover:bg-purple-500/10 group-hover:text-purple-300 transition-colors shadow-sm ring-1 ring-white/5 group-hover:ring-purple-500/30">
+                                        <Camera size={24} />
                                     </div>
-                                    <span className="text-sm font-medium text-gray-300 group-hover:text-white">Tomar foto</span>
+                                    <span className="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">Tomar foto</span>
                                 </button>
                             </div>
 
@@ -937,6 +930,7 @@ const Settings = () => {
                 </div>
             )}
 
+            {/* MODAL CAMARA */}
             {showCameraModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
                     {/* Backdrop con desenfoque */}
@@ -945,26 +939,36 @@ const Settings = () => {
                         onClick={handleCloseCamera}
                     ></div>
 
-                    {/* Tarjeta del Modal */}
-                    <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-[#151515] border border-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
+                    {/* Tarjeta del Modal (Ajustado a max-w-xl para que coincida con el de editar) */}
+                    <div className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-[#151515] border border-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
                         {/* Luz superior decorativa Cyan */}
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50" />
 
+                        {/* Botón Cerrar (X) */}
+                        <button
+                            onClick={handleCloseCamera}
+                            className="absolute right-4 top-4 z-20 p-2 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                        >
+                            <X size={20} />
+                        </button>
+
                         <div className="p-6">
                             {/* Título con icono */}
-                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></svg>
-                                Tomar foto
+                            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400">
+                                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                                    <circle cx="12" cy="13" r="3" />
+                                </svg>
+                                Cámara
                             </h3>
 
-                            {/* Área del Video (Visor) */}
-                            <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden ring-1 ring-white/10 shadow-inner group">
+                            {/* Área del Video (Visor) - Ajustado a h-[400px] para formato cuadrado */}
+                            <div className="relative w-full h-[400px] bg-black rounded-xl overflow-hidden ring-1 ring-white/10 shadow-inner group">
                                 <video
                                     ref={videoRef}
                                     autoPlay
                                     playsInline
                                     muted
-                                    // Agregué 'transform scale-x-[-1]' solo aquí para que te veas como en un espejo (visual)
                                     className="w-full h-full object-cover transform scale-x-[-1]"
                                 />
 
@@ -983,21 +987,14 @@ const Settings = () => {
                                 </div>
                             </div>
 
-                            {/* Botones */}
-                            <div className="mt-6 flex gap-3">
-                                <button
-                                    onClick={handleCloseCamera}
-                                    className="flex-1 py-3 rounded-xl bg-white/5 border border-white/5 text-white text-sm font-medium hover:bg-white/10 transition-all active:scale-95"
-                                >
-                                    Cancelar
-                                </button>
-
+                            {/* Botón de Captura Central */}
+                            <div className="mt-8 mb-2 flex justify-center items-center">
                                 <button
                                     onClick={handleCapturePhoto}
-                                    className="flex-1 py-3 rounded-xl bg-cyan-600 border border-cyan-500 text-white text-sm font-bold shadow-lg shadow-cyan-500/20 hover:bg-cyan-500 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                    className="relative flex items-center justify-center w-16 h-16 rounded-full border-[3px] border-white/50 hover:border-white transition-all active:scale-95 group"
+                                    title="Capturar foto"
                                 >
-                                    <div className="w-3 h-3 rounded-full bg-white"></div>
-                                    Capturar
+                                    <div className="w-12 h-12 rounded-full bg-white group-active:scale-90 transition-transform duration-150"></div>
                                 </button>
                             </div>
                         </div>

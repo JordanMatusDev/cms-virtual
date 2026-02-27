@@ -8,6 +8,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { appTheme } from './admin/theme/appTheme.ts';
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ToastProvider } from './admin/core/context/toastContext.tsx';
 
 const queryClient = new QueryClient({
    defaultOptions: {
@@ -24,7 +25,9 @@ createRoot(document.getElementById('root')!).render(
       <ThemeProvider theme={appTheme}>
          <CssBaseline />
          <QueryClientProvider client={queryClient}>
-            <App />
+            <ToastProvider>
+               <App />
+            </ToastProvider>
             <ReactQueryDevtools initialIsOpen={false} />
          </QueryClientProvider>
       </ThemeProvider>

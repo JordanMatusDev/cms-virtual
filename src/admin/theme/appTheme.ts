@@ -72,6 +72,9 @@ export const appTheme = createTheme({
           border: 'none',
           backgroundColor: 'rgba(15, 23, 42, 0.4)', // Fondo semi-transparente estilo glass
           color: '#E2E8F0',
+          '& .MuiDataGrid-row:hover': {
+            cursor: 'pointer',
+          },
           '& .MuiDataGrid-withBorderColor': {
             borderColor: 'rgba(255, 255, 255, 0.08)',
           },

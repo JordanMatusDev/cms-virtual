@@ -25,8 +25,11 @@ import { type Course } from '../schemas/course.schema';
 import { useGetCourses, useUpdateCourse } from '../hooks/useCourse';
 import { useCoursesFilter } from '../hooks/useCoursesFilter';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
+import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
 import { IoReloadCircle } from "react-icons/io5";
 import { FaPlus, FaEllipsisV, FaClock, FaBookOpen, FaSearch } from "react-icons/fa";
+import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
+import { useToast } from '@/admin/core/context/toastContext';
 
 function CoursesList() {
    const { data: courses, isLoading, error, refetch, isFetching } = useGetCourses();
@@ -46,6 +49,7 @@ function CoursesList() {
    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
    const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
    const [actionError, setActionError] = useState('');
+   const { showToast } = useToast();
 
    const handleStatusFilterChange = (event: SelectChangeEvent) => {
       setStatusFilter(event.target.value as 'all' | 'active' | 'inactive');
@@ -91,12 +95,19 @@ function CoursesList() {
             id: String(selectedCourseId),
             data: { status: false },
          });
+         showToast(TOAST_MESSAGES.COURSES.DEACTIVATE_SUCCESS, 'success');
       } catch (mutationError: any) {
-         setActionError(mutationError?.message || 'No se pudo desactivar el curso');
+         const errorMessage = mutationError?.message || TOAST_MESSAGES.COURSES.DEACTIVATE_ERROR;
+         setActionError(errorMessage);
+         showToast(errorMessage, 'error');
       } finally {
          handleCloseMenu();
       }
    };
+
+   if (isLoading) {
+      return <AdminPageLoader message="Cargando información de cursos..." />;
+   }
 
    return (
       <Box sx={{ p: 1, display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
