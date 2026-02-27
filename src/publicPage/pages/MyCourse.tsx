@@ -186,12 +186,24 @@ const MyCourses = () => {
                   </div>
 
                   <div className="p-5 flex flex-col flex-1">
-                      <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2 text-white group-hover:text-cyan-400 transition-colors">
+                      <h3
+                        className="font-bold text-lg mb-0 text-white group-hover:text-cyan-400 transition-colors"
+                        style={{
+                          minHeight: '3.2em', // 2 líneas
+                          maxHeight: '3.2em',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                        }}
+                      >
                         {course.title}
                       </h3>
                       
                       <div className="mt-auto pt-4 space-y-3">
-                        <div className="space-y-1">
+                        <div className="space-y-0">
+                          {/* Barra de progreso pegada al título */}
                           <div className="flex justify-between text-xs text-gray-400">
                             <span>{course.progress === 100 ? 'Completado' : 'Progreso'}</span>
                             <span className={course.progress === 100 ? 'text-green-400' : 'text-cyan-400'}>{course.progress}%</span>
@@ -208,14 +220,15 @@ const MyCourses = () => {
                                <Award size={16} className="text-yellow-400"/> <span className="text-yellow-400">Certificado</span>
                              </button>
                            ) : (
-                             <button onClick={() => navigate(`/curso/${course.courseId}`)} className="flex-1 flex items-center justify-center gap-2 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 text-sm font-semibold py-2 rounded-lg transition-colors border border-cyan-500/20">
-                               <PlayCircle size={16}/> Continuar
-                             </button>
+                             <>
+                               <button onClick={() => navigate(`/curso/${course.courseId}`)} className="flex-1 flex items-center justify-center gap-2 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 text-sm font-semibold py-2 rounded-lg transition-colors border border-cyan-500/20">
+                                 <PlayCircle size={16}/> Continuar
+                               </button>
+                               <button onClick={() => setCourseToDelete(course.id)} className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                                 <Trash2 size={18}/>
+                               </button>
+                             </>
                            )}
-                           
-                           <button onClick={() => setCourseToDelete(course.id)} className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-                             <Trash2 size={18}/>
-                           </button>
                         </div>
                       </div>
                   </div>
