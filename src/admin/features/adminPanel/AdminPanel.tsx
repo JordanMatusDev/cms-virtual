@@ -189,10 +189,14 @@ function AdminPanel() {
                      }}
                   >
                      <MenuItem onClick={handleGoProfile} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' } }}>
-                        <Typography textAlign="center">{PROFILE_MENU_OPTIONS.PROFILE}</Typography>
+                        <Typography textAlign="center">
+                            {PROFILE_MENU_OPTIONS.PROFILE}
+                        </Typography>
                      </MenuItem>
                      <MenuItem onClick={setLogout} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' } }}>
-                        <Typography textAlign="center">{PROFILE_MENU_OPTIONS.LOGOUT}</Typography>
+                        <Typography textAlign="center" sx={{ color: colors.accentAlt }}>
+                            {PROFILE_MENU_OPTIONS.LOGOUT}
+                        </Typography>
                      </MenuItem>
 
                   </Menu>

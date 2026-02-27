@@ -9,7 +9,6 @@ import {
    TextField,
    Typography,
    Avatar,
-   CircularProgress,
    Grid,
    Paper,
    IconButton,
@@ -23,6 +22,7 @@ import { AuthContext } from '@/admin/core/context/authContext';
 import { useGetUserByUsername, useUpdateUser, useUploadUserAvatar } from '@/admin/features/users/hooks/useUsers';
 import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
 import { z } from 'zod';
+import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
 
 const ProfilePayloadSchema = z.object({
    username: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres.'),
@@ -171,12 +171,7 @@ function ProfilePage() {
    }
 
    if (isFetchingUser) {
-      return (
-         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
-            <CircularProgress sx={{ color: '#4F46E5' }} />
-            <Typography sx={{ color: '#94A3B8', mt: 2 }}>Cargando información del perfil...</Typography>
-         </Box>
-      );
+      return <AdminPageLoader message="Cargando información del perfil..." />;
    }
 
    return (

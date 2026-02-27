@@ -23,6 +23,7 @@ import { IoReloadCircle } from 'react-icons/io5';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
 import { useGetUsers } from '@/admin/features/users/hooks/useUsers';
 import { useGetCourses } from '@/admin/features/courses/hooks/useCourse';
+import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
 
 function HomePage() {
     const navigate = useNavigate();
@@ -63,6 +64,10 @@ function HomePage() {
             inactiveCourses,
         };
     }, [users, courses]);
+
+    if (isLoadingUsers || isLoadingCourses) {
+        return <AdminPageLoader message="Cargando información del panel..." />;
+    }
 
     return (
         <Box sx={{ px: 1, pb: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>

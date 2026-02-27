@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
    Box, Button, Stack, TextField, Typography, FormControlLabel,
    FormControl, Switch, InputLabel, Select, MenuItem,
-   CircularProgress, Grid, Paper, IconButton, Tooltip, Divider
+   Grid, Paper, IconButton, Tooltip, Divider
 } from '@mui/material';
 import { inputSx, switchSx } from '@/admin/theme/Input.styles';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
@@ -19,6 +19,7 @@ import { extractPlaylistId } from '@/admin/utils/youtubeUtils';
 import { useYoutubeData } from '@/admin/features/youtubeData';
 import { CoursePayloadSchema, type CoursePayload } from '../schemas/coursePayload.schema';
 import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
+import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
 
 function CoursesForm() {
    const { id } = useParams();
@@ -174,12 +175,7 @@ function CoursesForm() {
    };
 
    if (isFetchingCourse) {
-      return (
-         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
-            <CircularProgress sx={{ color: '#4F46E5' }} />
-            <Typography sx={{ color: '#94A3B8', mt: 2 }}>Cargando información del curso...</Typography>
-         </Box>
-      );
+      return <AdminPageLoader message="Cargando información del curso..." />;
    }
 
    return (

@@ -25,6 +25,7 @@ import { USERS_PAGE_HEADERS } from '@/admin/core/constants/appConstants';
 import { IoReloadCircle } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 import { FaSearch } from 'react-icons/fa';
+import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
 
 const PAGINATION_MODEL = { paginationModel: { pageSize: 10 } };
 const PAGE_SIZE_OPTIONS = [10, 15];
@@ -151,6 +152,10 @@ function UsersList() {
 
    const handleUserForm = () => {
       navigate(ROUTES_PATHS.ADMIN_USERS_FORM.replace(':id', 'nuevo'), { replace: true});
+   }
+
+   if (isLoading) {
+      return <AdminPageLoader message="Cargando información de usuarios..." />;
    }
 
    return (

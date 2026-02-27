@@ -27,6 +27,7 @@ import { useCoursesFilter } from '../hooks/useCoursesFilter';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
 import { IoReloadCircle } from "react-icons/io5";
 import { FaPlus, FaEllipsisV, FaClock, FaBookOpen, FaSearch } from "react-icons/fa";
+import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
 
 function CoursesList() {
    const { data: courses, isLoading, error, refetch, isFetching } = useGetCourses();
@@ -97,6 +98,10 @@ function CoursesList() {
          handleCloseMenu();
       }
    };
+
+   if (isLoading) {
+      return <AdminPageLoader message="Cargando información de cursos..." />;
+   }
 
    return (
       <Box sx={{ p: 1, display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
