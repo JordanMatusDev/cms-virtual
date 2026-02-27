@@ -138,8 +138,8 @@ export default function ResetPassword() {
 
         {/* Header con Logo e Icono */}
         <div className="text-center mb-8">
-           {/* Reemplaza src con tu ruta correcta de imagen */}
-          <img src="/src/assets/virtualz.png" alt="Virtual+" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+            {/* Reemplaza src con tu ruta correcta de imagen */}
+           <img src="/assets/virtualz.png" alt="Virtual+" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
           
           <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Restablecer Contraseña</h1>
           <p className="text-gray-400 text-sm">Ingresa tu nueva clave para recuperar el acceso.</p>
