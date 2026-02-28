@@ -1,81 +1,95 @@
-import { useState, useEffect } from 'react';
-import logoImg from '../assets/virtualz.png';
-import React from 'react';
-import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router';
-// Asegúrate de importar la nueva función checkActionToken
-import { confirmPasswordReset, checkActionToken } from '../services/email/resetPasswordService'; 
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
+import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Loader2, AlertCircle, Ban } from 'lucide-react';
 
-// Modal de error para enlace expirado (Sin cambios, está perfecto)
-function ExpiredLinkModal({ onGoToLogin }: { onGoToLogin: () => void }) {
+import logoImg from '../assets/virtualz.png';
+import { confirmPasswordReset, checkActionToken } from '../services/email/resetPasswordService';
+
+// --- PANTALLA DE ENLACE EXPIRADO (Estilo Glass + Neón Rojo) ---
+function ExpiredLinkModal() {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity" />
-      <div className="relative w-full max-w-sm bg-[#121212]/90 border border-red-500/30 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500 via-pink-500 to-purple-500" />
-        <div className="p-8 pt-10 text-center">
-          <div className="mb-6 relative inline-flex items-center justify-center">
-            <div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl animate-pulse"></div>
-            <div className="relative w-20 h-20 bg-black/40 border border-red-500/30 rounded-full flex items-center justify-center shadow-lg">
-              <AlertCircle className="w-10 h-10 text-red-400" />
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Enlace expirado</h2>
-          <p className="text-gray-400 text-sm mb-6">El enlace para restablecer tu contraseña ha expirado o ya fue utilizado. Solicita uno nuevo desde la página de inicio de sesión.</p>
-          <button
-            onClick={onGoToLogin}
-            className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
-          >
-            Ir al Inicio
-          </button>
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      
+      {/* Fondo Ambiental (Glow dinámico rojo) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[120px] transition-colors duration-700 bg-red-600/10" />
+
+      {/* Tarjeta Principal Glass */}
+      <div className="w-full max-w-sm bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative z-10 animate-in zoom-in-95 duration-500">
+        
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <img src={logoImg} alt="Virtual+" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
         </div>
+        
+        {/* Línea Superior de Color Rojo */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-80" />
+
+        {/* Icono Central con Glow Rojo */}
+        <div className="mb-6 relative inline-flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full blur-xl transition-colors duration-500 bg-red-500/20"></div>
+          <div className="relative w-20 h-20 bg-black/40 border rounded-full flex items-center justify-center shadow-lg transition-colors duration-500 border-red-500/30">
+            <Ban size={40} className="text-red-400" />
+          </div>
+        </div>
+
+        {/* Textos */}
+        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight animate-in fade-in slide-in-from-bottom-2 duration-300">
+          Enlace Expirado
+        </h2>
+        <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+          Este enlace ya fue utilizado o ha caducado por seguridad. Por favor, solicita uno nuevo desde la pantalla de inicio de sesión.
+        </p>
+
+        {/* Botón de Acción */}
+        <button
+          onClick={() => {
+            sessionStorage.setItem('openLoginModal', '1');
+            window.location.href = '/';
+          }}
+          className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] active:scale-[0.98]"
+        >
+          Volver al Inicio de Sesión
+        </button>
       </div>
     </div>
   );
 }
 
+// --- COMPONENTE PRINCIPAL ---
 export default function ResetPassword() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // --- ESTADO DE VALIDACIÓN INICIAL ---
+  // Estados de validación inicial
   const [isValidating, setIsValidating] = useState(true);
 
-  // Estados para los inputs
+  // Estados para los inputs y visibilidad
   const [passwords, setPasswords] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
-
-  // Estados de visibilidad (Ojo)
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Estado de la interfaz
+  // Estados de la interfaz y errores
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'expired'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
-
   const [showFieldErrors, setShowFieldErrors] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
 
-  // --- EFECTO PARA VALIDAR EL TOKEN AL CARGAR LA PÁGINA ---
+  // Efecto para validar el token al cargar la página
   useEffect(() => {
     const verifyToken = async () => {
-      // Obtenemos el token de la URL
       const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
       
-      // Si de entrada no hay token en la URL, mostramos el modal de expirado
       if (!token) {
         setStatus('expired');
         setIsValidating(false);
         return;
       }
 
-      // Preguntamos al backend si el token aún vive
       const isValid = await checkActionToken(token);
       
       if (!isValid) {
-        setStatus('expired'); // Si dice false, bloqueamos la pantalla
+        setStatus('expired');
       }
       
-      // Terminamos la validación (quita el spinner inicial)
       setIsValidating(false);
     };
 
@@ -145,10 +159,8 @@ export default function ResetPassword() {
       }
 
       if (result.success) {
+        // Al tener éxito, solo cambiamos el estado. No redirigimos automáticamente.
         setStatus('success');
-        setTimeout(() => {
-          navigate('/login');
-        }, 4000);
       } else {
         if (result.status === 400 || (result.message && result.message.toLowerCase().includes('expirado'))) {
           setStatus('expired');
@@ -180,9 +192,9 @@ export default function ResetPassword() {
     );
   }
 
-  // 2. Si el token expiró (o desde el inicio o después de enviarlo)
+  // 2. Si el token expiró
   if (status === 'expired') {
-    return <ExpiredLinkModal onGoToLogin={() => navigate('/login')} />;
+    return <ExpiredLinkModal />;
   }
 
   // 3. Si fue un éxito
@@ -202,12 +214,13 @@ export default function ResetPassword() {
            </div>
 
            <h2 className="text-2xl font-bold text-white mb-2">¡Contraseña Actualizada!</h2>
-           <p className="text-gray-400 text-sm mb-6">Tu contraseña ha sido cambiada correctamente.</p>
+           <p className="text-gray-400 text-sm mb-8">Tu contraseña ha sido cambiada correctamente.</p>
            
-           <p className="text-xs text-green-400/80 mb-6 animate-pulse">Redirigiendo al inicio...</p>
-
            <button 
-             onClick={() => navigate('/login')}
+             onClick={() => {
+               sessionStorage.setItem('openLoginModal', '1');
+               window.location.href = '/';
+             }}
              className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
            >
              Ir al Inicio ahora
