@@ -2,7 +2,6 @@ import api from '../apiService';
 
 export async function loginService(identifier: string, password: string) {
   try {
-    // 1. Enviamos "username" como lo pide la nueva API
     const response = await api.post('/api/v1/auth/login', { 
       username: identifier, 
       password: password 
@@ -19,6 +18,8 @@ export async function loginService(identifier: string, password: string) {
   } catch (error: any) {
     if (error.response) {
       let errorMessage = 'No se pudo iniciar sesión.';
+      // EXTRAEMOS EL CÓDIGO DEL BACKEND (ej: el 3 de usuario deshabilitado)
+      const errorCode = error.response.data?.code; 
       
       if (typeof error.response.data?.detail === 'string') {
         errorMessage = error.response.data.detail;
@@ -28,7 +29,8 @@ export async function loginService(identifier: string, password: string) {
 
       return { 
         error: errorMessage, 
-        status: error.response.status 
+        status: error.response.status,
+        code: errorCode // <--- AHORA EL HOOK PODRÁ LEER ESTO
       };
     }
     return { error: error.message || 'Error de red', status: 500 };
