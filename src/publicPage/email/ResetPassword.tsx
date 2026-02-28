@@ -1,4 +1,32 @@
-import { useState} from 'react';
+import { useState } from 'react';
+import React from 'react';
+// Modal de error para enlace expirado
+function ExpiredLinkModal({ onGoToLogin }: { onGoToLogin: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity" />
+      <div className="relative w-full max-w-sm bg-[#121212]/90 border border-red-500/30 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500 via-pink-500 to-purple-500" />
+        <div className="p-8 pt-10 text-center">
+          <div className="mb-6 relative inline-flex items-center justify-center">
+            <div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="relative w-20 h-20 bg-black/40 border border-red-500/30 rounded-full flex items-center justify-center shadow-lg">
+              <AlertCircle className="w-10 h-10 text-red-400" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Enlace expirado</h2>
+          <p className="text-gray-400 text-sm mb-6">El enlace para restablecer tu contraseña ha expirado. Solicita uno nuevo desde la página de inicio de sesión.</p>
+          <button
+            onClick={onGoToLogin}
+            className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
+          >
+            Ir al Inicio
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { confirmPasswordReset } from '../services/email/resetPasswordService';
@@ -7,8 +35,6 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Validar token al inicio
-  const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
 
   // Estados para los inputs
   const [passwords, setPasswords] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
@@ -18,7 +44,7 @@ export default function ResetPassword() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   // Estado de la interfaz
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'expired'>('idle');
 
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -72,48 +98,34 @@ export default function ResetPassword() {
           navigate('/login');
         }, 4000);
       } else {
-        if (elapsed < minDelay) {
-          await new Promise(res => setTimeout(res, minDelay - elapsed));
+        // Si el backend responde con error de enlace expirado
+        if (result.message && (result.message.toLowerCase().includes('expirado') || result.message.toLowerCase().includes('expired'))) {
+          setStatus('expired');
+        } else {
+          setStatus('error');
+          setErrorMsg(result.message || 'No se pudo actualizar la contraseña.');
+          setStatus('idle');
         }
-        setStatus('error');
-        setErrorMsg(result.message || 'No se pudo actualizar la contraseña.');
-        setStatus('idle');
       }
     } catch (error: any) {
       const elapsed = Date.now() - startTime;
       if (elapsed < minDelay) {
         await new Promise(res => setTimeout(res, minDelay - elapsed));
       }
-      setStatus('error');
-      setErrorMsg(error.message || 'Hubo un error al actualizar. Intenta de nuevo.');
-      setStatus('idle'); // Regresar al formulario para intentar de nuevo
+      // Si el backend responde con status 400, mostrar modal de expirado
+      if (error.response && error.response.status === 400) {
+        setStatus('expired');
+      } else {
+        setStatus('error');
+        setErrorMsg(error.message || 'Hubo un error al actualizar. Intenta de nuevo.');
+        setStatus('idle'); // Regresar al formulario para intentar de nuevo
+      }
     }
   };
 
-  // --- VISTA DE ENLACE INVÁLIDO ---
-  if (!token) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/20 rounded-full blur-[120px]" />
-        <div className="w-full max-w-sm bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 text-center shadow-2xl relative z-10 animate-in zoom-in-95 duration-500">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-80" />
-          <div className="mb-6 relative inline-flex items-center justify-center">
-            <div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl animate-pulse"></div>
-            <div className="relative w-20 h-20 bg-black/40 border border-red-500/30 rounded-full flex items-center justify-center shadow-lg">
-              <AlertCircle className="w-10 h-10 text-red-400" />
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Enlace no válido o expirado</h2>
-          <p className="text-gray-400 text-sm mb-6">El enlace para restablecer tu contraseña ya no es válido. Solicita uno nuevo desde la página de inicio de sesión.</p>
-          <button
-            onClick={() => navigate('/login')}
-            className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
-          >
-            Ir al Inicio
-          </button>
-        </div>
-      </div>
-    );
+  // --- MODAL DE ENLACE EXPIRADO ---
+  if (status === 'expired') {
+    return <ExpiredLinkModal onGoToLogin={() => navigate('/login')} />;
   }
 
   // --- VISTA DE ÉXITO ---
