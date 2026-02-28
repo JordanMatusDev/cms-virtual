@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logoImg from '../assets/virtualz.png';
 import React from 'react';
 // Modal de error para enlace expirado
 function ExpiredLinkModal({ onGoToLogin }: { onGoToLogin: () => void }) {
@@ -178,7 +179,7 @@ export default function ResetPassword() {
         {/* Header con Logo e Icono */}
         <div className="text-center mb-8">
            {/* Reemplaza src con tu ruta correcta de imagen */}
-          <img src="/src/assets/virtualz.png" alt="Virtual+" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+          <img src={logoImg} alt="Virtual+" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
           
           <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Restablecer Contraseña</h1>
           <p className="text-gray-400 text-sm">Ingresa tu nueva clave para recuperar el acceso.</p>
@@ -199,11 +200,11 @@ export default function ResetPassword() {
                 value={passwords.new}
                 onChange={handleChange}
                 className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all duration-300"
-                placeholder="Mínimo 8 caracteres"
                 required
               />
-              <button 
+              <button
                 type="button"
+                tabIndex={-1}
                 onClick={() => setShowNew(!showNew)}
                 className="absolute right-3 top-3.5 text-gray-500 hover:text-white transition-colors focus:outline-none"
               >
@@ -225,11 +226,11 @@ export default function ResetPassword() {
                 value={passwords.confirm}
                 onChange={handleChange}
                 className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all duration-300"
-                placeholder="Repite tu contraseña"
                 required
               />
-              <button 
+              <button
                 type="button"
+                tabIndex={-1}
                 onClick={() => setShowConfirm(!showConfirm)}
                 className="absolute right-3 top-3.5 text-gray-500 hover:text-white transition-colors focus:outline-none"
               >
