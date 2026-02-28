@@ -60,18 +60,17 @@ export default function ResetPassword() {
   };
 
   // Validar y Enviar
+  // Validar y Enviar
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    // Validar si el token existe antes de cualquier otra validación
     const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
     if (!token) {
       setErrorMsg('Enlace no válido o expirado.');
       return;
     }
 
-    // 1. Validaciones Locales
     if (passwords.new.length < 8) {
       setErrorMsg('La contraseña debe tener al menos 8 caracteres.');
       return;
@@ -87,40 +86,36 @@ export default function ResetPassword() {
     const startTime = Date.now();
 
     try {
-      // Llama al servicio real
       const result = await confirmPasswordReset(token, passwords.new);
+      
       const elapsed = Date.now() - startTime;
+      if (elapsed < minDelay) {
+        await new Promise(res => setTimeout(res, minDelay - elapsed));
+      }
+
       if (result.success) {
-        if (elapsed < minDelay) {
-          await new Promise(res => setTimeout(res, minDelay - elapsed));
-        }
         setStatus('success');
         setTimeout(() => {
           navigate('/login');
         }, 4000);
       } else {
-        // Si el backend responde con error de enlace expirado
-        if (result.message && (result.message.toLowerCase().includes('expirado') || result.message.toLowerCase().includes('expired'))) {
+        // Evaluamos el status 400 directamente O la palabra expirado
+        if (result.status === 400 || (result.message && result.message.toLowerCase().includes('expirado'))) {
           setStatus('expired');
         } else {
           setStatus('error');
           setErrorMsg(result.message || 'No se pudo actualizar la contraseña.');
-          setStatus('idle');
         }
       }
     } catch (error: any) {
+      // Como el servicio maneja sus propios errores, casi nunca caeremos aquí, 
+      // pero es buena práctica mantenerlo por si falla la red completamente.
       const elapsed = Date.now() - startTime;
       if (elapsed < minDelay) {
         await new Promise(res => setTimeout(res, minDelay - elapsed));
       }
-      // Si el backend responde con status 400, mostrar modal de expirado
-      if (error.response && error.response.status === 400) {
-        setStatus('expired');
-      } else {
-        setStatus('error');
-        setErrorMsg(error.message || 'Hubo un error al actualizar. Intenta de nuevo.');
-        setStatus('idle'); // Regresar al formulario para intentar de nuevo
-      }
+      setStatus('error');
+      setErrorMsg('Hubo un error de conexión. Intenta de nuevo.');
     }
   };
 
