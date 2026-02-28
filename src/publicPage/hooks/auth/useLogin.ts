@@ -51,7 +51,7 @@ export function useLogin(): UseLoginReturn {
           case 3: // Cuenta deshabilitada (bloqueada)
             setFieldErrors({ general: 'Cuenta suspendida, contacta a soporte.' });
             break;
-          case 4: // Email no verificado
+          case 5: // Email no verificado
             setFieldErrors({ general: 'Revisa tu correo para activar tu cuenta.' });
             break;
           default: // Cualquier otro error (ej. 500, 422)

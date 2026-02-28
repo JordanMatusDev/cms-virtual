@@ -30,7 +30,24 @@ export async function confirmPasswordReset(
     } else if (error.message) {
       message = error.message;
     }
+
+
     
     return { success: false, message, status };
+  }
+
+  
+}
+
+// Agrega esto en tu archivo de servicios (ej. resetPasswordService.ts)
+
+export async function checkActionToken(token: string): Promise<boolean> {
+  try {
+    const response = await api.get(`/api/v1/auth/check-action-token?token=${token}`);
+    // Devuelve true si el backend dice que es válido, false si no.
+    return response.data?.valid === true; 
+  } catch (error) {
+    // Si el backend lanza un error 400, 422 o similar, asumimos que el token ya no sirve
+    return false;
   }
 }

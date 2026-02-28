@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logoImg from '../assets/virtualz.png';
 import React from 'react';
 import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { confirmPasswordReset } from '../services/email/resetPasswordService';
+// Asegúrate de importar la nueva función checkActionToken
+import { confirmPasswordReset, checkActionToken } from '../services/email/resetPasswordService'; 
 
-// Modal de error para enlace expirado
+// Modal de error para enlace expirado (Sin cambios, está perfecto)
 function ExpiredLinkModal({ onGoToLogin }: { onGoToLogin: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -20,7 +21,7 @@ function ExpiredLinkModal({ onGoToLogin }: { onGoToLogin: () => void }) {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Enlace expirado</h2>
-          <p className="text-gray-400 text-sm mb-6">El enlace para restablecer tu contraseña ha expirado. Solicita uno nuevo desde la página de inicio de sesión.</p>
+          <p className="text-gray-400 text-sm mb-6">El enlace para restablecer tu contraseña ha expirado o ya fue utilizado. Solicita uno nuevo desde la página de inicio de sesión.</p>
           <button
             onClick={onGoToLogin}
             className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
@@ -37,6 +38,9 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // --- ESTADO DE VALIDACIÓN INICIAL ---
+  const [isValidating, setIsValidating] = useState(true);
+
   // Estados para los inputs
   const [passwords, setPasswords] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
 
@@ -48,24 +52,46 @@ export default function ResetPassword() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'expired'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // ESTADOS NUEVOS PARA VALIDACIÓN
-  // showFieldErrors se activa al intentar enviar el formulario
   const [showFieldErrors, setShowFieldErrors] = useState(false);
-  // Guardamos qué errores hay en cada campo
   const [fieldErrors, setFieldErrors] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
+
+  // --- EFECTO PARA VALIDAR EL TOKEN AL CARGAR LA PÁGINA ---
+  useEffect(() => {
+    const verifyToken = async () => {
+      // Obtenemos el token de la URL
+      const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
+      
+      // Si de entrada no hay token en la URL, mostramos el modal de expirado
+      if (!token) {
+        setStatus('expired');
+        setIsValidating(false);
+        return;
+      }
+
+      // Preguntamos al backend si el token aún vive
+      const isValid = await checkActionToken(token);
+      
+      if (!isValid) {
+        setStatus('expired'); // Si dice false, bloqueamos la pantalla
+      }
+      
+      // Terminamos la validación (quita el spinner inicial)
+      setIsValidating(false);
+    };
+
+    verifyToken();
+  }, [searchParams]);
 
   // Función para validar los campos internamente
   const validateFields = (newPass: string, confirmPass: string) => {
     let errors = { new: '', confirm: '' };
     
-    // Validación de nueva contraseña
     if (!newPass) {
       errors.new = 'Este campo es obligatorio.';
     } else if (newPass.length < 8) {
       errors.new = 'Mínimo 8 caracteres.';
     }
 
-    // Validación de confirmar contraseña
     if (!confirmPass) {
       errors.confirm = 'Este campo es obligatorio.';
     } else if (newPass !== confirmPass) {
@@ -75,28 +101,15 @@ export default function ResetPassword() {
     return errors;
   };
 
-// Manejar cambios en inputs
+  // Manejar cambios en inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     
-    // 1. Actualizamos el valor de la contraseña
-    setPasswords(prev => ({
-      ...prev,
-      [id]: value
-    }));
-    
-    // 2. Limpiamos el error global (del backend) si lo hay
+    setPasswords(prev => ({ ...prev, [id]: value }));
     setErrorMsg('');
 
-    // 3. ¡LA MAGIA AQUÍ! 
-    // Al escribir, simplemente borramos el error de ESTE cuadro en específico.
-    // Así el rojo desaparece al instante y lo deja escribir tranquilo.
-    // El otro cuadro conservará su error hasta que también escriban en él.
     if (showFieldErrors) {
-      setFieldErrors(prev => ({
-        ...prev,
-        [id]: '' // Limpiamos solo el error del campo que se está editando
-      }));
+      setFieldErrors(prev => ({ ...prev, [id]: '' }));
     }
   };
 
@@ -104,22 +117,18 @@ export default function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-    
-    // 1. Al dar clic, indicamos que queremos mostrar los errores
     setShowFieldErrors(true);
 
-    // 2. Evaluamos los errores
     const currentErrors = validateFields(passwords.new, passwords.confirm);
     setFieldErrors(currentErrors);
 
-    // 3. Si hay algún error en los campos, detenemos el envío
     if (currentErrors.new || currentErrors.confirm) {
       return;
     }
 
     const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
     if (!token) {
-      setErrorMsg('Enlace no válido o expirado.');
+      setStatus('expired');
       return;
     }
 
@@ -159,10 +168,24 @@ export default function ResetPassword() {
   };
 
   // --- VISTAS CONDICIONALES ---
+
+  // 1. Pantalla de carga mientras se valida el token con el backend
+  if (isValidating) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px]" />
+        <Loader2 className="w-12 h-12 text-purple-500 animate-spin mb-4 relative z-10" />
+        <p className="text-gray-400 animate-pulse relative z-10 font-medium">Verificando enlace seguro...</p>
+      </div>
+    );
+  }
+
+  // 2. Si el token expiró (o desde el inicio o después de enviarlo)
   if (status === 'expired') {
     return <ExpiredLinkModal onGoToLogin={() => navigate('/login')} />;
   }
 
+  // 3. Si fue un éxito
   if (status === 'success') {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
@@ -194,7 +217,7 @@ export default function ResetPassword() {
     );
   }
 
-  // --- VISTA FORMULARIO ---
+  // 4. Formulario (Solo llega aquí si el token es válido)
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
       
@@ -226,7 +249,6 @@ export default function ResetPassword() {
                 type={showNew ? "text" : "password"}
                 value={passwords.new}
                 onChange={handleChange}
-                // Si showFieldErrors es true y hay un error para 'new', mostramos borde rojo
                 className={`w-full bg-black/40 border rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-1 transition-all duration-300 
                   ${showFieldErrors && fieldErrors.new 
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' 
@@ -244,7 +266,6 @@ export default function ResetPassword() {
                 {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {/* Mostrar mensaje de error de 'new' solo si showFieldErrors es true */}
             {showFieldErrors && fieldErrors.new && (
               <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2 animate-in slide-in-from-top-1">
                 {fieldErrors.new}
@@ -264,7 +285,6 @@ export default function ResetPassword() {
                 type={showConfirm ? "text" : "password"}
                 value={passwords.confirm}
                 onChange={handleChange}
-                // Si showFieldErrors es true y hay un error para 'confirm', mostramos borde rojo
                 className={`w-full bg-black/40 border rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-1 transition-all duration-300 
                   ${showFieldErrors && fieldErrors.confirm 
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' 
@@ -282,7 +302,6 @@ export default function ResetPassword() {
                 {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {/* Mostrar mensaje de error de 'confirm' solo si showFieldErrors es true */}
             {showFieldErrors && fieldErrors.confirm && (
               <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mt-2 animate-in slide-in-from-top-1">
                 {fieldErrors.confirm}
@@ -290,7 +309,7 @@ export default function ResetPassword() {
             )}
           </div>
 
-          {/* Mensaje de Error General (del backend) */}
+          {/* Mensaje de Error General */}
           {errorMsg && (
             <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20 animate-in slide-in-from-top-2">
               <AlertCircle size={16} />
