@@ -74,6 +74,24 @@ const Footer = () => {
               Legal
             </h3>
             <ul className="space-y-3 text-sm text-gray-400">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigate('/reset-password')}
+                  className="hover:text-cyan-400 transition-colors underline"
+                >
+                  Restablecer Contraseña
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigate('/verify-email?token=demo')}
+                  className="hover:text-cyan-400 transition-colors underline"
+                >
+                  Verificar Email
+                </button>
+              </li>
               <li><a href="#" className="hover:text-cyan-400 transition-colors">Sobre Nosotros</a></li>
               <li><a href="#" className="hover:text-cyan-400 transition-colors">Política de Privacidad</a></li>
               <li><a href="#" className="hover:text-cyan-400 transition-colors">Términos de Servicio</a></li>
