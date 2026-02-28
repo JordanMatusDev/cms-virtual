@@ -34,6 +34,13 @@ export default function ResetPassword() {
     e.preventDefault();
     setErrorMsg('');
 
+    // Validar si el token existe antes de cualquier otra validación
+    const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
+    if (!token) {
+      setErrorMsg('Enlace no válido o expirado.');
+      return;
+    }
+
     // 1. Validaciones Locales
     if (passwords.new.length < 8) {
       setErrorMsg('La contraseña debe tener al menos 8 caracteres.');
@@ -50,15 +57,6 @@ export default function ResetPassword() {
     const startTime = Date.now();
 
     try {
-      // Obtener el token de la URL
-      const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
-      if (!token) {
-        await new Promise(res => setTimeout(res, minDelay));
-        setStatus('error');
-        setErrorMsg('Enlace inválido.');
-        setStatus('idle');
-        return;
-      }
       // Llama al servicio real
       const result = await confirmPasswordReset(token, passwords.new);
       const elapsed = Date.now() - startTime;
