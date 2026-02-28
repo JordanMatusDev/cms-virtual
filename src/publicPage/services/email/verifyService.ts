@@ -1,4 +1,3 @@
-// src/services/verifyService.ts
 import api from '../apiService';
 
 /**
@@ -6,13 +5,29 @@ import api from '../apiService';
  */
 export async function verifyAndActivateUser(token: string): Promise<'success' | 'already' | 'error'> {
   try {
-    const resp = await api.post('/api/v1/auth/verify-email', { token });
-    // Si el backend retorna status o algún campo para saber si ya estaba verificado, puedes adaptarlo aquí
-    if (resp.data?.verification === true) {
-      return 'already';
-    }
+    // Solo hacemos el await sin asignar el resultado a una variable
+    await api.post('/api/v1/auth/verify-email', { token });
+    
+    // Si llega a esta línea sin lanzar error, es un 200 OK
     return 'success';
-  } catch (e) {
+
+  } catch (error: any) {
+    const detail = error.response?.data?.detail;
+
+    if (typeof detail === 'string') {
+      const detailLower = detail.toLowerCase();
+      
+      // Ajusta estas palabras clave según lo que devuelva tu backend
+      if (
+        detailLower.includes('ya verificado') || 
+        detailLower.includes('already verified') || 
+        detailLower.includes('ya fue verificado') ||
+        detailLower.includes('ya utilizado')
+      ) {
+        return 'already';
+      }
+    }
+
     return 'error';
   }
 }
