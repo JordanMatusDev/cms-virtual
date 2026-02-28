@@ -50,9 +50,9 @@ export default function ResetPassword() {
     const startTime = Date.now();
 
     try {
-      // Obtener el userId de la URL (token)
-      const userId = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
-      if (!userId) {
+      // Obtener el token de la URL
+      const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
+      if (!token) {
         await new Promise(res => setTimeout(res, minDelay));
         setStatus('error');
         setErrorMsg('Enlace inválido.');
@@ -60,7 +60,7 @@ export default function ResetPassword() {
         return;
       }
       // Llama al servicio real
-      const result = await confirmPasswordReset(Number(userId), passwords.new);
+      const result = await confirmPasswordReset(token, passwords.new);
       const elapsed = Date.now() - startTime;
       if (result.success) {
         if (elapsed < minDelay) {

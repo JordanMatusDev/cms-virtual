@@ -1,15 +1,24 @@
 // Servicio para restablecimiento de contraseña desde email
 
-export async function confirmPasswordReset(userId: number, newPassword: string): Promise<{ success: boolean; message?: string }> {
+import api from '../apiService';
+
+export async function confirmPasswordReset(token: string, newPassword: string): Promise<{ success: boolean; message?: string }> {
   try {
-    // Simulación de uso de parámetros para evitar error TS6133
-    if (!userId || !newPassword) {
+    if (!token || !newPassword) {
       throw new Error('Parámetros inválidos');
     }
-    // Aquí deberías llamar a la función real de actualización de usuario
-    // await updateUser(userId, { password: newPassword });
-    return { success: true };
+    const response = await api.post('/api/v1/auth/reset-password', {
+      token,
+      new_password: newPassword,
+    });
+    return { success: true, message: response.data.message };
   } catch (error: any) {
-    return { success: false, message: error.message || 'No se pudo restablecer la contraseña.' };
+    let message = 'No se pudo restablecer la contraseña.';
+    if (error.response && error.response.data && error.response.data.message) {
+      message = error.response.data.message;
+    } else if (error.message) {
+      message = error.message;
+    }
+    return { success: false, message };
   }
 }
