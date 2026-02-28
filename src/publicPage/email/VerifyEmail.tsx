@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, AlertTriangle, Ban, Loader2, ArrowRight } from 'lucide-react';
+import logoImg from '../assets/virtualz.png';
+import { CheckCircle, AlertTriangle, Ban, Loader2} from 'lucide-react';
 import { useSearchParams } from 'react-router';
 // Asumimos que esta función la crearemos en el siguiente paso
 import { verifyAndActivateUser } from '../services/email/verifyService';
@@ -84,7 +85,7 @@ export default function VerifyEmail() {
         
         {/* Logo */}
         <div className="text-center mb-6">
-          <img src="/src/assets/virtualz.png" alt="Virtual+ Logo" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+          <img src={logoImg} alt="Virtual+ Logo" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
         </div>
         
         {/* Línea Superior de Color */}
@@ -117,14 +118,10 @@ export default function VerifyEmail() {
                 window.location.href = '/';
               }
             }}
-            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-2
-              ${status === 'success' 
-                ? 'bg-white text-black hover:bg-gray-200 shadow-[0_0_20px_-5px_rgba(255,255,255,0.4)]' 
-                : 'bg-white/10 text-white hover:bg-white/20 border border-white/5'
-              }`}
+            className={`w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed`}
           >
             {status === 'error' ? 'Volver al Inicio' : 'Ir al Inicio de Sesión'}
-            <ArrowRight size={16} />
+            
           </button>
         )}
       </div>
