@@ -5,11 +5,14 @@ import { confirmPasswordReset } from '../services/email/resetPasswordService';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // Por si necesitas leer el token de la URL
-  
+  const [searchParams] = useSearchParams();
+
+  // Validar token al inicio
+  const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
+
   // Estados para los inputs
   const [passwords, setPasswords] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
-  
+
   // Estados de visibilidad (Ojo)
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -86,6 +89,32 @@ export default function ResetPassword() {
       setStatus('idle'); // Regresar al formulario para intentar de nuevo
     }
   };
+
+  // --- VISTA DE ENLACE INVÁLIDO ---
+  if (!token) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-600/20 rounded-full blur-[120px]" />
+        <div className="w-full max-w-sm bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 text-center shadow-2xl relative z-10 animate-in zoom-in-95 duration-500">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-80" />
+          <div className="mb-6 relative inline-flex items-center justify-center">
+            <div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="relative w-20 h-20 bg-black/40 border border-red-500/30 rounded-full flex items-center justify-center shadow-lg">
+              <AlertCircle className="w-10 h-10 text-red-400" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Enlace no válido o expirado</h2>
+          <p className="text-gray-400 text-sm mb-6">El enlace para restablecer tu contraseña ya no es válido. Solicita uno nuevo desde la página de inicio de sesión.</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
+          >
+            Ir al Inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // --- VISTA DE ÉXITO ---
   if (status === 'success') {
