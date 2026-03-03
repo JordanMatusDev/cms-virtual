@@ -23,6 +23,7 @@ import MyCourses from "./publicPage/pages/MyCourse"
 import MyCertificates from "./publicPage/pages/MyCertificates"
 import Verification from "./publicPage/pages/Verification"
 import Settings from "./publicPage/pages/Settings"
+import LegalInfo from "./publicPage/pages/Legal"
 
 // Componentes estructurales que creamos para la App Pública
 import PublicLayout from "./publicPage/layout/PublicLayout"
@@ -67,6 +68,7 @@ function App() {
                   <Route path="/" element={<><Hero /><CourseGrid /></>} />
                   <Route path="/curso/:id" element={<CoursePlayer />} />
                   <Route path="/verificacion" element={<Verification />} />
+                  <Route path="/legal" element={<LegalInfo />} />
                   
                   {/* Vistas privadas (Solo alumnos logueados) */}
                   <Route element={<PublicProtectedRoute />}>
