@@ -1,18 +1,15 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { getCroppedImg } from './cropImage';
 import { updateUserProfile, updateUserPassword, verifyUserCredentials, deleteUserAccount, uploadUserAvatar } from '../../services/pages/settingsService';
 
 const useSettings = () => {
+	
 	const [passwordValidationError, setPasswordValidationError] = useState<string | null>(null);
-	// Estado para el modal de confirmación de eliminar avatar
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-		// Para saber qué campo fue editado por última vez
-		const lastEditedFieldRef = useRef<string | null>(null);
+	const lastEditedFieldRef = useRef<string | null>(null);
 	// Referencias
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const videoRef = useRef<HTMLVideoElement | null>(null);
-	const croppedAreaRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
 
 	// Estados
 	const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'danger'>('profile');
@@ -33,7 +30,6 @@ const useSettings = () => {
 	const [showCameraModal, setShowCameraModal] = useState<boolean>(false);
 	const [showCropModal, setShowCropModal] = useState<boolean>(false);
 	const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-	const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 	const [zoom, setZoom] = useState<number>(1);
 	const [cropSaving, setCropSaving] = useState<boolean>(false);
 
@@ -115,7 +111,6 @@ const useSettings = () => {
 			reader.onload = () => {
 				const result = typeof reader.result === 'string' ? reader.result : '';
 				setCropImageSrc(result);
-				setCrop({ x: 0, y: 0 });
 				setZoom(1);
 				setShowCropModal(true);
 			};
@@ -176,86 +171,89 @@ const useSettings = () => {
 	};
 
 	const handleCapturePhoto = () => {
-		if (!videoRef.current) return;
-		const video = videoRef.current;
-		const canvas = document.createElement('canvas');
-		canvas.width = video.videoWidth;
-		canvas.height = video.videoHeight;
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
-		// Reflejar horizontalmente (espejo) y aplicar zoom visual
-		ctx.save();
-		ctx.translate(canvas.width, 0);
-		ctx.scale(-1, 1);
-		// Calcular el área a recortar según el zoom visual
-		const zoomFactor = zoom || 1;
-		const cropWidth = canvas.width / zoomFactor;
-		const cropHeight = canvas.height / zoomFactor;
-		const cropX = (canvas.width - cropWidth) / 2;
-		const cropY = (canvas.height - cropHeight) / 2;
-		ctx.drawImage(
-			video,
-			cropX, cropY, cropWidth, cropHeight, // src rect
-			0, 0, canvas.width, canvas.height    // dest rect
-		);
-		ctx.restore();
-		// Liberar la cámara inmediatamente después de capturar
-		if (video.srcObject) {
-			const tracks = (video.srcObject as MediaStream).getTracks();
-			tracks.forEach(track => track.stop());
-			video.srcObject = null;
-		}
-		const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-		setShowCameraModal(false);
-		setCropImageSrc(dataUrl);
-		setCrop({ x: 0, y: 0 });
-		setZoom(1);
-		setShowCropModal(true);
-	};
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.save();
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    const zoomFactor = zoom || 1;
+    const cropWidth = canvas.width / zoomFactor;
+    const cropHeight = canvas.height / zoomFactor;
+    const cropX = (canvas.width - cropWidth) / 2;
+    const cropY = (canvas.height - cropHeight) / 2;
+    ctx.drawImage(
+        video,
+        cropX, cropY, cropWidth, cropHeight,
+        0, 0, canvas.width, canvas.height 
+    );
+    ctx.restore();
+    
+    if (video.srcObject) {
+        const tracks = (video.srcObject as MediaStream).getTracks();
+        tracks.forEach(track => track.stop());
+        video.srcObject = null;
+    }
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    setShowCameraModal(false);
+    setCropImageSrc(dataUrl);
+    setZoom(1);
+    setShowCropModal(true);
+};
 
-	// Crop
-	const handleCropComplete = (_: unknown, croppedAreaPixels: { x: number; y: number; width: number; height: number }) => {
-		croppedAreaRef.current = croppedAreaPixels;
-	};
+	
 
-	const handleConfirmCrop = async () => {
-		if (!cropImageSrc || !croppedAreaRef.current) return;
-		setCropSaving(true);
-		const userId = localStorage.getItem('userId');
-		if (!userId) {
-			showError('No se encontró el usuario');
-			setCropSaving(false);
-			return;
-		}
-		try {
-			// Recortar la imagen según el área seleccionada y convertir a Blob
-			const croppedDataUrl = await getCroppedImg(
-				cropImageSrc,
-				croppedAreaRef.current,
-				256 // tamaño de salida (puedes ajustar)
-			);
-			// Convertir base64 a Blob
-			const blob = await (async () => {
-				const res = await fetch(croppedDataUrl);
-				return await res.blob();
-			})();
-			// Crear un archivo con nombre único
-			const file = new File([blob], `avatar_${userId}_${Date.now()}.jpg`, { type: blob.type });
-			// Subir a S3 usando el endpoint
-			const userData = await uploadUserAvatar(userId, file);
-			const imgUrl = userData.img || '';
-			setUser(prev => ({ ...prev, avatarUrl: imgUrl }));
-			setInitialUser(prev => prev ? { ...prev, avatarUrl: imgUrl } : null);
-			localStorage.setItem('userAvatar', imgUrl);
-			window.dispatchEvent(new Event('user:updated'));
-			setShowCropModal(false);
-			setCropImageSrc(null);
-			showSuccess('Foto de perfil actualizada');
-		} catch (error: any) {
-			showError('No se pudo actualizar la foto', error?.message || 'Error desconocido');
-		}
-		setCropSaving(false);
-	};
+	const base64ToFile = (base64: string, filename: string): File => {
+    const arr = base64.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+}
+
+	const handleConfirmCrop = async (base64Image: string) => {
+    if (!base64Image) return;
+    
+    setCropSaving(true);
+    const userId = localStorage.getItem('userId');
+    
+    if (!userId) {
+        showError('No se encontró el usuario');
+        setCropSaving(false);
+        return;
+    }
+    
+    try {
+        // Convertimos la imagen perfecta que nos dio la librería a un File para tu backend
+        const file = base64ToFile(base64Image, `avatar_${Date.now()}.jpg`);
+        
+        // Subir a S3 usando el endpoint
+        const userData = await uploadUserAvatar(userId, file);
+        const imgUrl = userData.img || '';
+        
+        setUser(prev => ({ ...prev, avatarUrl: imgUrl }));
+        setInitialUser(prev => prev ? { ...prev, avatarUrl: imgUrl } : null);
+        localStorage.setItem('userAvatar', imgUrl);
+        window.dispatchEvent(new Event('user:updated'));
+        
+        setShowCropModal(false);
+        setCropImageSrc(null);
+        showSuccess('Foto de perfil actualizada');
+    } catch (error: any) {
+        showError('No se pudo actualizar la foto', error?.message || 'Error desconocido');
+    } finally {
+        setCropSaving(false);
+    }
+};
 
 	const handleCancelCrop = () => {
 		setShowCropModal(false);
@@ -500,11 +498,10 @@ const useSettings = () => {
 		showCameraModal, setShowCameraModal,
 		showCropModal, setShowCropModal,
 		cropImageSrc, setCropImageSrc,
-		crop, setCrop,
 		zoom, setZoom,
 		cropSaving, setCropSaving,
 		isProfileDirty,
-		fileInputRef, videoRef, croppedAreaRef,
+		fileInputRef, videoRef,
 		handleInputChange,
 		handlePassChange,
 		handleAvatarUpload,
@@ -513,7 +510,6 @@ const useSettings = () => {
 		handleOpenCamera,
 		handleCloseCamera,
 		handleCapturePhoto,
-		handleCropComplete,
 		handleConfirmCrop,
 		handleCancelCrop,
 		handleSaveProfile,

@@ -55,7 +55,7 @@ export default function VerifyEmail() {
       <div className="w-full max-w-sm bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative z-10 animate-in zoom-in-95 duration-500">
         {/* Logo dentro del modal, igual que ResetPassword */}
         <div className="text-center mb-6">
-          <img src="/src/assets/virtualz.png" alt="Virtual+ Logo" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+          <img src="/assets/virtualz.png" alt="Virtual+ Logo" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
         </div>
         
         {/* Línea Superior de Color */}

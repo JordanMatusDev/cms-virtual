@@ -89,7 +89,13 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
           transition-all ${(isExiting || localExiting) ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
       >
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white p-1 rounded-full hover:bg-white/10 z-10 transition-colors">
+        <button
+          onClick={() => {
+            onClose();
+            resetFields();
+          }}
+          className="absolute top-4 right-4 text-gray-500 hover:text-white p-1 rounded-full hover:bg-white/10 z-10 transition-colors"
+        >
           <X size={20} />
         </button>
 
