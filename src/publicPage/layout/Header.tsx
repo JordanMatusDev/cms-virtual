@@ -12,6 +12,8 @@ import MobileMenu from './header/MobileMenu';
 import { useScroll } from '../hooks/header/useScroll';
 import { useAuthSession } from '../hooks/header/useAuthSession';
 
+import { useEffect } from 'react';
+
 const Header = () => {
   const isScrolled = useScroll();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -23,6 +25,15 @@ const Header = () => {
   const notificationsContainerRef = useRef<HTMLDivElement>(null);
   const profileContainerRef = useRef<HTMLDivElement>(null);
   const { user, setUser } = useAuthSession();
+
+  // Abrir modal de login si sessionStorage lo indica
+  useEffect(() => {
+    if (sessionStorage.getItem('openLoginModal') === '1') {
+      setIsAuthOpen(true);
+      setAuthView('login');
+      sessionStorage.removeItem('openLoginModal');
+    }
+  }, []);
 
   const handleProfileClick = () => {
     if (user) {
