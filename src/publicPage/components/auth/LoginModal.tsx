@@ -193,9 +193,11 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
             {/* Botón Submit */}
             <button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2 disabled:opacity-70">
               {isSuccessAnimating ? (
-                <span className="flex items-center gap-3">
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  Iniciando sesión...
+                <span className="flex items-center justify-center w-full gap-3">
+                  <span className="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-purple-600 rounded-lg flex items-center justify-center animate-spin shadow-[0_0_20px_rgba(34,211,238,0.5)]">
+                    <X size={20} strokeWidth={5} className="text-white" />
+                  </span>
+                  <span>Iniciando Sesión...</span>
                 </span>
               ) : (
                 'Iniciar Sesión'

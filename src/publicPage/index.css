@@ -35,3 +35,44 @@ body {
 .gradient-bg {
   background: linear-gradient(to bottom right, #06b6d4, #3b82f6, #9333ea);
 }
+
+
+/* ==========================================================
+   PERSONALIZACIÓN DEL SCROLLBAR (Ajustable a tu paleta)
+   ========================================================== */
+
+/* ==========================================================
+   PERSONALIZACIÓN DEL SCROLLBAR (Negro Elegante y Minimalista)
+   ========================================================== */
+
+/* 1. Para Firefox (Usa tonos oscuros y mate) */
+* {
+  scrollbar-width: thin;
+  /* Color del pulgar y color de la pista */
+  scrollbar-color: #2b2b2b #0a0a0a; 
+}
+
+/* 2. Para Chrome, Edge y Safari */
+::-webkit-scrollbar {
+  width: 8px; /* Un poco más delgada para verse más elegante */
+  height: 8px; /* Para la barra horizontal si la hubiera */
+}
+
+/* El "carril" o fondo por donde se desliza la barra */
+::-webkit-scrollbar-track {
+  background: #0a0a0a; /* Mismo color exacto del fondo de tu página (#0a0a0a) */
+}
+
+/* La barra deslizable (Thumb) - El "Negrito Elegante" */
+::-webkit-scrollbar-thumb {
+  background: #333333; /* Un gris muy oscuro y mate, no negro total, para que sea visible */
+  border-radius: 8px;
+  /* TRUCO DE ELEGANCIA: Un borde del mismo color que el fondo de tu página.
+     Esto crea visualmente una separación y un efecto de píldora flotante. */
+  border: 2px solid #0a0a0a; 
+}
+
+/* Efecto Hover: Cuando pasas el mouse sobre la barra */
+::-webkit-scrollbar-thumb:hover {
+  background: #444444; /* Un tono un poquito más claro para dar feedback al usuario */
+}
