@@ -8,7 +8,7 @@ export interface AppNotification {
   message: string;
   time: string;
   read: boolean;
-  type: 'course' | 'system' | 'achievement' | 'promo';
+  type: 'course' | 'system' | 'achievement' | 'promo' |"welcome" | 'remove';
 }
 
 interface NotificationContextType {
@@ -55,7 +55,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [notifications, storageKey]);
 
   const addNotification = (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => {
-    if (!user) return; 
+    
+    if (localStorage.getItem('isLoggedIn') !== 'true') return; 
+
     const newNotif: AppNotification = {
       ...notif,
       id: crypto.randomUUID(),

@@ -1,15 +1,17 @@
 // src/components/header/NotificationsMenu.tsx
 import React, { useRef } from 'react';
-import { Award, PlayCircle, Gift, BellRing, CheckCircle2, X } from 'lucide-react';
+import { Award, PlayCircle, Gift, BellRing, CheckCircle2, X, Hand, GraduationCap,Trash2 } from 'lucide-react';
 import { useClickOutside } from '../../hooks/header/useClickOutside';
-import { useNotificacion } from '../../context/NotificationContext'; // Importamos el hook
+import { useNotificacion } from '../../context/NotificationContext';
 
 // Diccionario para saber qué ícono y color pintar según el 'type'
 const ICON_MAP = {
-  course: { icon: PlayCircle, colorClass: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
+  course: { icon: GraduationCap, colorClass: 'text-violet-400 bg-violet-400/10 border-violet-400/20' },
   system: { icon: BellRing, colorClass: 'text-gray-300 bg-white/5 border-white/10' },
-  achievement: { icon: Award, colorClass: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
-  promo: { icon: Gift, colorClass: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
+  achievement: { icon: Award, colorClass: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' }, promo: { icon: Gift, colorClass: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
+  welcome: { icon: Hand, colorClass: 'text-green-400 bg-green-400/10 border-green-400/20' },
+  remove: { icon: Trash2, colorClass: 'text-red-400 bg-red-400/10 border-red-400/20' }
+
 };
 
 interface NotificationsMenuProps {
@@ -20,7 +22,7 @@ interface NotificationsMenuProps {
 
 const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen, containerRef }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  
+
   // EXTRAEMOS LOS DATOS REALES DEL CONTEXTO
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotificacion();
 
@@ -43,7 +45,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
           )}
         </div>
         {unreadCount > 0 && (
-          <button 
+          <button
             onClick={markAllAsRead}
             className="text-xs text-gray-400 hover:text-white flex items-center gap-1 transition-colors"
           >
@@ -53,7 +55,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
       </div>
 
       <div className="max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 hover:[&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full">
-        
+
         {notifications.length > 0 ? (
           notifications.map((notification) => {
             // Asignamos el ícono basado en el tipo
@@ -61,7 +63,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
             const Icon = style.icon;
 
             return (
-              <div 
+              <div
                 key={notification.id}
                 onClick={() => markAsRead(notification.id)}
                 className={`group relative p-4 border-b border-white/5 hover:bg-white/[0.04] transition-colors cursor-pointer flex gap-3 ${!notification.read ? 'bg-white/[0.02]' : ''}`}
@@ -79,7 +81,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
                       <span className="shrink-0 mt-1.5 block h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]"></span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-gray-400 mt-1 whitespace-normal break-words leading-relaxed">
                     {notification.message}
                   </p>
                   <span className="text-[10px] text-gray-500 font-medium mt-2 block">

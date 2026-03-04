@@ -3,6 +3,8 @@ import { useLogin } from '../../hooks/auth/useLogin';
 import { Eye, EyeOff, X, User, Lock } from 'lucide-react';
 import { useTrapFocus } from '../../hooks/auth/useTrapFocus';
 import logoImg from '../../assets/virtualz.png';
+import { useNotificacion } from '@/publicPage/context/NotificationContext';
+
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -19,6 +21,8 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
 
   // Estado local solo para transición entre modales
   const [localExiting, setLocalExiting] = useState(false);
+
+  const { addNotification } = useNotificacion();
 
   const {
     identifier,
@@ -57,16 +61,21 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
       currentErrors.password = 'La contraseña es obligatoria.';
     }
 
-    // 2. Si falta alguno, pintamos de rojo los correspondientes y detenemos el envío
     if (Object.keys(currentErrors).length > 0) {
       setFieldErrors(currentErrors);
-      return; // No llamamos a handleLogin
+      return; 
     }
 
-    // 3. Si ambos tienen texto, ahora sí mandamos la petición al backend
     handleLogin((user: any) => {
       onSuccess(user);
       window.dispatchEvent(new Event('auth:login'));
+        setTimeout(() => {
+          addNotification({
+            title: '¡Sesión Iniciada!',
+            message: `Bienvenido de nuevo, ${user.name}. Qué bueno verte de regreso en nuestra plataforma.`,
+            type: 'welcome'
+          });
+      }, 500);
       onClose();
       resetFields();
     });
