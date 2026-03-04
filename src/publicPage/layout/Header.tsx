@@ -11,7 +11,7 @@ import UserMenu from './header/UserMenu';
 import MobileMenu from './header/MobileMenu';
 import { useScroll } from '../hooks/header/useScroll';
 import { useAuthSession } from '../hooks/header/useAuthSession';
-import { useNotificacion } from '../context/NotificationContext'; // Ajusta la ruta
+import { useNotificacion } from '../context/NotificationContext'; 
 
 import { useEffect } from 'react';
 
@@ -26,7 +26,8 @@ const Header = () => {
   const notificationsContainerRef = useRef<HTMLDivElement>(null);
   const profileContainerRef = useRef<HTMLDivElement>(null);
   const { user, setUser } = useAuthSession();
-  const { unreadCount } = useNotificacion(); // Ajusta la ruta
+  const { unreadCount,clearActiveToasts } = useNotificacion(); 
+
 
   // Abrir modal de login si sessionStorage lo indica
   useEffect(() => {
@@ -80,7 +81,10 @@ const Header = () => {
               <div className="relative" style={{ display: 'inline-block' }} ref={notificationsContainerRef}>
                 <button
                   className="text-gray-400 hover:text-white transition-colors relative p-2 hover:bg-white/5 rounded-full outline-none"
-                  onClick={() => setIsNotificationsOpen(open => !open)}
+                  onClick={() => {
+                    setIsNotificationsOpen(open => !open);
+                    clearActiveToasts(); 
+                  }}
                   aria-label="Ver notificaciones"
                 >
                   <Bell size={22} />
