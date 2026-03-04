@@ -10,6 +10,8 @@ import { appTheme } from './admin/theme/appTheme.ts';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { ToastProvider } from './admin/core/context/toastContext.tsx';
 
+import { NotificationProvider } from './publicPage/context/NotificationContext.tsx';
+
 const queryClient = new QueryClient({
    defaultOptions: {
       queries: {
@@ -26,7 +28,9 @@ createRoot(document.getElementById('root')!).render(
          <CssBaseline />
          <QueryClientProvider client={queryClient}>
             <ToastProvider>
-               <App />
+               <NotificationProvider>
+                  <App />
+               </NotificationProvider>
             </ToastProvider>
             <ReactQueryDevtools initialIsOpen={false} />
          </QueryClientProvider>

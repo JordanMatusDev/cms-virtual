@@ -1,4 +1,4 @@
-import  { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router';
 import { Bell, Menu, X, Plus } from 'lucide-react';
 import NotificationsMenu from './header/NotificationsMenu';
@@ -11,6 +11,7 @@ import UserMenu from './header/UserMenu';
 import MobileMenu from './header/MobileMenu';
 import { useScroll } from '../hooks/header/useScroll';
 import { useAuthSession } from '../hooks/header/useAuthSession';
+import { useNotificacion } from '../context/NotificationContext'; // Ajusta la ruta
 
 import { useEffect } from 'react';
 
@@ -25,6 +26,7 @@ const Header = () => {
   const notificationsContainerRef = useRef<HTMLDivElement>(null);
   const profileContainerRef = useRef<HTMLDivElement>(null);
   const { user, setUser } = useAuthSession();
+  const { unreadCount } = useNotificacion(); // Ajusta la ruta
 
   // Abrir modal de login si sessionStorage lo indica
   useEffect(() => {
@@ -47,11 +49,10 @@ const Header = () => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
-          isScrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${isScrolled
             ? 'bg-[#050505]/85 backdrop-blur-xl border-white/10 py-5 shadow-[0_4px_30px_rgba(0,0,0,0.5)]'
             : 'bg-transparent border-transparent py-6'
-        }`}
+          }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="flex items-center justify-between gap-4">
@@ -78,12 +79,15 @@ const Header = () => {
             <div className="flex items-center gap-5 flex-shrink-0">
               <div className="relative" style={{ display: 'inline-block' }} ref={notificationsContainerRef}>
                 <button
-                  className="text-gray-400 hover:text-white transition-colors relative p-2 hover:bg-white/5 rounded-full"
+                  className="text-gray-400 hover:text-white transition-colors relative p-2 hover:bg-white/5 rounded-full outline-none"
                   onClick={() => setIsNotificationsOpen(open => !open)}
                   aria-label="Ver notificaciones"
                 >
                   <Bell size={22} />
-                  <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-cyan-500 ring-2 ring-black animate-pulse"></span>
+                  {/* MAGIA AQUÍ: Solo se muestra si unreadCount es mayor a 0 */}
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-cyan-500 ring-2 ring-black animate-pulse"></span>
+                  )}
                 </button>
                 <NotificationsMenu isOpen={isNotificationsOpen} setIsOpen={setIsNotificationsOpen} containerRef={notificationsContainerRef} />
               </div>
@@ -101,7 +105,7 @@ const Header = () => {
                         ) : (
                           <span className="text-gray-200 group-hover:text-white transition-colors">
                             {/* Icono User */}
-                            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7.5 7.5 0 0 1 13 0"/></svg>
+                            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4" /><path d="M5.5 21a7.5 7.5 0 0 1 13 0" /></svg>
                           </span>
                         )}
                       </div>
