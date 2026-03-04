@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'; // <--- AGREGADO useMemo
 import { useNavigate } from 'react-router';
 import { getUserEnrollments, deleteEnrollment } from '../../services/pages/myCoursesService';
+import { useNotificacion } from '../../context/NotificationContext';
 
 // --- TIPOS ---
 export interface EnrolledCourse {
@@ -50,6 +51,8 @@ export const useMyCourses = () => {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [canScroll, setCanScroll] = useState({ left: false, right: false });
   const [courseToDelete, setCourseToDelete] = useState<number | null>(null);
+
+  const { addNotification } = useNotificacion();
 
   // --- REFS ---
   const rowRef = useRef<HTMLDivElement>(null);
@@ -160,12 +163,20 @@ export const useMyCourses = () => {
 
   const handleDeleteCourse = async () => {
     if (!courseToDelete) return;
+    // Buscar el curso antes de eliminarlo
+    const courseEliminado = courses.find(c => c.id === courseToDelete);
     try {
       await deleteEnrollment(courseToDelete);
       setCourses(prev => prev.filter(c => c.id !== courseToDelete));
     } finally {
       setCourseToDelete(null);
     }
+
+    addNotification({
+      title: 'Curso Eliminado',
+      message: `El curso "${courseEliminado?.title || 'elegido'}" ha sido removido de tu lista de aprendizaje correctamente.`,
+      type: 'remove' 
+    });
   };
 
   // Retornamos todo lo que la UI necesita

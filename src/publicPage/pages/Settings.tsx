@@ -13,6 +13,7 @@ import useSettings from '../hooks/pages/useSettings';
 
 
 
+
 const Settings = () => {
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const [showPasswordError, setShowPasswordError] = useState(false);
@@ -731,9 +732,9 @@ const Settings = () => {
 
                                 <button
                                     onClick={handleDeleteAccount}
-                                    disabled={deleteConfirmation !== 'ELIMINAR' || loading}
+                                    disabled={deleteConfirmation.trim().toUpperCase() !== 'ELIMINAR' || loading}
                                     className={`flex-1 py-3 rounded-xl text-white text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2
-                                        ${deleteConfirmation === 'ELIMINAR'
+                                        ${deleteConfirmation.trim().toUpperCase() === 'ELIMINAR'
                                             ? 'bg-red-600 border border-red-500 shadow-red-600/20 hover:bg-red-500 active:scale-95 cursor-pointer'
                                             : 'bg-white/5 border border-white/5 text-gray-500 opacity-50 cursor-not-allowed'
                                         }

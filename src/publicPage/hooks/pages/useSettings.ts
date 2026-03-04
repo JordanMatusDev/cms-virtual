@@ -1,6 +1,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { updateUserProfile, updateUserPassword, verifyUserCredentials, deleteUserAccount, uploadUserAvatar } from '../../services/pages/settingsService';
+import { useNotificacion } from '../../context/NotificationContext';
 
 const useSettings = () => {
 	
@@ -32,6 +33,8 @@ const useSettings = () => {
 	const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 	const [zoom, setZoom] = useState<number>(1);
 	const [cropSaving, setCropSaving] = useState<boolean>(false);
+	const { addNotification, showToast } = useNotificacion();
+	
 
 	// Lógica de usuario inicial
 	useEffect(() => {
@@ -452,29 +455,46 @@ const useSettings = () => {
 	};
 
 	// Eliminar cuenta
-	const handleDeleteAccount = async () => {
-		setLoading(true);
-		const userId = localStorage.getItem('userId');
-		if (!userId) {
-			showError('No se encontró el usuario');
-			setLoading(false);
-			return;
-		}
-		try {
-			await deleteUserAccount(userId);
-			localStorage.clear();
-			window.dispatchEvent(new Event('auth:logout'));
-			showSuccess('Cuenta eliminada correctamente');
-		} catch (error: any) {
-			showError('No se pudo eliminar la cuenta', error?.message || 'Error desconocido');
-		}
-		setLoading(false);
-	};
+	// Eliminar cuenta
+    const handleDeleteAccount = async () => {
+        setLoading(true);
+        const userId = localStorage.getItem('userId');
+        
+        if (!userId) {
+            showError('No se encontró el usuario');
+            setLoading(false);
+            return;
+        }
+        
+        try {
+            await deleteUserAccount(userId);
+            
+            localStorage.clear();
+            window.dispatchEvent(new Event('auth:logout'));
+            
+            setShowDeleteConfirm(false); 
+            
+            showToast({
+                title: 'Cuenta eliminada',
+                message: 'Tu cuenta y todos tus datos han sido borrados correctamente.',
+                type: 'remove' 
+            });
+            
+        } catch (error: any) {
+            showError('No se pudo eliminar la cuenta', error?.message || 'Error desconocido');
+        }
+        setLoading(false);
+    };
 
 	// Mensajes
 	const showSuccess = (msg: string, detail?: string) => {
-		setResultModal({ type: 'success', title: msg, detail });
-	};
+        addNotification({
+            title: msg,
+            message: detail || 'Los cambios se aplicaron correctamente.',
+            type: 'success' 
+        });
+        setResultModal(null); 
+    };
 
 	const showError = (msg: string, detail?: string) => {
 		setResultModal({ type: 'error', title: msg, detail });

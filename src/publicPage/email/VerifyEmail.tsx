@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import logoImg from '../assets/virtualz.png';
-import { CheckCircle, AlertTriangle, Ban, Loader2} from 'lucide-react';
+import { CheckCircle, AlertTriangle, Ban, Loader2 } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 // Asumimos que esta función la crearemos en el siguiente paso
 import { verifyAndActivateUser } from '../services/email/verifyService';
@@ -30,44 +30,44 @@ export default function VerifyEmail() {
   const getStateConfig = () => {
     switch (status) {
       case 'success':
-        return { 
+        return {
           ambientBg: 'bg-green-600/20',
           topLine: 'via-green-500',
           iconGlow: 'bg-green-500/20',
           iconBorder: 'border-green-500/30',
-          icon: <CheckCircle size={40} className="text-green-400" />, 
-          title: '¡Cuenta Verificada!', 
-          desc: 'Todo listo. Tu cuenta ha sido activada correctamente.' 
+          icon: <CheckCircle size={40} className="text-green-400" />,
+          title: '¡Cuenta Verificada!',
+          desc: 'Todo listo. Tu cuenta ha sido activada correctamente.'
         };
       case 'already':
-        return { 
+        return {
           ambientBg: 'bg-yellow-600/10',
           topLine: 'via-yellow-500',
           iconGlow: 'bg-yellow-500/20',
           iconBorder: 'border-yellow-500/30',
-          icon: <AlertTriangle size={40} className="text-yellow-400" />, 
-          title: 'Enlace ya utilizado', 
-          desc: 'Esta cuenta ya fue verificada anteriormente.' 
+          icon: <AlertTriangle size={40} className="text-yellow-400" />,
+          title: 'Enlace ya utilizado',
+          desc: 'Esta cuenta ya fue verificada anteriormente.'
         };
       case 'error':
-        return { 
+        return {
           ambientBg: 'bg-red-600/10',
           topLine: 'via-red-500',
           iconGlow: 'bg-red-500/20',
           iconBorder: 'border-red-500/30',
-          icon: <Ban size={40} className="text-red-400" />, 
-          title: 'Error', 
-          desc: errorMessage 
+          icon: <Ban size={40} className="text-red-400" />,
+          title: 'Error',
+          desc: errorMessage
         };
       default: // loading
-        return { 
+        return {
           ambientBg: 'bg-blue-600/10',
           topLine: 'via-blue-500',
           iconGlow: 'bg-blue-500/20',
           iconBorder: 'border-blue-500/30',
-          icon: <Loader2 size={40} className="text-blue-400 animate-spin" />, 
-          title: 'Procesando...', 
-          desc: 'Estamos validando tu cuenta, por favor espera.' 
+          icon: <Loader2 size={40} className="text-blue-400 animate-spin" />,
+          title: 'Procesando...',
+          desc: 'Estamos validando tu cuenta, por favor espera.'
         };
     }
   };
@@ -76,18 +76,18 @@ export default function VerifyEmail() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      
+
       {/* Fondo Ambiental (Glow dinámico) */}
       <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[120px] transition-colors duration-700 ${config.ambientBg}`} />
 
       {/* Tarjeta Principal Glass */}
       <div className="w-full max-w-sm bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative z-10 animate-in zoom-in-95 duration-500">
-        
+
         {/* Logo */}
         <div className="text-center mb-6">
           <img src={logoImg} alt="Virtual+ Logo" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
         </div>
-        
+
         {/* Línea Superior de Color */}
         <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent ${config.topLine} to-transparent opacity-80 transition-colors duration-500`} />
 
@@ -107,7 +107,8 @@ export default function VerifyEmail() {
           {config.desc}
         </p>
 
-        {/* Botones de Acción */}
+ {/* Botones de Acción */}
+
         {status !== 'loading' && (
           <button
             onClick={() => {
@@ -117,11 +118,10 @@ export default function VerifyEmail() {
                 sessionStorage.setItem('openLoginModal', '1');
                 window.location.href = '/';
               }
-            }}
+            }}        
             className={`w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed`}
           >
             {status === 'error' ? 'Volver al Inicio' : 'Ir al Inicio de Sesión'}
-            
           </button>
         )}
       </div>

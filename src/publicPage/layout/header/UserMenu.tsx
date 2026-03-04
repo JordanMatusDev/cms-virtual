@@ -5,6 +5,8 @@ import LogoutConfirmButton from '../../components/auth/LogoutConfirm';
 import { useLocation, useNavigate } from 'react-router';
 import { useAuthSession } from '../../hooks/header/useAuthSession';
 import { useClickOutside } from '../../hooks/header/useClickOutside';
+import { useNotificacion } from '../../context/NotificationContext';
+
 
 interface UserMenuProps {
   isOpen: boolean;
@@ -21,6 +23,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, setIsOpen, containerRef }) 
   const [confirmLogoutState, setConfirmLogoutState] = useState(false);
   // Estado para destello final
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { showToast } = useNotificacion();
 
   useClickOutside(
     containerRef ?? menuRef,
@@ -51,7 +54,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, setIsOpen, containerRef }) 
       setUser(null); // Ahora sí, desmonta después del destello
       localStorage.clear();
       window.dispatchEvent(new Event('auth:logout'));
-      // Ya no refresca la pantalla
+      showToast({
+        title: '¡Sesión cerrada!',
+        message: 'Has cerrado sesión correctamente. ¡Vuelve pronto!',
+        type: 'system' // Usamos 'system' para que salga el icono gris discreto
+      })
+
     }, 700);
   };
 
@@ -105,8 +113,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, setIsOpen, containerRef }) 
       )}
       {isLoggingOut && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none">
-          {/* Fondo negro que se oscurece */}
-          <div className="absolute inset-0 bg-black animate-in fade-in duration-300 fill-mode-forwards"></div>
+          {/* Fondo negro sólido para evitar efecto fantasma */}
+          <div className="absolute inset-0 bg-black/100 animate-in fade-in duration-300 fill-mode-forwards"></div>
           {/* Explosión 1: Gradiente gigante con colores del hero */}
           <div className="absolute w-[150vw] h-[150vh] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/80 via-purple-900/40 to-transparent blur-[120px] mix-blend-screen animate-in zoom-in-50 fade-out duration-700 ease-out"></div>
           {/* Explosión 2: Centro brillante hero */}

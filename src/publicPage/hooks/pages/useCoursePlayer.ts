@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
 import type { YouTubeEvent } from 'react-youtube';
+import { useNotificacion } from '../../context/NotificationContext';
 
 import { getEnrollments } from '../../services/pages/coursePlayerService';
 import api from '../../services/apiService';
@@ -62,6 +63,8 @@ export const useCoursePlayer = () => {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [isLoadingEnroll, setIsLoadingEnroll] = useState(false);
+
+    const { addNotification } = useNotificacion();
 
 // Limpiar la memoria al cambiar de video
     useEffect(() => {
@@ -410,6 +413,7 @@ export const useCoursePlayer = () => {
         setIsLoadingEnroll(true);
         const userId = localStorage.getItem('userId');
         console.log('userId:', userId, 'course?.id:', course?.id);
+        
         if (userId && course?.id) {
             try {
                 const { data } = await api.post('/api/v1/registrations/', {
@@ -421,9 +425,18 @@ export const useCoursePlayer = () => {
                     end_at: null
                 });
                 console.log('Respuesta inscripción:', data);
+                
                 if (data) {
                     await updateEnrollmentState(userId, lessonsRef.current);
                     setShowConfirmModal(false);
+
+                    // --- Notificación con nombre del curso ---
+                    addNotification({
+                        title: '¡Inscripción Exitosa!',
+                        message: `Te has inscrito correctamente en el curso "${course.titulo || course.nombre}". ¡Es hora de aprender!`,
+                        type: 'course'
+                    });
+                    // ----------------------------------------
                 }
             } catch (error) {
                 console.error('Error al procesar inscripción:', error);
@@ -458,6 +471,15 @@ export const useCoursePlayer = () => {
             last_position_seconds: JSON.stringify({ videoIndex: currentVideoIndex + 1, seconds: Math.floor(time) }),
             end_at: nextVistos.length >= lessons.length ? new Date().toISOString() : null
         });
+
+        
+        if (isChecked && nextVistos.length === lessons.length) {
+            addNotification({
+                title: '¡Curso Completado!',
+                message: `¡Felicidades! Has terminado el curso "${course?.titulo || course?.nombre || 'elegido'}" con éxito. Tu certificado ya está disponible para descargar.`,
+                type: 'achievement' 
+            });
+        }
     };
 
     return {
