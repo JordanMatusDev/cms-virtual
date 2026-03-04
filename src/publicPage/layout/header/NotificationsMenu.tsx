@@ -1,6 +1,7 @@
 // src/components/header/NotificationsMenu.tsx
 import React, { useRef } from 'react';
-import { Award, PlayCircle, Gift, BellRing, CheckCircle2, X, Hand, GraduationCap,Trash2 } from 'lucide-react';
+import { Award,PartyPopper ,
+   BellRing, CheckCircle2, X, Hand, GraduationCap,Trash2, } from 'lucide-react';
 import { useClickOutside } from '../../hooks/header/useClickOutside';
 import { useNotificacion } from '../../context/NotificationContext';
 
@@ -8,7 +9,8 @@ import { useNotificacion } from '../../context/NotificationContext';
 const ICON_MAP = {
   course: { icon: GraduationCap, colorClass: 'text-violet-400 bg-violet-400/10 border-violet-400/20' },
   system: { icon: BellRing, colorClass: 'text-gray-300 bg-white/5 border-white/10' },
-  achievement: { icon: Award, colorClass: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' }, promo: { icon: Gift, colorClass: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
+  achievement: { icon: Award, colorClass: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' }, 
+  promo: { icon: PartyPopper, colorClass: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
   welcome: { icon: Hand, colorClass: 'text-green-400 bg-green-400/10 border-green-400/20' },
   remove: { icon: Trash2, colorClass: 'text-red-400 bg-red-400/10 border-red-400/20' }
 
@@ -27,6 +29,9 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotificacion();
 
   useClickOutside(containerRef ?? menuRef, () => setIsOpen(false));
+
+  // Detectar si el usuario está logueado
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
   if (!isOpen) return null;
 
@@ -99,12 +104,21 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
             );
           })
         ) : (
-          <div className="py-12 px-4 text-center flex flex-col items-center justify-center">
-            <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-              <BellRing size={24} className="text-gray-600" />
+          <div className="py-5 px-4 min-h-[120px] text-center flex flex-col items-center justify-center">
+            <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center mb-2">
+              <BellRing size={20} className="text-gray-600" />
             </div>
-            <p className="text-sm font-medium text-gray-300">Nada por aquí</p>
-            <p className="text-xs text-gray-500 mt-1">Estás al día con todas tus alertas.</p>
+            {isLoggedIn ? (
+              <>
+                <p className="text-sm font-medium text-gray-300">Nada por aquí</p>
+                <p className="text-xs text-gray-500 mt-1">Estás al día con todas tus alertas.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-gray-300">No has iniciado sesión</p>
+                <p className="text-xs text-gray-500 mt-1">Inicia sesión para visualizar tus notificaciones.</p>
+              </>
+            )}
           </div>
         )}
       </div>
