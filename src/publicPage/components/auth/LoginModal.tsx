@@ -70,15 +70,27 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
       onSuccess(user);
       window.dispatchEvent(new Event('auth:login'));
       setTimeout(() => {
+        const isFirstTime = localStorage.getItem('isFirstTimeLogin') === 'true';
+
         const userNombre = localStorage.getItem('userNombre') || '';
         const userApellido = localStorage.getItem('userApellido') || '';
         const primerNombre = userNombre.split(' ')[0] || userNombre;
         const primerApellido = userApellido.split(' ')[0] || userApellido;
-        addNotification({
-          title: '¡Sesión Iniciada!',
-          message: `Bienvenido de nuevo, ${primerNombre} ${primerApellido}. Qué bueno verte de regreso.`,
-          type: 'welcome'
-        });
+        
+        if (isFirstTime) {
+            addNotification({
+              title: '¡Cuenta verificada!',
+              message: `¡Hola ${primerNombre} ${primerApellido}! Bienvenido a Virtual+. Tu cuenta está lista y es genial tenerte con nosotros.`,
+              type: 'promo' 
+            });
+            sessionStorage.removeItem('isFirstTimeLogin');
+        } else {
+            addNotification({
+              title: '¡Sesión Iniciada!',
+              message: `Bienvenido de nuevo, ${primerNombre} ${primerApellido}. Qué bueno verte de regreso.`,
+              type: 'welcome'
+            });
+        }
       }, 500);
       onClose();
       resetFields();

@@ -114,7 +114,14 @@ export default function VerifyEmail() {
               if (status === 'error') {
                 window.location.href = '/';
               } else {
+                // Abre el modal de login (como ya tenías)
                 sessionStorage.setItem('openLoginModal', '1');
+                
+                // SOLO si acaba de verificar exitosamente, dejamos la nota de "Primera vez"
+                if (status === 'success') {
+                  localStorage.setItem('isFirstTimeLogin', 'true');
+                }
+                
                 window.location.href = '/';
               }
             }}
