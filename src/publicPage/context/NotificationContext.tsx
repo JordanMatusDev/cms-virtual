@@ -20,6 +20,7 @@ interface NotificationContextType {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   deleteNotification: (id: string) => void;
+  clearActiveToasts: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -57,25 +58,23 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [notifications, storageKey]);
 
-  // Función addNotification corregida
+
+  // Utilidad para obtener la hora local en formato HH:mm
+  const getCurrentTimeString = () => {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   const addNotification = (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => {
     const toastId = Date.now().toString();
-
-    // Armamos la notificación completa con los datos faltantes
     const newNotif: AppNotification = {
       ...notif,
       id: toastId,
       read: false,
-      time: 'Ahora' // Puedes cambiar esto por la hora real si lo prefieres
+      time: getCurrentTimeString()
     };
-
-    // 1. Lo guardamos en el historial de la campanita
     setNotifications(prev => [newNotif, ...prev]);
-
-    // 2. Lo lanzamos a la pantalla como alerta flotante
     setActiveToasts(prev => [...prev, newNotif]);
-
-    // 3. Lo desaparecemos de la pantalla después de 4 segundos
     setTimeout(() => {
       setActiveToasts(prev => prev.filter(toast => toast.id !== toastId));
     }, 4000);
@@ -88,11 +87,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       ...notif, 
       id: toastId,
       read: true, 
-      time: 'Ahora' 
+      time: getCurrentTimeString()
     };
     setActiveToasts(prev => [...prev, newNotif]);
     setTimeout(() => {
-        setActiveToasts(prev => prev.filter(toast => toast.id !== toastId));
+      setActiveToasts(prev => prev.filter(toast => toast.id !== toastId));
     }, 4000); 
   };
 
@@ -108,6 +107,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  const clearActiveToasts = () => {
+    setActiveToasts([]);
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const ICON_MAP = {
@@ -121,7 +124,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, showToast, markAsRead, markAllAsRead, deleteNotification }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, showToast, markAsRead, markAllAsRead, deleteNotification, clearActiveToasts }}>
       {children}
 
       {/* --- CONTENEDOR FLOTANTE DE TOASTS --- */}
