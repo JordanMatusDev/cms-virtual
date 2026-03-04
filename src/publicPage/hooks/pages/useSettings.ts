@@ -1,6 +1,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { updateUserProfile, updateUserPassword, verifyUserCredentials, deleteUserAccount, uploadUserAvatar } from '../../services/pages/settingsService';
+import { useNotificacion } from '../../context/NotificationContext';
 
 const useSettings = () => {
 	
@@ -32,6 +33,7 @@ const useSettings = () => {
 	const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 	const [zoom, setZoom] = useState<number>(1);
 	const [cropSaving, setCropSaving] = useState<boolean>(false);
+	const { addNotification } = useNotificacion();
 
 	// Lógica de usuario inicial
 	useEffect(() => {
@@ -473,8 +475,16 @@ const useSettings = () => {
 
 	// Mensajes
 	const showSuccess = (msg: string, detail?: string) => {
-		setResultModal({ type: 'success', title: msg, detail });
-	};
+        // En lugar de setResultModal, disparamos la notificación push verde
+        addNotification({
+            title: msg,
+            message: detail || 'Los cambios se aplicaron correctamente.',
+            type: 'success' // ¡El nuevo tipo que creamos!
+        });
+        
+        // Limpiamos cualquier modal de error que pudiera estar abierto
+        setResultModal(null); 
+    };
 
 	const showError = (msg: string, detail?: string) => {
 		setResultModal({ type: 'error', title: msg, detail });

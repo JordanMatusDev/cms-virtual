@@ -1,6 +1,7 @@
 // src/context/NotificationContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuthSession } from '../hooks/header/useAuthSession'; 
+import { useAuthSession } from '../hooks/header/useAuthSession';
+import { Award, PartyPopper, BellRing, CheckCircle2, Hand, GraduationCap, Trash2, } from 'lucide-react';
 
 export interface AppNotification {
   id: string;
@@ -8,7 +9,7 @@ export interface AppNotification {
   message: string;
   time: string;
   read: boolean;
-  type: 'course' | 'system' | 'achievement' | 'promo' |"welcome" | 'remove';
+  type: 'course' | 'system' | 'achievement' | 'promo' | 'welcome' | 'remove' | 'success';
 }
 
 interface NotificationContextType {
@@ -24,11 +25,13 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  
+  // AQUÍ ES DONDE VA EL ESTADO DE LOS TOASTS (dentro del componente)
+  const [activeToasts, setActiveToasts] = useState<AppNotification[]>([]);
+
   // Usamos tu hook
-  const { user } = useAuthSession(); 
-  
-  // CORRECCIÓN AQUÍ: Usamos el email (o el name) en lugar de un id
+  const { user } = useAuthSession();
+
+  // Usamos el email (o el name) en lugar de un id
   const userIdentifier = user?.email || user?.name;
   const storageKey = userIdentifier ? `virtualz_notifs_${userIdentifier}` : null;
 
@@ -38,11 +41,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (saved) {
         setNotifications(JSON.parse(saved));
       } else {
-        // Si no hay nada guardado, simplemente iniciamos con el panel vacío
         setNotifications([]);
       }
     } else {
-      setNotifications([]); 
+      setNotifications([]);
     }
   }, [storageKey]);
 
@@ -54,17 +56,28 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [notifications, storageKey]);
 
+  // Función addNotification corregida
   const addNotification = (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => {
-    
-    if (localStorage.getItem('isLoggedIn') !== 'true') return; 
+    const toastId = Date.now().toString();
 
+    // Armamos la notificación completa con los datos faltantes
     const newNotif: AppNotification = {
       ...notif,
-      id: crypto.randomUUID(),
+      id: toastId,
       read: false,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: 'Ahora' // Puedes cambiar esto por la hora real si lo prefieres
     };
+
+    // 1. Lo guardamos en el historial de la campanita
     setNotifications(prev => [newNotif, ...prev]);
+
+    // 2. Lo lanzamos a la pantalla como alerta flotante
+    setActiveToasts(prev => [...prev, newNotif]);
+
+    // 3. Lo desaparecemos de la pantalla después de 4 segundos
+    setTimeout(() => {
+      setActiveToasts(prev => prev.filter(toast => toast.id !== toastId));
+    }, 4000);
   };
 
   const markAsRead = (id: string) => {
@@ -81,9 +94,45 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const ICON_MAP = {
+    course: { icon: GraduationCap, colorClass: 'text-violet-400 bg-violet-400/10 border-violet-400/20' },
+    system: { icon: BellRing, colorClass: 'text-gray-300 bg-white/5 border-white/10' },
+    achievement: { icon: Award, colorClass: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
+    promo: { icon: PartyPopper, colorClass: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
+    welcome: { icon: Hand, colorClass: 'text-green-400 bg-green-400/10 border-green-400/20' },
+    remove: { icon: Trash2, colorClass: 'text-red-400 bg-red-400/10 border-red-400/20' },
+    success: { icon: CheckCircle2, colorClass: 'text-green-400 bg-green-400/10 border-green-400/20' }
+  };
+
   return (
     <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAsRead, markAllAsRead, deleteNotification }}>
       {children}
+
+      {/* --- CONTENEDOR FLOTANTE DE TOASTS --- */}
+      <div className="fixed top-[85px] right-6 md:right-24 lg:right-[120px] xl:right-[calc(50vw-580px)] z-[99999] flex flex-col gap-3 pointer-events-none">
+        {activeToasts.map((toast) => {
+          // Obtenemos el icono y los colores (si no existe el tipo, usamos system por defecto)
+          const { icon: Icon, colorClass } = ICON_MAP[toast.type] || ICON_MAP.system;
+
+          return (
+            <div
+              key={toast.id}
+              className="bg-[#151515] border border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-4 rounded-xl flex items-start gap-4 w-80 pointer-events-auto transition-all duration-300 animate-in fade-in slide-in-from-top-6"
+            >
+              {/* Renderizamos el icono con el fondo y borde que definiste */}
+              <div className={`shrink-0 p-2 rounded-full border ${colorClass}`}>
+                <Icon size={20} />
+              </div>
+
+              <div className="flex-1 mt-0.5">
+                <h4 className="text-white font-bold text-sm mb-1">{toast.title}</h4>
+                <p className="text-gray-300 text-xs leading-relaxed">{toast.message}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
     </NotificationContext.Provider>
   );
 };

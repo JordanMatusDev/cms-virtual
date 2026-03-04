@@ -1,7 +1,6 @@
 // src/components/header/NotificationsMenu.tsx
 import React, { useRef } from 'react';
-import { Award,PartyPopper ,
-   BellRing, CheckCircle2, X, Hand, GraduationCap,Trash2, } from 'lucide-react';
+import { Award,PartyPopper ,BellRing, CheckCircle2, X, Hand, GraduationCap,Trash2, } from 'lucide-react';
 import { useClickOutside } from '../../hooks/header/useClickOutside';
 import { useNotificacion } from '../../context/NotificationContext';
 
@@ -12,7 +11,8 @@ const ICON_MAP = {
   achievement: { icon: Award, colorClass: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' }, 
   promo: { icon: PartyPopper, colorClass: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
   welcome: { icon: Hand, colorClass: 'text-green-400 bg-green-400/10 border-green-400/20' },
-  remove: { icon: Trash2, colorClass: 'text-red-400 bg-red-400/10 border-red-400/20' }
+  remove: { icon: Trash2, colorClass: 'text-red-400 bg-red-400/10 border-red-400/20' },
+  success: { icon: CheckCircle2, colorClass: 'text-green-400 bg-green-400/10 border-green-400/20' }
 
 };
 

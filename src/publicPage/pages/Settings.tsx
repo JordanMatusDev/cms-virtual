@@ -13,6 +13,7 @@ import useSettings from '../hooks/pages/useSettings';
 
 
 
+
 const Settings = () => {
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const [showPasswordError, setShowPasswordError] = useState(false);
