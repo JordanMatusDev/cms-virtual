@@ -69,12 +69,16 @@ const LoginModal = ({ isOpen, isExiting = false, onClose, onSuccess, onSwitchToR
     handleLogin((user: any) => {
       onSuccess(user);
       window.dispatchEvent(new Event('auth:login'));
-        setTimeout(() => {
-          addNotification({
-            title: '¡Sesión Iniciada!',
-            message: `Bienvenido de nuevo, ${user.name}. Qué bueno verte de regreso en nuestra plataforma.`,
-            type: 'welcome'
-          });
+      setTimeout(() => {
+        const userNombre = localStorage.getItem('userNombre') || '';
+        const userApellido = localStorage.getItem('userApellido') || '';
+        const primerNombre = userNombre.split(' ')[0] || userNombre;
+        const primerApellido = userApellido.split(' ')[0] || userApellido;
+        addNotification({
+          title: '¡Sesión Iniciada!',
+          message: `Bienvenido de nuevo, ${primerNombre} ${primerApellido}. Qué bueno verte de regreso.`,
+          type: 'welcome'
+        });
       }, 500);
       onClose();
       resetFields();

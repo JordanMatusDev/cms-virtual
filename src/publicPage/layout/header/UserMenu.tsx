@@ -5,6 +5,8 @@ import LogoutConfirmButton from '../../components/auth/LogoutConfirm';
 import { useLocation, useNavigate } from 'react-router';
 import { useAuthSession } from '../../hooks/header/useAuthSession';
 import { useClickOutside } from '../../hooks/header/useClickOutside';
+import { useNotificacion } from '../../context/NotificationContext';
+
 
 interface UserMenuProps {
   isOpen: boolean;
@@ -21,6 +23,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, setIsOpen, containerRef }) 
   const [confirmLogoutState, setConfirmLogoutState] = useState(false);
   // Estado para destello final
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { showToast } = useNotificacion();
 
   useClickOutside(
     containerRef ?? menuRef,
@@ -51,7 +54,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ isOpen, setIsOpen, containerRef }) 
       setUser(null); // Ahora sí, desmonta después del destello
       localStorage.clear();
       window.dispatchEvent(new Event('auth:logout'));
-      // Ya no refresca la pantalla
+      showToast({
+        title: '¡Sesión cerrada!',
+        message: 'Has cerrado sesión correctamente. ¡Vuelve pronto!',
+        type: 'system' // Usamos 'system' para que salga el icono gris discreto
+      })
+
     }, 700);
   };
 

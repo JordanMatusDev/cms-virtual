@@ -33,7 +33,8 @@ const useSettings = () => {
 	const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 	const [zoom, setZoom] = useState<number>(1);
 	const [cropSaving, setCropSaving] = useState<boolean>(false);
-	const { addNotification } = useNotificacion();
+	const { addNotification, showToast } = useNotificacion();
+	
 
 	// Lógica de usuario inicial
 	useEffect(() => {
@@ -454,35 +455,44 @@ const useSettings = () => {
 	};
 
 	// Eliminar cuenta
-	const handleDeleteAccount = async () => {
-		setLoading(true);
-		const userId = localStorage.getItem('userId');
-		if (!userId) {
-			showError('No se encontró el usuario');
-			setLoading(false);
-			return;
-		}
-		try {
-			await deleteUserAccount(userId);
-			localStorage.clear();
-			window.dispatchEvent(new Event('auth:logout'));
-			showSuccess('Cuenta eliminada correctamente');
-		} catch (error: any) {
-			showError('No se pudo eliminar la cuenta', error?.message || 'Error desconocido');
-		}
-		setLoading(false);
-	};
+	// Eliminar cuenta
+    const handleDeleteAccount = async () => {
+        setLoading(true);
+        const userId = localStorage.getItem('userId');
+        
+        if (!userId) {
+            showError('No se encontró el usuario');
+            setLoading(false);
+            return;
+        }
+        
+        try {
+            await deleteUserAccount(userId);
+            
+            localStorage.clear();
+            window.dispatchEvent(new Event('auth:logout'));
+            
+            setShowDeleteConfirm(false); 
+            
+            showToast({
+                title: 'Cuenta eliminada',
+                message: 'Tu cuenta y todos tus datos han sido borrados correctamente.',
+                type: 'remove' 
+            });
+            
+        } catch (error: any) {
+            showError('No se pudo eliminar la cuenta', error?.message || 'Error desconocido');
+        }
+        setLoading(false);
+    };
 
 	// Mensajes
 	const showSuccess = (msg: string, detail?: string) => {
-        // En lugar de setResultModal, disparamos la notificación push verde
         addNotification({
             title: msg,
             message: detail || 'Los cambios se aplicaron correctamente.',
-            type: 'success' // ¡El nuevo tipo que creamos!
+            type: 'success' 
         });
-        
-        // Limpiamos cualquier modal de error que pudiera estar abierto
         setResultModal(null); 
     };
 

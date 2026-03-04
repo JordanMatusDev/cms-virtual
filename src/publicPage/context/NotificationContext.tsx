@@ -16,6 +16,7 @@ interface NotificationContextType {
   notifications: AppNotification[];
   unreadCount: number;
   addNotification: (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => void;
+  showToast: (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => void; 
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   deleteNotification: (id: string) => void;
@@ -80,6 +81,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }, 4000);
   };
 
+  // Función para mostrar Toasts sin guardar en el historial
+  const showToast = (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => {
+    const toastId = Date.now().toString();
+    const newNotif: AppNotification = { 
+      ...notif, 
+      id: toastId,
+      read: true, 
+      time: 'Ahora' 
+    };
+    setActiveToasts(prev => [...prev, newNotif]);
+    setTimeout(() => {
+        setActiveToasts(prev => prev.filter(toast => toast.id !== toastId));
+    }, 4000); 
+  };
+
   const markAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
@@ -105,7 +121,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAsRead, markAllAsRead, deleteNotification }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, showToast, markAsRead, markAllAsRead, deleteNotification }}>
       {children}
 
       {/* --- CONTENEDOR FLOTANTE DE TOASTS --- */}
