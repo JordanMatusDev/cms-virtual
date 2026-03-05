@@ -79,7 +79,15 @@ export const switchSx: SxProps<Theme> = {
    '& .MuiSwitch-switchBase.Mui-disabled': {
       color: '#545454',
    },
+   '& .MuiSwitch-switchBase.Mui-checked.Mui-disabled': {
+      color: '#545454',
+   },
    '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': {
+      backgroundColor: '#545454',
+      opacity: 0.5,
+   },
+   '& .MuiSwitch-switchBase.Mui-checked.Mui-disabled + .MuiSwitch-track': {
+      backgroundColor: '#545454',
       opacity: 0.5,
    },
    '& .MuiSwitch-switchBase.Mui-checked': {
