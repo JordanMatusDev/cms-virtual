@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-    Lock, Download, ChevronRight,
+    Lock, Download,
     Users, Star, Unlock, BookOpen, Loader2, Trophy, Sparkles, Play, Target, CheckCircle2, Info
 } from 'lucide-react';
 import { useCoursePlayer } from '../hooks/pages/useCoursePlayer';
@@ -55,24 +55,24 @@ const CoursePlayer = () => {
 
   // Scroll automático en la playlist hacia el video activo
     useEffect(() => {
+        // Hacer scroll automático en playlist tanto en escritorio como en móviles, solo dentro del contenedor
         if (isReadyToPlay && currentVideoIndex !== null && lessons.length > 0) {
             const timeoutId = setTimeout(() => {
                 const activeItem = document.getElementById(`lesson-item-${currentVideoIndex}`);
-                if (activeItem) {
-                    // Detectamos si el video actual es uno de los últimos dos
-                    const isLastTwoVideos = currentVideoIndex >= lessons.length - 2;
-                    
-                    activeItem.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        // Si son los últimos 2, usa 'nearest' (no mueve la página). Si no, usa 'center'.
-                        block: isLastTwoVideos ? 'nearest' : 'center' 
+                const playlistContainer = document.querySelector('.custom-scrollbar');
+                if (activeItem && playlistContainer) {
+                    const container = playlistContainer as HTMLElement;
+                    const item = activeItem as HTMLElement;
+                    const offset = item.offsetTop - container.offsetTop - (container.clientHeight / 2) + (item.clientHeight / 2);
+                    container.scrollTo({
+                        top: offset,
+                        behavior: 'smooth',
                     });
                 }
-            }, 300); 
-
+            }, 300);
             return () => clearTimeout(timeoutId);
         }
-    }, [currentVideoIndex, isReadyToPlay, lessons.length]); // Agregamos lessons.length aquí
+    }, [currentVideoIndex, isReadyToPlay, lessons.length]);
 
     // Listener para eventos de autenticación
     useEffect(() => {
@@ -351,21 +351,48 @@ const CoursePlayer = () => {
                                     ></div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/60 to-transparent"></div>
 
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center z-20 p-6 text-center animate-in fade-in zoom-in duration-300">
-                                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 ring-1 ring-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.2)]">
-                                            <Lock size={32} className="text-cyan-400" />
+                                    <div
+                                        className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center animate-in fade-in zoom-in duration-300 px-6 sm:px-10"
+                                        style={{ paddingTop: window.innerWidth < 1024 ? 24 : 36, paddingBottom: window.innerWidth < 1024 ? 24 : 36 }}
+                                    >
+                                        <div
+                                            className="bg-white/5 flex items-center justify-center mb-4 ring-1 ring-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+                                            style={{
+                                                width: window.innerWidth < 1024 ? 40 : 64,
+                                                height: window.innerWidth < 1024 ? 40 : 64,
+                                                borderRadius: '50%',
+                                                minWidth: window.innerWidth < 1024 ? 40 : 64,
+                                                minHeight: window.innerWidth < 1024 ? 40 : 64,
+                                            }}
+                                        >
+                                            <Lock size={window.innerWidth < 1024 ? 18 : 32} className="text-cyan-400" />
                                         </div>
-                                        <h2 className="text-2xl font-bold text-white mb-2">Contenido Exclusivo</h2>
-                                        <p className="text-gray-400 mb-8 max-w-md text-sm">
+                                        <h2
+                                            className="font-bold text-white mb-2"
+                                            style={{ fontSize: window.innerWidth < 1024 ? 15 : 28, lineHeight: 1.2 }}
+                                        >
+                                            Contenido Exclusivo
+                                        </h2>
+                                        <p
+                                            className="text-gray-400 max-w-md mx-auto"
+                                            style={{ marginBottom: window.innerWidth < 1024 ? 11 : 32, fontSize: window.innerWidth < 1024 ? 11.5 : 16, lineHeight: 1.4 }}
+                                        >
                                             Inscríbete gratis para acceder a todas las lecciones y obtener tu certificado.
                                         </p>
                                         <button
                                             onClick={handleEnrollClickLocal}
-                                            className="group relative px-10 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all hover:scale-[1.02] flex items-center gap-3 border border-white/10"
+                                            className="group relative bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-[0_0_18px_rgba(6,182,212,0.3)] transition-all hover:scale-[1.02] flex items-center border border-white/10"
+                                            style={{
+                                                paddingLeft: window.innerWidth < 1024 ? 16 : 40,
+                                                paddingRight: window.innerWidth < 1024 ? 16 : 40,
+                                                paddingTop: window.innerWidth < 1024 ? 7 : 16,
+                                                paddingBottom: window.innerWidth < 1024 ? 7 : 16,
+                                                fontSize: window.innerWidth < 1024 ? 13 : 18,
+                                                gap: window.innerWidth < 1024 ? 6 : 12
+                                            }}
                                         >
-                                            <Unlock size={20} />
-                                            <span className="text-lg">Inscribirse Ahora</span>
-                                            <ChevronRight size={20} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                                            <Unlock size={window.innerWidth < 1024 ? 15 : 22} />
+                                            <span style={{ fontSize: window.innerWidth < 1024 ? 13 : 18 }}>{window.innerWidth < 1024 ? 'Inscribirse' : 'Inscribirse'}</span>
                                         </button>
                                     </div>
                                 </>
@@ -380,7 +407,7 @@ const CoursePlayer = () => {
 
                         {/* INFO */}
                         <div>
-                            <h1 className="text-3xl font-bold text-white mb-2">{course.nombre}</h1>
+                            <h1 className="text-3xl font-bold text-white mb-2" style={{ fontSize: window.innerWidth < 1024 ? 20 : undefined }}>{course.nombre}</h1>
                             <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
                                 <span className="flex items-center gap-1 text-cyan-400">
                                     <Users size={16} /> {typeof course.autor === 'object' ? (course.autor?.username || course.autor?.nombre || 'Autor') : (course.autor || course.instructor || 'Autor')}
@@ -412,7 +439,7 @@ const CoursePlayer = () => {
                                                         <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1 block">
                                                             Reproduciendo ahora
                                                         </span>
-                                                        <h3 className="text-xl md:text-2xl font-bold text-white leading-tight">
+                                                        <h3 className="text-xl md:text-2xl font-bold text-white leading-tight" style={{ fontSize: window.innerWidth < 1024 ? 15 : undefined }}>
                                                             {currentLesson.title}
                                                         </h3>
                                                     </div>
@@ -422,11 +449,11 @@ const CoursePlayer = () => {
                                         )}
                                         {/* 2. INFO GENERAL DEL CURSO (VISIBLE PARA TODOS) */}
                                         <div className={`${isEnrolled ? 'pt-4 border-t border-white/5' : ''}`}>
-                                            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                                            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2" style={{ fontSize: window.innerWidth < 1024 ? 14 : undefined }}>
                                                 <Info size={18} className="text-purple-400" />
                                                 Acerca de este curso
                                             </h3>
-                                            <p className="text-gray-400 leading-relaxed text-sm md:text-base text-justify">
+                                            <p className="text-gray-400 leading-relaxed text-sm md:text-base text-justify" style={{ fontSize: window.innerWidth < 1024 ? 12 : undefined }}>
                                                 {course.descripcion}
                                             </p>
                                         </div>
@@ -443,7 +470,7 @@ const CoursePlayer = () => {
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <Target size={20} className="text-cyan-400" />
-                                                            <h3 className="text-white font-bold text-xl tracking-tight">Tu Progreso</h3>
+                                                            <h3 className="text-white font-bold text-xl tracking-tight" style={{ fontSize: window.innerWidth < 1024 ? 15 : undefined }}>Tu Progreso</h3>
                                                         </div>
                                                         <p className="text-sm text-gray-400 flex items-center gap-1.5">
                                                             <CheckCircle2 size={16} className={progressPercentage === 100 ? 'text-green-400' : 'text-gray-500'} />
@@ -475,8 +502,8 @@ const CoursePlayer = () => {
                                                 <div className="bg-white/5 p-4 rounded-full mb-4 z-10 border border-white/10 backdrop-blur-sm shadow-[0_0_30px_rgba(255,255,255,0.05)]">
                                                     <Lock size={32} className="text-gray-500" />
                                                 </div>
-                                                <h3 className="text-xl font-bold text-white mb-2 z-10 tracking-tight">Progreso Bloqueado</h3>
-                                                <p className="text-gray-400 text-sm max-w-sm z-10 leading-relaxed">
+                                                <h3 className="text-xl font-bold text-white mb-2 z-10 tracking-tight" style={{ fontSize: window.innerWidth < 1024 ? 15 : undefined }}>Progreso Bloqueado</h3>
+                                                <p className="text-gray-400 text-sm max-w-sm z-10 leading-relaxed" style={{ fontSize: window.innerWidth < 1024 ? 12 : undefined }}>
                                                     Inscríbete para registrar tu progreso y desbloquear el certificado.
                                                 </p>
                                             </div>
@@ -529,14 +556,20 @@ const CoursePlayer = () => {
                     <div className="lg:col-span-1">
                         <div
                             className="bg-[#0a0a0a] border border-white/10 rounded-2xl sticky top-24 overflow-hidden flex flex-col shadow-2xl"
-                            style={playlistHeight ? { height: `${playlistHeight}px` } : undefined}
+                            style={
+                                playlistHeight && window.innerWidth >= 1024
+                                    ? { height: `${playlistHeight}px` }
+                                    : window.innerWidth < 1024
+                                        ? { maxHeight: '420px', height: '420px' }
+                                        : undefined
+                            }
                         >
                             <div className="p-5 border-b border-white/10 bg-white/5 backdrop-blur-md flex justify-between items-center z-10">
                                 <h3 className="font-bold text-white">Contenido</h3>
                                 <span className="text-xs bg-white/10 px-2 py-1 rounded text-gray-400">{lessons.length} lecciones</span>
                             </div>
 
-                            <div className="overflow-y-auto p-2 space-y-3 custom-scrollbar scrollbar-hide scroll-smooth">
+                            <div className="overflow-y-auto p-2 space-y-3 custom-scrollbar scrollbar-hide scroll-smooth" style={window.innerWidth < 1024 ? { maxHeight: '340px' } : undefined}>
                                 {lessons.length > 0 ? lessons.map((lesson: any, index: number) => {
                                     const isActive = currentVideoIndex === index;
                                     // El candado debe mostrarse si el usuario no está inscrito

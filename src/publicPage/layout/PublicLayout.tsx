@@ -2,9 +2,7 @@ import { Outlet } from 'react-router';
 import Header from './Header';
 import Footer from './Footer';
 
-// IMPORTANTE: Asegúrate de que esta ruta apunte a tu archivo CSS global 
-// (el que trajiste del Repo 2 y que tiene las cosas de Tailwind).
-// Si lo dejaste en src/publicPage/index.css, la ruta sería algo así:
+
 import '../index.css'; 
 
 export default function PublicLayout() {
