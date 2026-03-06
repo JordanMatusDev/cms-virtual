@@ -1,6 +1,6 @@
 // src/components/header/NotificationsMenu.tsx
 import React, { useRef } from 'react';
-import { Award,PartyPopper ,BellRing, CheckCircle2, X, Hand, GraduationCap,Trash2, } from 'lucide-react';
+import { Award, PartyPopper, BellRing, CheckCircle2, X, Hand, GraduationCap, Trash2, } from 'lucide-react';
 import { useClickOutside } from '../../hooks/header/useClickOutside';
 import { useNotificacion } from '../../context/NotificationContext';
 
@@ -8,7 +8,7 @@ import { useNotificacion } from '../../context/NotificationContext';
 const ICON_MAP = {
   course: { icon: GraduationCap, colorClass: 'text-violet-400 bg-violet-400/10 border-violet-400/20' },
   system: { icon: BellRing, colorClass: 'text-gray-300 bg-white/5 border-white/10' },
-  achievement: { icon: Award, colorClass: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' }, 
+  achievement: { icon: Award, colorClass: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
   promo: { icon: PartyPopper, colorClass: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
   welcome: { icon: Hand, colorClass: 'text-green-400 bg-green-400/10 border-green-400/20' },
   remove: { icon: Trash2, colorClass: 'text-red-400 bg-red-400/10 border-red-400/20' },
@@ -38,7 +38,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
   return (
     <div
       ref={menuRef}
-      className="absolute top-full right-0 mt-4 w-80 sm:w-96 bg-[#050505]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_10px_50px_-10px_rgba(0,0,0,0.8)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2"
+      className="absolute top-full mt-4 bg-[#050505]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_10px_50px_-10px_rgba(0,0,0,0.8)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 right-[-60px] w-[calc(100vw-32px)] max-w-[360px] sm:right-0 sm:w-96 sm:max-w-none"
     >
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
         <div className="flex items-center gap-2">
