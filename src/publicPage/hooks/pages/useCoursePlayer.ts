@@ -270,6 +270,7 @@ export const useCoursePlayer = () => {
                     cData = null;
                 }
                 if (!cData) throw new Error("Curso no encontrado");
+                if (!cData.activo) throw new Error("Curso no encontrado");
                 setCourse(cData);
 
                 let vList: string[] = [];
