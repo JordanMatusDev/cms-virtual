@@ -68,27 +68,29 @@ export const useMyCourses = () => {
       } 
       try {
         const data = await getUserEnrollments(userId);
-        const mapped: EnrolledCourse[] = (Array.isArray(data) ? data : []).map((item: any) => {
-          const course = item.curso || {};
-          const playlist = typeof course.playlist_id === 'string'
-            ? course.playlist_id.split(',').map((v: string) => v.trim()).filter(Boolean)
-            : [];
-          const totalVideos = playlist.length;
-          const completedFlag = Number(item.completado) === 1;
-          const completedCount = completedFlag ? totalVideos : parseProgressCount(item.progreso, totalVideos);
-          const progress = totalVideos > 0
-            ? Math.min(100, Math.round((completedCount / totalVideos) * 100))
-            : completedFlag ? 100 : 0;
-          return {
-            id: item.id,
-            courseId: item.curso_id ?? course.id,
-            title: course.titulo || course.nombre || 'Curso sin título',
-            image: course.img || course.imagen_url || course.imagen || '',
-            category: course.categoria?.nombre || 'General',
-            progress,
-            status: progress >= 100 ? 'completed' : 'active'
-          };
-        });
+        const mapped: EnrolledCourse[] = (Array.isArray(data) ? data : [])
+          .filter((item: any) => (item.curso?.activo === undefined) ? true : !!item.curso.activo)
+          .map((item: any) => {
+            const course = item.curso || {};
+            const playlist = typeof course.playlist_id === 'string'
+              ? course.playlist_id.split(',').map((v: string) => v.trim()).filter(Boolean)
+              : [];
+            const totalVideos = playlist.length;
+            const completedFlag = Number(item.completado) === 1;
+            const completedCount = completedFlag ? totalVideos : parseProgressCount(item.progreso, totalVideos);
+            const progress = totalVideos > 0
+              ? Math.min(100, Math.round((completedCount / totalVideos) * 100))
+              : completedFlag ? 100 : 0;
+            return {
+              id: item.id,
+              courseId: item.curso_id ?? course.id,
+              title: course.titulo || course.nombre || 'Curso sin título',
+              image: course.img || course.imagen_url || course.imagen || '',
+              category: course.categoria?.nombre || 'General',
+              progress,
+              status: progress >= 100 ? 'completed' : 'active'
+            };
+          });
         setCourses(mapped);
       } catch (err) {
         console.error("Error cargando cursos:", err);
