@@ -23,7 +23,7 @@ const Verification = () => {
     } = useVerification();
 
     return (
-        <div className="min-h-screen bg-[#04070f] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-[#04070f] text-white flex flex-col items-center justify-center p-4 pt-32 sm:pt-40 relative overflow-hidden">
 
             {/* --- TARJETA PRINCIPAL --- */}
             <div className="relative z-10 w-full max-w-xl bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-8 animate-in fade-in zoom-in-95 duration-700">

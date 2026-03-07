@@ -5,40 +5,51 @@ import { Info, ShieldCheck, FileText } from 'lucide-react';
 export default function LegalInfo() {
   const location = useLocation();
 
-  // Efecto para hacer scroll suave a la sección si se accede desde un enlace con ancla (ej. /legal#politica-privacidad)
   useEffect(() => {
-    if (location.hash) {
-      const element = document.getElementById(location.hash.substring(1));
-      if (element) {
-        const yOffset = -160; // Aún más espacio para evitar que el header tape el contenido
-        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({ top: y, behavior: 'smooth' });
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+    const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+
+    if (isReload) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      if (location.hash) {
+        window.history.replaceState(null, '', window.location.pathname);
       }
+    } else if (location.hash) {
+      // Le damos 300ms para asegurar que la página nueva ya se dibujó por completo
+      setTimeout(() => {
+        const element = document.getElementById(location.hash.substring(1));
+        if (element) {
+          // Usamos scrollIntoView nativo en lugar de matemáticas. 
+          // Respetará el margen 'scroll-mt-40' que pusimos en las secciones.
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#04070f] text-white font-sans selection:bg-cyan-500/30 relative py-20 px-4 sm:px-6 lg:px-8">
       
-      {/* Fondos Ambientales (Glow Neón) */}
-      <div className="fixed top-0 left-1/4 w-96 h-96 bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none" />
-
       <div className="max-w-4xl mx-auto space-y-12 relative z-10">
         
-        {/* Encabezado de la página */}
         <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-          <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mb-4 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mb-4 tracking-tight leading-normal pb-2">
             Información Legal
           </h1>
           <p className="text-gray-400 text-lg">Todo lo que necesitas saber sobre Virtual+</p>
         </div>
 
         {/* --- SECCIÓN 1: SOBRE NOSOTROS --- */}
+        {/* Cambiamos scroll-mt-24 por scroll-mt-40 */}
         <section 
           id="sobre-nosotros" 
-          className="bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out scroll-mt-24 relative overflow-hidden"
+          className="bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out scroll-mt-40 relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-1/3 h-1 bg-gradient-to-r from-cyan-500 to-transparent opacity-50"></div>
           
@@ -65,9 +76,10 @@ export default function LegalInfo() {
         </section>
 
         {/* --- SECCIÓN 2: POLÍTICA DE PRIVACIDAD --- */}
+        {/* Cambiamos scroll-mt-24 por scroll-mt-40 */}
         <section 
           id="politica-privacidad" 
-          className="bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 delay-100 ease-out fill-mode-both scroll-mt-24 relative overflow-hidden"
+          className="bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 delay-100 ease-out fill-mode-both scroll-mt-40 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-1/3 h-1 bg-gradient-to-l from-purple-500 to-transparent opacity-50"></div>
 
@@ -108,9 +120,10 @@ export default function LegalInfo() {
         </section>
 
         {/* --- SECCIÓN 3: TÉRMINOS DE SERVICIO --- */}
+        {/* Cambiamos scroll-mt-24 por scroll-mt-40 */}
         <section 
           id="terminos-servicio" 
-          className="bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 delay-200 ease-out fill-mode-both scroll-mt-24 relative overflow-hidden"
+          className="bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 delay-200 ease-out fill-mode-both scroll-mt-40 relative overflow-hidden"
         >
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
 

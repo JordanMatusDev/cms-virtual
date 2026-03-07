@@ -35,7 +35,7 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
     };
 
     return (
-        <div className="mb-10 relative animate-in fade-in slide-in-from-bottom-4 duration-500 group/row">
+        <div className="mb-10 relative animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-xl font-bold text-white mb-4 border-l-4 border-cyan-500 pl-4 flex items-center gap-3">
                 {category}
                 <span className="text-xs font-normal text-gray-500 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">{courses.length}</span>
@@ -43,7 +43,7 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
 
             <div className="relative">
                 {canScrollLeft && (
-                    <button onClick={() => slide('left')} className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-r border-white/10 rounded-r-xl opacity-0 group-hover/row:opacity-100 transition-opacity duration-300">
+                    <button onClick={() => slide('left')} className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-r border-white/10 rounded-r-xl transition-all">
                         <ChevronLeft size={24} className="text-cyan-400" />
                     </button>
                 )}
@@ -68,7 +68,7 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
                 </div>
 
                 {canScrollRight && (
-                    <button onClick={() => slide('right')} className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-l border-white/10 rounded-l-xl opacity-0 group-hover/row:opacity-100 transition-opacity duration-300">
+                    <button onClick={() => slide('right')} className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-l border-white/10 rounded-l-xl transition-all">
                         <ChevronRight size={24} className="text-cyan-400" />
                     </button>
                 )}
@@ -93,73 +93,73 @@ const CourseGrid = () => {
             <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 w-full">
 
                 {/* Header */}
-                <div className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-6">
-                    <div>
-                        <h2 className="text-3xl font-bold text-white tracking-tight">Explorar Cursos</h2>
-                        <p className="text-gray-400 text-sm mt-1">Domina nuevas habilidades hoy.</p>
-                    </div>
+                <div className="relative z-40 mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-6">                    <div>
+                    <h2 className="text-3xl font-bold text-white tracking-tight">Explorar Cursos</h2>
+                    <p className="text-gray-400 text-sm mt-1">Domina nuevas habilidades hoy.</p>
+                </div>
 
                     <div className="relative z-20">
-                                                <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-all min-w-[180px] bg-white/5 border border-white/10 ${isFilterOpen ? 'border-cyan-500/50' : 'hover:border-white/20'}`}>
-                                                    <div className="flex items-center gap-2">
-                                                        <Filter size={16} className="text-cyan-400" />
-                                                        <span className="text-gray-300">
-                                                            <span className="font-bold text-white mr-1">Filtrar:</span>
-                                                            {filter === 'Todas' ? (
-                                                                <span className="text-cyan-400 font-bold">Todas</span>
-                                                            ) : (
-                                                                <span className="text-cyan-400 font-bold">{filter}</span>
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                    <ChevronDown size={16} className={`transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
-                                                </button>
+                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-all min-w-[180px] bg-white/5 border border-white/10 ${isFilterOpen ? 'border-cyan-500/50' : 'hover:border-white/20'}`}>
+                            <div className="flex items-center gap-2">
+                                <Filter size={16} className="text-cyan-400" />
+                                <span className="text-gray-300">
+                                    <span className="font-bold text-white mr-1">Filtrar:</span>
+                                    {filter === 'Todas' ? (
+                                        <span className="text-cyan-400 font-bold">Todas</span>
+                                    ) : (
+                                        <span className="text-cyan-400 font-bold">{filter}</span>
+                                    )}
+                                </span>
+                            </div>
+                            <ChevronDown size={16} className={`transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                        </button>
 
-                                                {isFilterOpen && (
-                                                    <div className="absolute right-0 top-full mt-2 w-56 bg-[#121212] border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl z-20 animate-in fade-in zoom-in-95">
-                                                        <div className="py-2 max-h-64 overflow-y-auto custom-scrollbar">
-                                                            <button onClick={() => { setFilter('Todas'); setIsFilterOpen(false); }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 text-cyan-400 hover:text-cyan-300 flex justify-between font-bold">
-                                                                Todas {filter === 'Todas' && <Check size={16} className="text-cyan-400" />}
-                                                            </button>
-                                                            <div className="h-px bg-white/10 my-1 mx-4"></div>
-                                                            {availableCategories.map((cat) => (
-                                                                <button key={cat} onClick={() => { setFilter(cat); setIsFilterOpen(false); }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 text-gray-300 hover:text-cyan-400 flex justify-between">
-                                                                    <span className={filter === cat ? 'text-cyan-400 font-bold' : ''}>{cat}</span> {filter === cat && <Check size={16} className="text-cyan-400" />}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
+                        {isFilterOpen && (
+                            // AQUI ESTÁ LA MAGIA: left-0 sm:left-auto sm:right-0
+                            <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-56 bg-[#121212] border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl z-20 animate-in fade-in zoom-in-95">
+                                <div className="py-2 max-h-64 overflow-y-auto custom-scrollbar">
+                                    <button onClick={() => { setFilter('Todas'); setIsFilterOpen(false); }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 text-cyan-400 hover:text-cyan-300 flex justify-between font-bold">
+                                        Todas {filter === 'Todas' && <Check size={16} className="text-cyan-400" />}
+                                    </button>
+                                    <div className="h-px bg-white/10 my-1 mx-4"></div>
+                                    {availableCategories.map((cat) => (
+                                        <button key={cat} onClick={() => { setFilter(cat); setIsFilterOpen(false); }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 text-gray-300 hover:text-cyan-400 flex justify-between">
+                                            <span className={filter === cat ? 'text-cyan-400 font-bold' : ''}>{cat}</span> {filter === cat && <Check size={16} className="text-cyan-400" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Grid */}
-                <div className="space-y-2 pb-20">
+                <div className="relative z-0 space-y-2 pb-20">                    
                     {courses.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">
-                            <BookOpen size={48} className="mb-4 opacity-50" />
-                            <p>No se encontraron cursos activos.</p>
-                        </div>
-                    ) : (
-                        (filter === 'Todas' ?
-                            availableCategories.map((category) => {
-                                const categoryCourses = courses.filter(course => course.category === category);
-                                if (categoryCourses.length === 0) return null;
-                                return <CategoryRow key={category} category={category} courses={categoryCourses} />;
-                            })
+                    <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">
+                        <BookOpen size={48} className="mb-4 opacity-50" />
+                        <p>No se encontraron cursos activos.</p>
+                    </div>
+                ) : (
+                    (filter === 'Todas' ?
+                        availableCategories.map((category) => {
+                            const categoryCourses = courses.filter(course => course.category === category);
+                            if (categoryCourses.length === 0) return null;
+                            return <CategoryRow key={category} category={category} courses={categoryCourses} />;
+                        })
                         :
-                            (() => {
-                                const categoryCourses = courses.filter(course => course.category === filter);
-                                if (categoryCourses.length === 0) return (
-                                    <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">
-                                        <BookOpen size={48} className="mb-4 opacity-50" />
-                                        <p>No se encontraron cursos para esta categoría.</p>
-                                    </div>
-                                );
-                                return <CategoryRow key={filter} category={filter} courses={categoryCourses} />;
-                            })()
-                        )
-                    )}
+                        (() => {
+                            const categoryCourses = courses.filter(course => course.category === filter);
+                            if (categoryCourses.length === 0) return (
+                                <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">
+                                    <BookOpen size={48} className="mb-4 opacity-50" />
+                                    <p>No se encontraron cursos para esta categoría.</p>
+                                </div>
+                            );
+                            return <CategoryRow key={filter} category={filter} courses={categoryCourses} />;
+                        })()
+                    )
+                )}
                 </div>
             </div>
 
