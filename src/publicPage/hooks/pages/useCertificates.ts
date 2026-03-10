@@ -63,8 +63,6 @@ export const useCertificates = () => {
                         try {
                             const certData = await getCertificateByEnrollment(item.id, headers);
                             verificationCode = certData?.verification_code;
-                            console.log('Certificado recibido:', certData);
-                            console.log('Código de verificación:', verificationCode);
                         } catch {}
                         const categoriaOriginal = course.categoria?.nombre || 'general';
                         return {
@@ -81,7 +79,6 @@ export const useCertificates = () => {
                 );
                 setCertificates(mapped);
             } catch (err) {
-                console.error(err);
                 setCertificates([]);
             } finally {
                 setLoading(false);
@@ -121,7 +118,6 @@ export const useCertificates = () => {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         } catch (error) {
-            console.error("Error descargando certificado", error);
         } finally {
             setDownloadingIds(prev => {
                 const next = new Set(prev);
