@@ -164,7 +164,10 @@ const MyCourses = () => {
         ) : filteredCourses.length > 0 ? (
           <div className="relative group/row">
             {canScroll.left && (
-              <button onClick={() => slide('left')} className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 w-10 flex items-center justify-center backdrop-blur-sm border-r border-white/10 rounded-r-xl transition-all">
+              <button 
+                onClick={() => slide('left')} 
+                className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 w-10 flex items-center justify-center backdrop-blur-sm border-r border-white/10 rounded-r-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/row:opacity-100"
+              >
                 <ChevronLeft size={24} className="text-cyan-400" />
               </button>
             )}
@@ -238,7 +241,10 @@ const MyCourses = () => {
             </div>
 
             {canScroll.right && (
-              <button onClick={() => slide('right')} className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 w-10 flex items-center justify-center backdrop-blur-sm border-l border-white/10 rounded-l-xl transition-all">
+              <button 
+                onClick={() => slide('right')} 
+                className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 w-10 flex items-center justify-center backdrop-blur-sm border-l border-white/10 rounded-l-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/row:opacity-100"
+              >
                 <ChevronRight size={24} className="text-cyan-400" />
               </button>
             )}

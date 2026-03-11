@@ -28,31 +28,28 @@ export const useCourseGrid = () => {
           title: c.titulo || c.nombre || "Curso sin título",
           category: c.categoria?.nombre || "General",
           image: c.img || c.imagen_url || "",
-          description: c.descripcion
+          description: c.descripcion,
+          author: c.autor || c.instructor || "Autor Anónimo", 
+          videoCount: c.modulos || 0
         }));
 
         setCourses(formattedCourses);
 
-        // --- SISTEMA INTELIGENTE DE NUEVOS CURSOS ---
         const knownCourses = JSON.parse(localStorage.getItem('known_courses') || 'null');
         if (!knownCourses) {
-          // Es la primera vez que el usuario entra en su vida. 
-          // Guardamos todos los IDs en silencio para no hacerle spam con 20 notificaciones.
+          
           const allIds = formattedCourses.map(c => c.id);
           localStorage.setItem('known_courses', JSON.stringify(allIds));
         } else {
-          // Buscamos cuáles cursos de la base de datos NO están en la memoria del usuario
           const newCourses = formattedCourses.filter(c => !knownCourses.includes(c.id));
 
           if (newCourses.length === 1) {
-            // Solo hay 1 curso nuevo
             addNotification({
               title: '¡Nuevo Curso Disponible!',
               message: `Acabamos de publicar "${newCourses[0].title}". ¡Ve a descubrirlo!`,
               type: 'promo'
             });
           } else if (newCourses.length > 1) {
-            // Hay varios cursos nuevos de golpe
             addNotification({
               title: '¡Nuevos Cursos Disponibles!',
               message: `¡Tenemos ${newCourses.length} nuevos cursos para ti! Incluyendo "${newCourses[0].title}".`,
@@ -60,7 +57,6 @@ export const useCourseGrid = () => {
             });
           }
 
-          // Si hubo cursos nuevos, actualizamos la memoria para que no vuelva a avisar mañana
           if (newCourses.length > 0) {
             const allIds = formattedCourses.map(c => c.id);
             localStorage.setItem('known_courses', JSON.stringify(allIds));
@@ -75,7 +71,7 @@ export const useCourseGrid = () => {
       }
     };
     fetchCourses();
-  }, []); // Dependencias vacías para que solo se ejecute al montar
+  }, []); 
 
   // Lógica de filtrado
   const availableCategories = Array.from(new Set(courses.map(c => c.category))).sort();
