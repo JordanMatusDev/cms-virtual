@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Filter, ChevronDown, Check, ChevronLeft, ChevronRight, Loader2, BookOpen } from 'lucide-react';
+import { User, PlayCircle, Filter, ChevronDown, Check, ChevronLeft, ChevronRight, Loader2, BookOpen } from 'lucide-react';
 import { useCourseGrid } from '../hooks/pages/useCourseGrid';
 import type { CategoryRowProps } from '../types/course.type';
 
@@ -41,26 +41,56 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
                 <span className="text-xs font-normal text-gray-500 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">{courses.length}</span>
             </h2>
 
-            <div className="relative">
+            <div className="relative group/slider">
+                
                 {canScrollLeft && (
-                    <button onClick={() => slide('left')} className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-r border-white/10 rounded-r-xl transition-all">
+                    <button 
+                        onClick={() => slide('left')} 
+                        className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-r border-white/10 rounded-r-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/slider:opacity-100"
+                    >
                         <ChevronLeft size={24} className="text-cyan-400" />
                     </button>
                 )}
 
+                {/* CONTENEDOR DE CURSOS */}
                 <div ref={rowRef} onScroll={checkScroll} className="flex overflow-x-auto gap-5 scrollbar-hide py-4 scroll-smooth" style={{ scrollPaddingLeft: 0 }}>
                     {courses.map((course) => (
-                        <div key={course.id} onClick={() => navigate(`/curso/${course.id}`)} className="min-w-[260px] w-[260px] sm:min-w-[300px] bg-[#121212] rounded-2xl border border-white/10 hover:border-cyan-500/50 transition-all duration-300 overflow-hidden flex flex-col hover:shadow-[0_0_30px_-5px_rgba(34,211,238,0.2)] hover:-translate-y-1 cursor-pointer group/card">
-                            <div className="relative overflow-hidden h-40 w-full">
-                                <div className="absolute inset-0 bg-black/20 group-hover/card:bg-transparent transition-all z-10"></div>
-                                <img src={course.image || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop"} alt={course.title} className="w-full h-full object-cover transform group-hover/card:scale-110 transition duration-500 z-0" loading="lazy" />
-                                <div className="absolute top-2 left-2 z-20">
+                        <div key={course.id} onClick={() => navigate(`/curso/${course.id}`)}
+                            className="min-w-[260px] w-[260px] sm:min-w-[300px] h-[340px] bg-[#121212] rounded-2xl border border-white/10 hover:border-cyan-500/50 transition-all duration-300 overflow-hidden flex flex-col hover:shadow-[0_0_30px_-5px_rgba(34,211,238,0.2)] hover:-translate-y-1 cursor-pointer group/card">
+
+                            <div className="relative overflow-hidden h-[146px] sm:h-40 w-full shrink-0 rounded-t-2xl [transform:translateZ(0)] bg-[#121212]">
+                                <div className="absolute inset-0 bg-black/20 group-hover/card:bg-transparent transition-all z-20 pointer-events-none"></div>
+                                <img 
+                                    src={course.image || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop"} 
+                                    alt={course.title} 
+                                    className="absolute inset-0 w-full h-full object-cover transform group-hover/card:scale-110 transition duration-500 z-10" 
+                                    loading="lazy" 
+                                />
+                                <div className="absolute top-2 left-2 z-30">
                                     <span className="bg-[#0b1220] backdrop-blur-md border border-[#1e2a3a] px-2 py-1 text-xs font-bold text-slate-300 rounded">{course.category}</span>
                                 </div>
                             </div>
-                            <div className="p-4 flex-grow flex flex-col justify-between">
-                                <h3 className="text-base font-bold text-white mb-3 group-hover/card:text-cyan-400 transition-colors line-clamp-2">{course.title}</h3>
-                                <button className="w-full py-2 rounded-lg font-semibold text-xs text-white border border-white/10 bg-white/5 hover:bg-gradient-to-r hover:from-cyan-500 hover:to-blue-600 hover:border-transparent transition-all duration-300 cursor-pointer shadow-lg relative overflow-hidden">Ver Curso</button>
+
+                            <div className="p-4 flex-grow flex flex-col">
+                                <div>
+                                    <h3 className="text-base font-bold text-white mb-2 group-hover/card:text-cyan-400 transition-colors line-clamp-2 min-h-[3rem]">{course.title}</h3>
+                                    <p className="text-xs text-gray-400 line-clamp-2">
+                                        {course.description}
+                                    </p>
+                                </div>
+
+                                <div className="mt-auto">
+                                    <div className="flex items-center justify-between text-sm text-gray-400 border-t border-white/5 pt-3">
+                                        <div className="flex items-center gap-1.5">
+                                            <User size={12} className="text-cyan-500 shrink-0" />
+                                            <span className="max-w-[120px] whitespace-normal break-words line-clamp-2 text-xs">{course.author}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            <PlayCircle size={12} className="text-cyan-500" />
+                                            <span className="text-xs">{course.videoCount} Lecciones</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -68,7 +98,10 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
                 </div>
 
                 {canScrollRight && (
-                    <button onClick={() => slide('right')} className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-l border-white/10 rounded-l-xl transition-all">
+                    <button 
+                        onClick={() => slide('right')} 
+                        className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-l border-white/10 rounded-l-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/slider:opacity-100"
+                    >
                         <ChevronRight size={24} className="text-cyan-400" />
                     </button>
                 )}
@@ -134,32 +167,32 @@ const CourseGrid = () => {
                 </div>
 
                 {/* Grid */}
-                <div className="relative z-0 space-y-2 pb-20">                    
+                <div className="relative z-0 space-y-2 pb-20">
                     {courses.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">
-                        <BookOpen size={48} className="mb-4 opacity-50" />
-                        <p>No se encontraron cursos activos.</p>
-                    </div>
-                ) : (
-                    (filter === 'Todas' ?
-                        availableCategories.map((category) => {
-                            const categoryCourses = courses.filter(course => course.category === category);
-                            if (categoryCourses.length === 0) return null;
-                            return <CategoryRow key={category} category={category} courses={categoryCourses} />;
-                        })
-                        :
-                        (() => {
-                            const categoryCourses = courses.filter(course => course.category === filter);
-                            if (categoryCourses.length === 0) return (
-                                <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">
-                                    <BookOpen size={48} className="mb-4 opacity-50" />
-                                    <p>No se encontraron cursos para esta categoría.</p>
-                                </div>
-                            );
-                            return <CategoryRow key={filter} category={filter} courses={categoryCourses} />;
-                        })()
-                    )
-                )}
+                        <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">
+                            <BookOpen size={48} className="mb-4 opacity-50" />
+                            <p>No se encontraron cursos activos.</p>
+                        </div>
+                    ) : (
+                        (filter === 'Todas' ?
+                            availableCategories.map((category) => {
+                                const categoryCourses = courses.filter(course => course.category === category);
+                                if (categoryCourses.length === 0) return null;
+                                return <CategoryRow key={category} category={category} courses={categoryCourses} />;
+                            })
+                            :
+                            (() => {
+                                const categoryCourses = courses.filter(course => course.category === filter);
+                                if (categoryCourses.length === 0) return (
+                                    <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">
+                                        <BookOpen size={48} className="mb-4 opacity-50" />
+                                        <p>No se encontraron cursos para esta categoría.</p>
+                                    </div>
+                                );
+                                return <CategoryRow key={filter} category={filter} courses={categoryCourses} />;
+                            })()
+                        )
+                    )}
                 </div>
             </div>
 

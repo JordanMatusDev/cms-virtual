@@ -200,7 +200,10 @@ const MyCertificates = () => {
                     // --- CAROUSEL ---
                     <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-700 group/row">
                         {canScrollLeft && (
-                            <button onClick={() => slide('left')} className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-r border-white/10 rounded-r-xl transition-all">
+                            <button 
+                                onClick={() => slide('left')} 
+                                className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-r border-white/10 rounded-r-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/row:opacity-100"
+                            >
                                 <ChevronLeft size={24} className="text-cyan-400" />
                             </button>
                         )}
@@ -253,7 +256,10 @@ const MyCertificates = () => {
                         </div>
 
                         {canScrollRight && (
-                            <button onClick={() => slide('right')} className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-l border-white/10 rounded-l-xl transition-all">
+                            <button 
+                                onClick={() => slide('right')} 
+                                className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-l border-white/10 rounded-l-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/row:opacity-100"
+                            >
                                 <ChevronRight size={24} className="text-cyan-400" />
                             </button>
                         )}
