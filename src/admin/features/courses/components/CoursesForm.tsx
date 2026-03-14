@@ -211,11 +211,17 @@ function CoursesForm() {
 
    const onFormError = (errores: any) => {
       window.scrollTo({ top: -5, behavior: 'smooth' });
+      const fieldMessages = Object.values(errores)
+         .map((err: any) => err?.message)
+         .filter(
+            (message: unknown): message is string =>
+               typeof message === 'string' && message.trim().length > 0
+         );
       const errorMsg = errores.general
          ? errores.general.message
-         : Object.values(errores)
-              .map((err: any) => err.message)
-              .join(', ');
+         : fieldMessages.length >= 2
+           ? 'Hay campos con datos faltantes o inválidos.'
+           : fieldMessages[0] || 'Hay campos con datos faltantes o inválidos.';
       setMainError('Error de validación: ' + errorMsg);
    };
 
