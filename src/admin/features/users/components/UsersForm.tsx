@@ -20,6 +20,11 @@ import {
    IconButton,
    Tooltip,
    Divider,
+   Dialog,
+   DialogTitle,
+   DialogContent,
+   DialogContentText,
+   DialogActions,
 } from '@mui/material';
 import { inputSx, switchSx } from '@/admin/theme/Input.styles';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
@@ -51,6 +56,7 @@ function UsersForm() {
 
    const isEditMode = id && id !== 'nuevo';
    const [isEditable, setIsEditable] = useState(!isEditMode);
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
    const [avatarFileToUpload, setAvatarFileToUpload] = useState<File | null>(
@@ -223,23 +229,37 @@ function UsersForm() {
       }
    };
 
-   const handleDelete = () => {
-      if (
-         window.confirm('¿Estás seguro de que deseas eliminar este usuario?')
-      ) {
-         deleteMutation.mutate(id!, {
-            onSuccess: () => {
-               showToast(TOAST_MESSAGES.USERS.DELETE_SUCCESS, 'success');
-               navigate(-1);
-            },
-            onError: (error: Error) => {
-               showToast(
-                  error.message || TOAST_MESSAGES.USERS.DELETE_ERROR,
-                  'error'
-               );
-            },
-         });
+   const handleOpenDeleteDialog = () => {
+      setIsDeleteDialogOpen(true);
+   };
+
+   const handleCloseDeleteDialog = () => {
+      if (deleteMutation.isPending) {
+         return;
       }
+
+      setIsDeleteDialogOpen(false);
+   };
+
+   const handleConfirmDelete = () => {
+      if (!id) {
+         return;
+      }
+
+      deleteMutation.mutate(id, {
+         onSuccess: () => {
+            setIsDeleteDialogOpen(false);
+            showToast(TOAST_MESSAGES.USERS.DELETE_SUCCESS, 'success');
+            navigate(-1);
+         },
+         onError: (error: Error) => {
+            setIsDeleteDialogOpen(false);
+            showToast(
+               error.message || TOAST_MESSAGES.USERS.DELETE_ERROR,
+               'error'
+            );
+         },
+      });
    };
 
    const handleCancel = () => handleGoBack();
@@ -319,7 +339,7 @@ function UsersForm() {
                      <Tooltip title="Eliminar usuario">
                         <Button
                            variant="contained"
-                           onClick={handleDelete}
+                           onClick={handleOpenDeleteDialog}
                            disabled={deleteMutation.isPending || isSaving}
                            sx={{
                               bgcolor: '#EF4444',
@@ -591,6 +611,37 @@ function UsersForm() {
                     : 'Crear Usuario'}
             </Button>
          </Stack>
+
+         <Dialog
+            open={isDeleteDialogOpen}
+            onClose={handleCloseDeleteDialog}
+            fullWidth
+            maxWidth="xs"
+         >
+            <DialogTitle>Eliminar usuario</DialogTitle>
+            <DialogContent>
+               <DialogContentText>
+                  Esta acción eliminará el usuario de forma permanente. ¿Deseas
+                  continuar?
+               </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+               <Button
+                  onClick={handleCloseDeleteDialog}
+                  disabled={deleteMutation.isPending}
+               >
+                  Cancelar
+               </Button>
+               <Button
+                  onClick={handleConfirmDelete}
+                  color="error"
+                  variant="contained"
+                  disabled={deleteMutation.isPending}
+               >
+                  {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+               </Button>
+            </DialogActions>
+         </Dialog>
       </Box>
    );
 }

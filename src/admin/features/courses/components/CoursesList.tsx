@@ -570,10 +570,9 @@ function CoursesList() {
                   color: '#EF4444',
                   mt: 3,
                   fontWeight: 600,
-                  textAlign: 'center',
                }}
             >
-               {`Error: ${error.message || 'Error desconocido'}`}
+               {`Error al cargar cursos: ${error.message || 'Error desconocido'}`}
             </Typography>
          )}
 

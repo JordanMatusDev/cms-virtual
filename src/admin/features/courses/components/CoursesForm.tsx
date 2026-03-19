@@ -19,6 +19,11 @@ import {
    IconButton,
    Tooltip,
    Divider,
+   Dialog,
+   DialogTitle,
+   DialogContent,
+   DialogContentText,
+   DialogActions,
 } from '@mui/material';
 import { inputSx, switchSx } from '@/admin/theme/Input.styles';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
@@ -53,6 +58,7 @@ function CoursesForm() {
 
    const isEditMode = id && id !== 'nuevo';
    const [isEditable, setIsEditable] = useState(!isEditMode);
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
    const [mainError, setMainError] = useState('');
    const [playlistId, setPlaylistId] = useState<string>('');
    const [formattedCourseData, setFormattedCourseData] =
@@ -256,22 +262,38 @@ function CoursesForm() {
       }
    };
 
-   const handleDelete = () => {
-      if (window.confirm('¿Estás seguro de que deseas eliminar este curso?')) {
-         deleteMutation.mutate(id!, {
-            onSuccess: () => {
-               showToast(TOAST_MESSAGES.COURSES.DELETE_SUCCESS, 'success');
-               navigate(-1);
-            },
-            onError: (error: any) => {
-               showToast(
-                  error.message || TOAST_MESSAGES.COURSES.DELETE_ERROR,
-                  'error'
-               );
-               setMainError(error.message || 'Error al eliminar');
-            },
-         });
+   const handleOpenDeleteDialog = () => {
+      setIsDeleteDialogOpen(true);
+   };
+
+   const handleCloseDeleteDialog = () => {
+      if (deleteMutation.isPending) {
+         return;
       }
+
+      setIsDeleteDialogOpen(false);
+   };
+
+   const handleConfirmDelete = () => {
+      if (!id) {
+         return;
+      }
+
+      deleteMutation.mutate(id, {
+         onSuccess: () => {
+            setIsDeleteDialogOpen(false);
+            showToast(TOAST_MESSAGES.COURSES.DELETE_SUCCESS, 'success');
+            navigate(-1);
+         },
+         onError: (error: any) => {
+            setIsDeleteDialogOpen(false);
+            showToast(
+               error.message || TOAST_MESSAGES.COURSES.DELETE_ERROR,
+               'error'
+            );
+            setMainError(error.message || 'Error al eliminar');
+         },
+      });
    };
 
    if (isFetchingCourse) {
@@ -332,7 +354,7 @@ function CoursesForm() {
                      <Tooltip title="Eliminar curso">
                         <Button
                            variant="contained"
-                           onClick={handleDelete}
+                           onClick={handleOpenDeleteDialog}
                            disabled={deleteMutation.isPending || isSaving}
                            sx={{
                               bgcolor: '#EF4444',
@@ -752,6 +774,37 @@ function CoursesForm() {
                     : 'Crear Curso'}
             </Button>
          </Stack>
+
+         <Dialog
+            open={isDeleteDialogOpen}
+            onClose={handleCloseDeleteDialog}
+            fullWidth
+            maxWidth="xs"
+         >
+            <DialogTitle>Eliminar curso</DialogTitle>
+            <DialogContent>
+               <DialogContentText>
+                  Esta acción eliminará el curso de forma permanente. ¿Deseas
+                  continuar?
+               </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+               <Button
+                  onClick={handleCloseDeleteDialog}
+                  disabled={deleteMutation.isPending}
+               >
+                  Cancelar
+               </Button>
+               <Button
+                  onClick={handleConfirmDelete}
+                  color="error"
+                  variant="contained"
+                  disabled={deleteMutation.isPending}
+               >
+                  {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+               </Button>
+            </DialogActions>
+         </Dialog>
       </Box>
    );
 }
