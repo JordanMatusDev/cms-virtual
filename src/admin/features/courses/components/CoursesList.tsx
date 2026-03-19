@@ -20,10 +20,20 @@ import {
    type SelectChangeEvent,
    InputAdornment,
    Pagination,
+   Dialog,
+   DialogTitle,
+   DialogContent,
+   DialogContentText,
+   DialogActions,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { type Course } from '../schemas/course.schema';
+import {
+   CategoryPayloadSchema,
+   type CategoryPayload,
+} from '../schemas/category.schema';
 import { useGetCourses, useUpdateCourse } from '../hooks/useCourse';
+import { useCreateCategory, useGetCategories } from '../hooks/useCategories';
 import { useCoursesFilter } from '../hooks/useCoursesFilter';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
 import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
@@ -51,6 +61,8 @@ function CoursesList() {
       isFetching,
    } = useGetCourses();
    const updateMutation = useUpdateCourse();
+   const createCategoryMutation = useCreateCategory();
+   const { data: categoriesData } = useGetCategories();
    const navigate = useNavigate();
    const {
       searchTerm,
@@ -59,7 +71,7 @@ function CoursesList() {
       setStatusFilter,
       categoryFilter,
       setCategoryFilter,
-      categories,
+      categories: courseCategories,
       filteredCourses,
    } = useCoursesFilter(courses ?? []);
 
@@ -68,6 +80,9 @@ function CoursesList() {
       null
    );
    const [actionError, setActionError] = useState('');
+   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+   const [newCategoryName, setNewCategoryName] = useState('');
+   const [newCategoryError, setNewCategoryError] = useState('');
    const [page, setPage] = useState(() => {
       if (typeof window === 'undefined') {
          return 1;
@@ -85,6 +100,20 @@ function CoursesList() {
       1,
       Math.ceil(filteredCourses.length / COURSES_PER_PAGE)
    );
+
+   const categoryOptions = useMemo(() => {
+      const categoriesFromApi = (categoriesData ?? [])
+         .map((category) => category.nombre)
+         .filter((name): name is string => Boolean(name));
+
+      const mergedCategories = new Set([
+         ...courseCategories,
+         ...categoriesFromApi,
+      ]);
+
+      return Array.from(mergedCategories).sort((a, b) => a.localeCompare(b));
+   }, [courseCategories, categoriesData]);
+
    const paginatedCourses = filteredCourses.slice(
       (page - 1) * COURSES_PER_PAGE,
       page * COURSES_PER_PAGE
@@ -145,6 +174,48 @@ function CoursesList() {
 
    const handleCourseForm = () => {
       navigate(ROUTES_PATHS.ADMIN_COURSES_FORM.replace(':id', 'nuevo'));
+   };
+
+   const handleOpenCategoryDialog = () => {
+      setIsCategoryDialogOpen(true);
+      setNewCategoryError('');
+   };
+
+   const handleCloseCategoryDialog = () => {
+      if (createCategoryMutation.isPending) {
+         return;
+      }
+
+      setIsCategoryDialogOpen(false);
+      setNewCategoryName('');
+      setNewCategoryError('');
+   };
+
+   const handleCreateCategory = async () => {
+      const trimmedCategoryName = newCategoryName.trim();
+
+      if (!trimmedCategoryName) {
+         setNewCategoryError('El nombre de la categoría es requerido');
+         return;
+      }
+
+      setNewCategoryError('');
+
+      try {
+         const categoryPayload: CategoryPayload = CategoryPayloadSchema.parse({
+            name: trimmedCategoryName,
+            status: true,
+         });
+
+         await createCategoryMutation.mutateAsync(categoryPayload);
+         showToast('Categoría creada correctamente', 'success');
+         handleCloseCategoryDialog();
+      } catch (mutationError: any) {
+         const errorMessage =
+            mutationError?.message || 'No se pudo crear la categoría';
+         setNewCategoryError(errorMessage);
+         showToast(errorMessage, 'error');
+      }
    };
 
    const handleEdit = () => {
@@ -232,6 +303,25 @@ function CoursesList() {
                      <IoReloadCircle size={28} />
                   </Button>
                </Tooltip>
+
+               <Button
+                  variant="contained"
+                  disabled={isLoading || isFetching}
+                  onClick={handleOpenCategoryDialog}
+                  sx={{
+                     bgcolor: '#4F46E5',
+                     color: 'white',
+                     borderRadius: '8px',
+                     textTransform: 'none',
+                     fontWeight: 600,
+                     px: 3,
+                     py: 1,
+                     '&:hover': { bgcolor: '#4338CA' },
+                  }}
+               >
+                  <FaPlus size={16} style={{ marginRight: 8 }} />
+                  Nueva Categoría
+               </Button>
 
                <Button
                   variant="contained"
@@ -343,7 +433,7 @@ function CoursesList() {
                   }}
                >
                   <MenuItem value="all">Todas</MenuItem>
-                  {categories.map((category) => (
+                  {categoryOptions.map((category) => (
                      <MenuItem key={category} value={category}>
                         {category}
                      </MenuItem>
@@ -563,6 +653,52 @@ function CoursesList() {
                {updateMutation.isPending ? 'Desactivando...' : 'Desactivar'}
             </MenuItem>
          </Menu>
+
+         <Dialog
+            open={isCategoryDialogOpen}
+            onClose={handleCloseCategoryDialog}
+            fullWidth
+            maxWidth="xs"
+         >
+            <DialogTitle>Crear categoría</DialogTitle>
+            <DialogContent>
+               <DialogContentText sx={{ mb: 2 }}>
+                  Ingresa el nombre de la nueva categoría.
+               </DialogContentText>
+               <TextField
+                  autoFocus
+                  fullWidth
+                  label="Nombre de categoría"
+                  value={newCategoryName}
+                  onChange={(event) => {
+                     setNewCategoryName(event.target.value);
+                     if (newCategoryError) {
+                        setNewCategoryError('');
+                     }
+                  }}
+                  error={!!newCategoryError}
+                  helperText={newCategoryError}
+                  disabled={createCategoryMutation.isPending}
+               />
+            </DialogContent>
+            <DialogActions>
+               <Button
+                  onClick={handleCloseCategoryDialog}
+                  disabled={createCategoryMutation.isPending}
+               >
+                  Cancelar
+               </Button>
+               <Button
+                  onClick={handleCreateCategory}
+                  variant="contained"
+                  disabled={createCategoryMutation.isPending}
+               >
+                  {createCategoryMutation.isPending
+                     ? 'Guardando...'
+                     : 'Guardar'}
+               </Button>
+            </DialogActions>
+         </Dialog>
 
          {error && (
             <Typography

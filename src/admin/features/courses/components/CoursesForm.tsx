@@ -692,7 +692,6 @@ function CoursesForm() {
                                  </Box>
                               ))
                            ) : modulesList.length > 0 ? (
-                              // SI NO HAY DETALLES (EJ: AL CARGAR EN MODO EDICIÓN SIN SINCRONIZAR), MOSTRAMOS EL RESPALDO
                               modulesList.map((id, index) => (
                                  <Box
                                     key={index}
@@ -718,7 +717,6 @@ function CoursesForm() {
                                  </Box>
                               ))
                            ) : (
-                              // SI NO HAY NADA DE NADA
                               <Typography
                                  sx={{
                                     color: '#64748B',
