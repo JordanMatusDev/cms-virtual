@@ -236,7 +236,7 @@ function AdminPanel() {
                         }}
                      >
                         {ADMIN_PANEL_TEXTS.WELCOME_MESSAGE +
-                           (usuario?.username || 'Admin User') +
+                           (usuario?.name || 'Admin User') +
                            '!'}
                      </Typography>
                      <Typography
