@@ -35,6 +35,7 @@ import {
    FaClock,
    FaBookOpen,
    FaSearch,
+   FaEdit,
 } from 'react-icons/fa';
 import AdminPageLoader from '@/admin/core/components/AdminPageLoader';
 import { useToast } from '@/admin/core/context/toastContext';
@@ -164,16 +165,10 @@ function CoursesList() {
       navigate(ROUTES_PATHS.ADMIN_COURSES_FORM.replace(':id', 'nuevo'));
    };
 
-   const handleEdit = () => {
-      if (selectedCourseId) {
-         navigate(
-            ROUTES_PATHS.ADMIN_COURSES_FORM.replace(
-               ':id',
-               String(selectedCourseId)
-            )
-         );
-      }
-      handleCloseMenu();
+   const handleEditCourse = (courseId: number) => {
+      navigate(
+         ROUTES_PATHS.ADMIN_COURSES_FORM.replace(':id', String(courseId))
+      );
    };
 
    const selectedCourse = courses?.find(
@@ -399,16 +394,58 @@ function CoursesList() {
                         <FaEllipsisV size={14} />
                      </IconButton>
 
-                     <CardMedia
-                        component="img"
-                        height="160"
-                        image={course.img || '/default-course.png'}
-                        alt={course.titulo}
+                     <Box
+                        onClick={() => handleEditCourse(course.id)}
                         sx={{
-                           objectFit: 'cover',
+                           position: 'relative',
+                           cursor: 'pointer',
+                           overflow: 'hidden',
                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                           '&:hover .course-image': {
+                              filter: 'blur(10px)',
+                              transform: 'scale(1.03)',
+                           },
+                           '&:hover .course-image-overlay': {
+                              opacity: 1,
+                           },
                         }}
-                     />
+                     >
+                        <CardMedia
+                           component="img"
+                           height="160"
+                           image={course.img || '/default-course.png'}
+                           alt={course.titulo}
+                           className="course-image"
+                           sx={{
+                              objectFit: 'cover',
+                              transition:
+                                 'filter 0.2s ease, transform 0.2s ease',
+                           }}
+                        />
+                        <Box
+                           className="course-image-overlay"
+                           sx={{
+                              position: 'absolute',
+                              inset: 0,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 0.75,
+                              color: '#F8FAFC',
+                              bgcolor: 'rgba(15, 23, 42, 0.45)',
+                              opacity: 0,
+                              transition: 'opacity 0.2s ease',
+                           }}
+                        >
+                           <FaEdit size={22} />
+                           <Typography
+                              sx={{ fontSize: '0.85rem', fontWeight: 600 }}
+                           >
+                              Editar detalles
+                           </Typography>
+                        </Box>
+                     </Box>
 
                      <CardContent
                         sx={{
@@ -570,9 +607,6 @@ function CoursesList() {
                },
             }}
          >
-            <MenuItem onClick={handleEdit} sx={{ fontSize: '14px' }}>
-               Editar Detalles
-            </MenuItem>
             <MenuItem
                onClick={handleDeactivate}
                disabled={updateMutation.isPending || !selectedCourse?.activo}
