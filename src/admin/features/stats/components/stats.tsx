@@ -1,4 +1,14 @@
-import { Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import {
+   Box,
+   Card,
+   CardContent,
+   Grid,
+   Stack,
+   Typography,
+   Tooltip,
+   Button,
+} from '@mui/material';
+import { IoReloadCircle } from 'react-icons/io5';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { useNavigate } from 'react-router';
@@ -33,7 +43,7 @@ const formatAxisLabel = (title: string) => {
 
 function stats() {
    const navigate = useNavigate();
-   const { data, isLoading } = useGetStats();
+   const { data, isLoading, refetch } = useGetStats();
    const topCourses = data?.top_courses?.slice(0, 5) ?? [];
 
    const handleBarClick = (dataIndex: number | null) => {
@@ -62,17 +72,41 @@ function stats() {
       <Box
          sx={{ px: 1, pb: 1, display: 'flex', flexDirection: 'column', gap: 3 }}
       >
-         <Box>
-            <Typography
-               variant="h5"
-               sx={{ color: '#F8FAFC', fontWeight: 'bold', mb: 0.5 }}
-            >
-               Estadísticas
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#94A3B8' }}>
-               Resumen visual del estado de usuarios, registros y cursos con más
-               actividad
-            </Typography>
+         <Box
+            sx={{
+               justifyContent: 'space-between',
+               display: 'flex',
+               alignItems: 'center',
+            }}
+         >
+            <Box>
+               <Typography
+                  variant="h5"
+                  sx={{ color: '#F8FAFC', fontWeight: 'bold', mb: 0.5 }}
+               >
+                  Estadísticas
+               </Typography>
+               <Typography variant="body2" sx={{ color: '#94A3B8' }}>
+                  Resumen visual del estado de usuarios, registros y cursos con
+                  más actividad
+               </Typography>
+            </Box>
+            <Box>
+               <Tooltip
+                  title="Recargar lista estadísticas"
+                  placement="left"
+                  arrow
+               >
+                  <Button
+                     color="inherit"
+                     disabled={isLoading}
+                     onClick={() => refetch()}
+                     sx={{ color: '#94A3B8', minWidth: 'auto', p: 1 }}
+                  >
+                     <IoReloadCircle size={28} />
+                  </Button>
+               </Tooltip>
+            </Box>
          </Box>
 
          <Grid container spacing={2}>

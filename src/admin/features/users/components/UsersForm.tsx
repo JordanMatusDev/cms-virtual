@@ -17,10 +17,14 @@ import {
    Avatar,
    CircularProgress,
    Grid,
-   Paper,
    IconButton,
    Tooltip,
    Divider,
+   Dialog,
+   DialogTitle,
+   DialogContent,
+   DialogContentText,
+   DialogActions,
 } from '@mui/material';
 import { inputSx, switchSx } from '@/admin/theme/Input.styles';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
@@ -43,13 +47,16 @@ import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
 import { useToast } from '@/admin/core/context/toastContext';
 import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
 
+const USERS_GO_LAST_PAGE_KEY = 'admin.users.goLastPage';
+
 function UsersForm() {
    const { id } = useParams();
    const navigate = useNavigate();
+   const handleGoBack = () => navigate(-1);
 
    const isEditMode = id && id !== 'nuevo';
    const [isEditable, setIsEditable] = useState(!isEditMode);
-   const [mainError, setMainError] = useState('');
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
    const [avatarFileToUpload, setAvatarFileToUpload] = useState<File | null>(
@@ -111,18 +118,24 @@ function UsersForm() {
 
    const onFormError = (errores: any) => {
       window.scrollTo({ top: -5, behavior: 'smooth' });
-      const errorMsg = errores.general
-         ? errores.general.message
-         : Object.values(errores)
-              .map((err: any) => err.message)
-              .join(', ');
+      const generalMessage = (errores as { general?: { message?: string } })
+         .general?.message;
+      const fieldMessages = Object.values(errores)
+         .map((err: any) => err?.message)
+         .filter(
+            (message: unknown): message is string =>
+               typeof message === 'string' && message.trim().length > 0
+         );
+      const errorMsg = generalMessage
+         ? generalMessage
+         : fieldMessages.length >= 2
+           ? 'Hay campos con datos faltantes o inválidos.'
+           : fieldMessages[0] || 'Hay campos con datos faltantes o inválidos.';
 
-      setMainError('Error: ' + errorMsg);
+      showToast('Error: ' + errorMsg, 'error');
    };
 
    const onSubmit = async (data: UserPayload) => {
-      setMainError('');
-
       if (isEditMode) {
          try {
             const payloadToUpdate = cleanPatchPayload(data, userData, [
@@ -144,13 +157,12 @@ function UsersForm() {
             }
 
             showToast(TOAST_MESSAGES.USERS.UPDATE_SUCCESS, 'success');
-            navigate(ROUTES_PATHS.ADMIN_USERS);
+            navigate(-1);
          } catch (error: any) {
             showToast(
                error.message || TOAST_MESSAGES.USERS.UPDATE_ERROR,
                'error'
             );
-            onFormError({ general: { message: error.message } });
          }
       } else {
          if (!data.password) {
@@ -205,42 +217,52 @@ function UsersForm() {
 
             await Promise.all(tareasExtra);
             showToast(TOAST_MESSAGES.USERS.CREATE_SUCCESS, 'success');
+            window.sessionStorage.setItem(USERS_GO_LAST_PAGE_KEY, 'true');
             navigate(ROUTES_PATHS.ADMIN_USERS);
          } catch (error: any) {
             showToast(
-               error.message || TOAST_MESSAGES.USERS.CREATE_ERROR,
+               'Hubo un problema en el proceso: ' +
+                  (error.message || TOAST_MESSAGES.USERS.CREATE_ERROR),
                'error'
             );
-            onFormError({
-               general: {
-                  message: 'Hubo un problema en el proceso: ' + error.message,
-               },
-            });
          }
       }
    };
 
-   const handleDelete = () => {
-      if (
-         window.confirm('¿Estás seguro de que deseas eliminar este usuario?')
-      ) {
-         deleteMutation.mutate(id!, {
-            onSuccess: () => {
-               showToast(TOAST_MESSAGES.USERS.DELETE_SUCCESS, 'success');
-               navigate(ROUTES_PATHS.ADMIN_USERS);
-            },
-            onError: (error: Error) => {
-               showToast(
-                  error.message || TOAST_MESSAGES.USERS.DELETE_ERROR,
-                  'error'
-               );
-               onFormError({ general: { message: error.message } });
-            },
-         });
-      }
+   const handleOpenDeleteDialog = () => {
+      setIsDeleteDialogOpen(true);
    };
 
-   const handleCancel = () => navigate(ROUTES_PATHS.ADMIN_USERS);
+   const handleCloseDeleteDialog = () => {
+      if (deleteMutation.isPending) {
+         return;
+      }
+
+      setIsDeleteDialogOpen(false);
+   };
+
+   const handleConfirmDelete = () => {
+      if (!id) {
+         return;
+      }
+
+      deleteMutation.mutate(id, {
+         onSuccess: () => {
+            setIsDeleteDialogOpen(false);
+            showToast(TOAST_MESSAGES.USERS.DELETE_SUCCESS, 'success');
+            navigate(-1);
+         },
+         onError: (error: Error) => {
+            setIsDeleteDialogOpen(false);
+            showToast(
+               error.message || TOAST_MESSAGES.USERS.DELETE_ERROR,
+               'error'
+            );
+         },
+      });
+   };
+
+   const handleCancel = () => handleGoBack();
 
    if (isFetchingUser) {
       return (
@@ -275,7 +297,7 @@ function UsersForm() {
             }}
          >
             <Stack direction="row" alignItems="center" spacing={1}>
-               <IconButton onClick={handleCancel} sx={{ color: '#94A3B8' }}>
+               <IconButton onClick={handleGoBack} sx={{ color: '#94A3B8' }}>
                   <MdArrowBack />
                </IconButton>
                <Box>
@@ -287,27 +309,6 @@ function UsersForm() {
                   </Typography>
                </Box>
             </Stack>
-
-            {mainError && (
-               <Paper
-                  sx={{
-                     p: 1.5,
-                     bgcolor: 'rgba(239, 68, 68, 0.1)',
-                     border: '1px solid #EF4444',
-                     borderRadius: '8px',
-                  }}
-               >
-                  <Typography
-                     sx={{
-                        color: '#EF4444',
-                        fontSize: '13px',
-                        textAlign: 'center',
-                     }}
-                  >
-                     {mainError}
-                  </Typography>
-               </Paper>
-            )}
 
             <Stack direction="row" spacing={1}>
                {isEditMode && (
@@ -338,7 +339,7 @@ function UsersForm() {
                      <Tooltip title="Eliminar usuario">
                         <Button
                            variant="contained"
-                           onClick={handleDelete}
+                           onClick={handleOpenDeleteDialog}
                            disabled={deleteMutation.isPending || isSaving}
                            sx={{
                               bgcolor: '#EF4444',
@@ -610,6 +611,37 @@ function UsersForm() {
                     : 'Crear Usuario'}
             </Button>
          </Stack>
+
+         <Dialog
+            open={isDeleteDialogOpen}
+            onClose={handleCloseDeleteDialog}
+            fullWidth
+            maxWidth="xs"
+         >
+            <DialogTitle>Eliminar usuario</DialogTitle>
+            <DialogContent>
+               <DialogContentText>
+                  Esta acción eliminará el usuario de forma permanente. ¿Deseas
+                  continuar?
+               </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+               <Button
+                  onClick={handleCloseDeleteDialog}
+                  disabled={deleteMutation.isPending}
+               >
+                  Cancelar
+               </Button>
+               <Button
+                  onClick={handleConfirmDelete}
+                  color="error"
+                  variant="contained"
+                  disabled={deleteMutation.isPending}
+               >
+                  {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+               </Button>
+            </DialogActions>
+         </Dialog>
       </Box>
    );
 }
