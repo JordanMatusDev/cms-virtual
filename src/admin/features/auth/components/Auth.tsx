@@ -196,6 +196,7 @@ function Auth() {
                   placeholder={LOGIN_UI_TEXTS.USERNAME_PLACEHOLDER}
                   variant="outlined"
                   margin="normal"
+                  autoComplete="off"
                   slotProps={{
                      input: {
                         startAdornment: (
@@ -218,6 +219,7 @@ function Auth() {
                   variant="outlined"
                   margin="normal"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="off"
                   slotProps={{
                      input: {
                         startAdornment: (
