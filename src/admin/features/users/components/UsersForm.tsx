@@ -371,6 +371,7 @@ function UsersForm() {
                   <Stack spacing={2.5}>
                      <TextField
                         label="Usuario"
+                        autoComplete="off"
                         fullWidth
                         sx={inputSx}
                         {...register('username')}
@@ -381,6 +382,7 @@ function UsersForm() {
 
                      <TextField
                         label="Correo Electrónico"
+                        autoComplete="off"
                         fullWidth
                         sx={inputSx}
                         {...register('email')}
@@ -392,6 +394,7 @@ function UsersForm() {
                      <TextField
                         type="password"
                         label="Contraseña"
+                        autoComplete="off"
                         fullWidth
                         sx={inputSx}
                         {...register('password')}
@@ -443,6 +446,7 @@ function UsersForm() {
 
                      <TextField
                         label="Nombre"
+                        autoComplete="off"
                         fullWidth
                         sx={inputSx}
                         {...register('name')}
@@ -453,6 +457,7 @@ function UsersForm() {
 
                      <TextField
                         label="Apellido"
+                        autoComplete="off"
                         fullWidth
                         sx={inputSx}
                         {...register('surnames')}
