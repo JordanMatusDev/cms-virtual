@@ -15,7 +15,6 @@ import {
    Select,
    MenuItem,
    Grid,
-   Paper,
    IconButton,
    Tooltip,
    Divider,
@@ -59,7 +58,6 @@ function CoursesForm() {
    const isEditMode = id && id !== 'nuevo';
    const [isEditable, setIsEditable] = useState(!isEditMode);
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-   const [mainError, setMainError] = useState('');
    const [playlistId, setPlaylistId] = useState<string>('');
    const [formattedCourseData, setFormattedCourseData] =
       useState<CoursePayload>({
@@ -217,23 +215,24 @@ function CoursesForm() {
 
    const onFormError = (errores: any) => {
       window.scrollTo({ top: -5, behavior: 'smooth' });
+      const generalMessage = (errores as { general?: { message?: string } })
+         .general?.message;
       const fieldMessages = Object.values(errores)
          .map((err: any) => err?.message)
          .filter(
             (message: unknown): message is string =>
                typeof message === 'string' && message.trim().length > 0
          );
-      const errorMsg = errores.general
-         ? errores.general.message
+      const errorMsg = generalMessage
+         ? generalMessage
          : fieldMessages.length >= 2
            ? 'Hay campos con datos faltantes o inválidos.'
            : fieldMessages[0] || 'Hay campos con datos faltantes o inválidos.';
-      setMainError('Error de validación: ' + errorMsg);
+
+      showToast('Error: ' + errorMsg, 'error');
    };
 
    const onSubmit = async (data: CoursePayload) => {
-      setMainError('');
-
       const cleanPayload = cleanPatchPayload<CoursePayload>(
          data,
          isEditMode ? formattedCourseData : undefined,
@@ -258,7 +257,6 @@ function CoursesForm() {
             error.message || TOAST_MESSAGES.COURSES.CREATE_ERROR,
             'error'
          );
-         setMainError(error.message || 'Error al guardar el curso');
       }
    };
 
@@ -291,7 +289,6 @@ function CoursesForm() {
                error.message || TOAST_MESSAGES.COURSES.DELETE_ERROR,
                'error'
             );
-            setMainError(error.message || 'Error al eliminar');
          },
       });
    };
@@ -371,27 +368,6 @@ function CoursesForm() {
                )}
             </Stack>
          </Box>
-
-         {mainError && (
-            <Paper
-               sx={{
-                  p: 1.5,
-                  bgcolor: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid #EF4444',
-                  borderRadius: '8px',
-               }}
-            >
-               <Typography
-                  sx={{
-                     color: '#EF4444',
-                     fontSize: '13px',
-                     textAlign: 'center',
-                  }}
-               >
-                  {mainError}
-               </Typography>
-            </Paper>
-         )}
 
          <Box
             sx={{
