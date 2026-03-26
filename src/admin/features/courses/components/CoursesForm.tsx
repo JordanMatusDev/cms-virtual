@@ -384,6 +384,7 @@ function CoursesForm() {
                   <Stack spacing={2.5}>
                      <TextField
                         label="Título del Curso"
+                        autoComplete="off"
                         fullWidth
                         sx={inputSx}
                         {...register('title')}
@@ -394,6 +395,7 @@ function CoursesForm() {
                      />
                      <TextField
                         label="Descripción"
+                        autoComplete="off"
                         fullWidth
                         multiline
                         rows={4}
@@ -408,6 +410,7 @@ function CoursesForm() {
                      />
                      <TextField
                         label="Autor / Canal"
+                        autoComplete="off"
                         fullWidth
                         sx={inputSx}
                         {...register('author')}
@@ -474,6 +477,7 @@ function CoursesForm() {
                         </Typography>
                         <TextField
                            label="URL de la Playlist"
+                           autoComplete="off"
                            fullWidth
                            sx={{ ...inputSx, mb: 1.5 }}
                            {...register('video_url')}
