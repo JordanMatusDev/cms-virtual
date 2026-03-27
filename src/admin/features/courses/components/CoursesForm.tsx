@@ -23,6 +23,14 @@ import {
    DialogContent,
    DialogContentText,
    DialogActions,
+   Table,
+   TableBody,
+   TableCell,
+   TableContainer,
+   TableHead,
+   TableRow,
+   TablePagination,
+   LinearProgress,
 } from '@mui/material';
 import { inputSx, switchSx } from '@/admin/theme/Input.styles';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
@@ -37,6 +45,7 @@ import {
    useDeleteCourse,
 } from '../hooks/useCourse';
 import { useGetCategories } from '../hooks/useCategories';
+import { useCourseRegistrations } from '../hooks/useCourseRegistration';
 import { extractPlaylistId } from '@/admin/utils/youtubeUtils';
 import { useYoutubeData } from '@/admin/features/youtubeData';
 import {
@@ -50,6 +59,36 @@ import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
 
 const COURSES_GO_LAST_PAGE_KEY = 'admin.courses.goLastPage';
 
+const parseProgressCount = (raw: string | null | undefined): number => {
+   if (!raw || raw === 'pendiente' || raw === '[]') {
+      return 0;
+   }
+
+   if (raw.startsWith('i:') || raw.startsWith('v:')) {
+      return raw
+         .slice(2)
+         .split(',')
+         .map((value) => value.trim())
+         .filter(Boolean).length;
+   }
+
+   try {
+      const parsed = JSON.parse(raw);
+
+      if (Array.isArray(parsed)) {
+         return parsed.length;
+      }
+
+      if (parsed && Array.isArray(parsed.vistos)) {
+         return parsed.vistos.length;
+      }
+
+      return 0;
+   } catch {
+      return 0;
+   }
+};
+
 function CoursesForm() {
    const { id } = useParams();
    const navigate = useNavigate();
@@ -59,6 +98,7 @@ function CoursesForm() {
    const [isEditable, setIsEditable] = useState(!isEditMode);
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
    const [playlistId, setPlaylistId] = useState<string>('');
+   const [registrationsPage, setRegistrationsPage] = useState(0);
    const [formattedCourseData, setFormattedCourseData] =
       useState<CoursePayload>({
          title: '',
@@ -78,6 +118,10 @@ function CoursesForm() {
       isEditMode ? id : undefined
    );
    const { data: categories } = useGetCategories();
+
+   const { data: courseRegistrations } = useCourseRegistrations(
+      courseData?.id || 0
+   );
 
    const { playlist, playlistItems, videoDetails } = useYoutubeData(playlistId);
 
@@ -126,6 +170,15 @@ function CoursesForm() {
       typeof playlistIdWatch === 'string' && playlistIdWatch
          ? playlistIdWatch.split(',').filter((id) => id.trim() !== '')
          : [];
+   const registrationsRowsPerPage = 5;
+   const paginatedRegistrations = (courseRegistrations || []).slice(
+      registrationsPage * registrationsRowsPerPage,
+      registrationsPage * registrationsRowsPerPage + registrationsRowsPerPage
+   );
+
+   useEffect(() => {
+      setRegistrationsPage(0);
+   }, [courseRegistrations?.length]);
 
    useEffect(() => {
       if (isEditMode && courseData) {
@@ -717,6 +770,200 @@ function CoursesForm() {
                </Grid>
             </Grid>
          </Box>
+         {isEditMode && (
+            <Box
+               sx={{
+                  bgcolor: '#1E293B',
+                  p: 2,
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+               }}
+            >
+               <Typography
+                  variant="h6"
+                  sx={{ color: '#F8FAFC', fontWeight: 700, mb: 1 }}
+               >
+                  Usuarios inscritos
+               </Typography>
+               <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2 }}>
+                  {courseRegistrations?.length
+                     ? `${courseRegistrations.length} usuario(s) encontrados`
+                     : 'Este curso no tiene inscripciones todavía.'}
+               </Typography>
+
+               {courseRegistrations && courseRegistrations.length > 0 ? (
+                  <Box>
+                     <TableContainer
+                        sx={{
+                           maxHeight: 280,
+                           border: '1px solid rgba(255,255,255,0.08)',
+                           borderRadius: '8px',
+                           backgroundColor: 'rgba(255,255,255,0.02)',
+                        }}
+                     >
+                        <Table stickyHeader size="small">
+                           <TableHead>
+                              <TableRow>
+                                 <TableCell
+                                    sx={{
+                                       bgcolor: '#0F172A',
+                                       color: '#CBD5E1',
+                                    }}
+                                 >
+                                    Estudiante
+                                 </TableCell>
+                                 <TableCell
+                                    sx={{
+                                       bgcolor: '#0F172A',
+                                       color: '#CBD5E1',
+                                    }}
+                                 >
+                                    Email
+                                 </TableCell>
+                                 <TableCell
+                                    sx={{
+                                       bgcolor: '#0F172A',
+                                       color: '#CBD5E1',
+                                    }}
+                                 >
+                                    Progreso
+                                 </TableCell>
+                                 <TableCell
+                                    sx={{
+                                       bgcolor: '#0F172A',
+                                       color: '#CBD5E1',
+                                    }}
+                                 >
+                                    Completado
+                                 </TableCell>
+                              </TableRow>
+                           </TableHead>
+                           <TableBody>
+                              {paginatedRegistrations.map((registration) => {
+                                 const fullName =
+                                    `${registration.estudiante.nombre} ${registration.estudiante.apellido}`.trim();
+                                 const totalModules =
+                                    registration.curso.modulos ||
+                                    registration.curso.playlist_id
+                                       .split(',')
+                                       .filter((id) => id.trim() !== '').length;
+                                 const progressCount = parseProgressCount(
+                                    registration.progreso
+                                 );
+                                 const percentage =
+                                    totalModules > 0
+                                       ? Math.min(
+                                            100,
+                                            Math.round(
+                                               (progressCount / totalModules) *
+                                                  100
+                                            )
+                                         )
+                                       : Number(registration.completado) === 1
+                                         ? 100
+                                         : 0;
+                                 const isCompleted =
+                                    Number(registration.completado) === 1 ||
+                                    percentage >= 100;
+
+                                 return (
+                                    <TableRow
+                                       key={registration.id}
+                                       hover
+                                       sx={{
+                                          '& td': {
+                                             color: '#E2E8F0',
+                                             borderColor:
+                                                'rgba(255,255,255,0.06)',
+                                          },
+                                       }}
+                                    >
+                                       <TableCell>
+                                          {fullName ||
+                                             registration.estudiante.username}
+                                       </TableCell>
+                                       <TableCell>
+                                          {registration.estudiante.email}
+                                       </TableCell>
+                                       <TableCell>
+                                          <Box sx={{ minWidth: 170 }}>
+                                             <Typography
+                                                sx={{
+                                                   color: isCompleted
+                                                      ? '#FCD34D'
+                                                      : '#E2E8F0',
+                                                   fontSize: '12px',
+                                                   mb: 0.5,
+                                                   fontWeight: 600,
+                                                }}
+                                             >
+                                                {percentage}% ({progressCount}/
+                                                {totalModules || 0})
+                                             </Typography>
+                                             <LinearProgress
+                                                variant="determinate"
+                                                value={percentage}
+                                                sx={{
+                                                   height: 8,
+                                                   borderRadius: 999,
+                                                   backgroundColor:
+                                                      'rgba(148,163,184,0.2)',
+                                                   '& .MuiLinearProgress-bar': {
+                                                      borderRadius: 999,
+                                                      backgroundColor:
+                                                         isCompleted
+                                                            ? '#D4AF37'
+                                                            : '#22C55E',
+                                                   },
+                                                }}
+                                             />
+                                          </Box>
+                                       </TableCell>
+                                       <TableCell>
+                                          <Typography
+                                             sx={{
+                                                color: isCompleted
+                                                   ? '#FCD34D'
+                                                   : '#94A3B8',
+                                                fontWeight: 700,
+                                             }}
+                                          >
+                                             {isCompleted
+                                                ? 'Completado'
+                                                : 'En progreso'}
+                                          </Typography>
+                                       </TableCell>
+                                    </TableRow>
+                                 );
+                              })}
+                           </TableBody>
+                        </Table>
+                     </TableContainer>
+
+                     <TablePagination
+                        component="div"
+                        count={courseRegistrations.length}
+                        page={registrationsPage}
+                        onPageChange={(_, newPage) =>
+                           setRegistrationsPage(newPage)
+                        }
+                        rowsPerPage={registrationsRowsPerPage}
+                        rowsPerPageOptions={[5]}
+                        sx={{
+                           color: '#CBD5E1',
+                           '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows':
+                              {
+                                 color: '#94A3B8',
+                              },
+                           '.MuiIconButton-root': {
+                              color: '#CBD5E1',
+                           },
+                        }}
+                     />
+                  </Box>
+               ) : null}
+            </Box>
+         )}
 
          <Stack
             direction="row"
