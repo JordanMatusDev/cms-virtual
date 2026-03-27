@@ -5,7 +5,7 @@ import api, {
 import {
    type CourseRegistration,
    CourseRegistrationSchema,
-} from '../schemas/coursesRegistrations.schema';
+} from '../../../schemas/registrations.schema';
 import { z } from 'zod';
 
 export const courseRegistrationsService = {

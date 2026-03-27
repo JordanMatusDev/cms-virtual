@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { courseRegistrationsService } from '../services/courseRegistrations.service';
-import { type CourseRegistration } from '../schemas/coursesRegistrations.schema';
+import { type CourseRegistration } from '../../../schemas/registrations.schema';
 
 export const useCourseRegistrations = (courseId: number) => {
    return useQuery<CourseRegistration[]>({

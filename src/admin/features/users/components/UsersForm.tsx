@@ -25,6 +25,14 @@ import {
    DialogContent,
    DialogContentText,
    DialogActions,
+   Table,
+   TableBody,
+   TableCell,
+   TableContainer,
+   TableHead,
+   TableRow,
+   TablePagination,
+   LinearProgress,
 } from '@mui/material';
 import { inputSx, switchSx } from '@/admin/theme/Input.styles';
 import { ROUTES_PATHS } from '@/admin/routes/AdminRoutes.constants';
@@ -43,11 +51,42 @@ import {
    UserPayloadSchema,
    type UserPayload,
 } from '../schemas/userPayload.schema';
+import { useUserCourseRegistrations } from '../hooks/useUserCourseRegistrations';
 import { cleanPatchPayload } from '@/admin/utils/cleanPayloadUtils';
 import { useToast } from '@/admin/core/context/toastContext';
 import { TOAST_MESSAGES } from '@/admin/core/constants/appConstants';
 
 const USERS_GO_LAST_PAGE_KEY = 'admin.users.goLastPage';
+
+const parseProgressCount = (raw: string | null | undefined): number => {
+   if (!raw || raw === 'pendiente' || raw === '[]') {
+      return 0;
+   }
+
+   if (raw.startsWith('i:') || raw.startsWith('v:')) {
+      return raw
+         .slice(2)
+         .split(',')
+         .map((value) => value.trim())
+         .filter(Boolean).length;
+   }
+
+   try {
+      const parsed = JSON.parse(raw);
+
+      if (Array.isArray(parsed)) {
+         return parsed.length;
+      }
+
+      if (parsed && Array.isArray(parsed.vistos)) {
+         return parsed.vistos.length;
+      }
+
+      return 0;
+   } catch {
+      return 0;
+   }
+};
 
 function UsersForm() {
    const { id } = useParams();
@@ -57,6 +96,7 @@ function UsersForm() {
    const isEditMode = id && id !== 'nuevo';
    const [isEditable, setIsEditable] = useState(!isEditMode);
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const [registrationsPage, setRegistrationsPage] = useState(0);
 
    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
    const [avatarFileToUpload, setAvatarFileToUpload] = useState<File | null>(
@@ -66,6 +106,9 @@ function UsersForm() {
 
    const { data: userData, isLoading: isFetchingUser } = useGetUserById(
       isEditMode ? id : undefined
+   );
+   const { data: userCourseRegistrations } = useUserCourseRegistrations(
+      userData?.id || 0
    );
    const createMutation = useCreateUser();
    const updateMutation = useUpdateUser();
@@ -107,6 +150,16 @@ function UsersForm() {
    useEffect(() => {
       window.scrollTo(0, 0);
    }, []);
+
+   useEffect(() => {
+      setRegistrationsPage(0);
+   }, [userCourseRegistrations?.length]);
+
+   const registrationsRowsPerPage = 5;
+   const paginatedRegistrations = (userCourseRegistrations || []).slice(
+      registrationsPage * registrationsRowsPerPage,
+      registrationsPage * registrationsRowsPerPage + registrationsRowsPerPage
+   );
 
    const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -581,6 +634,199 @@ function UsersForm() {
                </Grid>
             </Grid>
          </Box>
+
+         {isEditMode && (
+            <Box
+               sx={{
+                  bgcolor: '#1E293B',
+                  p: 2,
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+               }}
+            >
+               <Typography
+                  variant="h6"
+                  sx={{ color: '#F8FAFC', fontWeight: 700, mb: 1 }}
+               >
+                  Cursos inscritos
+               </Typography>
+               <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2 }}>
+                  {userCourseRegistrations?.length
+                     ? `${userCourseRegistrations.length} curso(s) encontrados`
+                     : 'Este usuario no tiene inscripciones todavía.'}
+               </Typography>
+
+               {userCourseRegistrations && userCourseRegistrations.length > 0 ? (
+                  <Box>
+                     <TableContainer
+                        sx={{
+                           maxHeight: 280,
+                           border: '1px solid rgba(255,255,255,0.08)',
+                           borderRadius: '8px',
+                           backgroundColor: 'rgba(255,255,255,0.02)',
+                        }}
+                     >
+                        <Table stickyHeader size="small">
+                           <TableHead>
+                              <TableRow>
+                                 <TableCell
+                                    sx={{
+                                       bgcolor: '#0F172A',
+                                       color: '#CBD5E1',
+                                    }}
+                                 >
+                                    Curso
+                                 </TableCell>
+                                 <TableCell
+                                    sx={{
+                                       bgcolor: '#0F172A',
+                                       color: '#CBD5E1',
+                                    }}
+                                 >
+                                    Autor
+                                 </TableCell>
+                                 <TableCell
+                                    sx={{
+                                       bgcolor: '#0F172A',
+                                       color: '#CBD5E1',
+                                    }}
+                                 >
+                                    Progreso
+                                 </TableCell>
+                                 <TableCell
+                                    sx={{
+                                       bgcolor: '#0F172A',
+                                       color: '#CBD5E1',
+                                    }}
+                                 >
+                                    Completado
+                                 </TableCell>
+                              </TableRow>
+                           </TableHead>
+                           <TableBody>
+                              {paginatedRegistrations.map((registration) => {
+                                 const totalModules =
+                                    registration.curso.modulos ||
+                                    registration.curso.playlist_id
+                                       .split(',')
+                                       .filter((value) => value.trim() !== '')
+                                       .length;
+                                 const progressCount = parseProgressCount(
+                                    registration.progreso
+                                 );
+                                 const percentage =
+                                    totalModules > 0
+                                       ? Math.min(
+                                            100,
+                                            Math.round(
+                                               (progressCount / totalModules) *
+                                                  100
+                                            )
+                                         )
+                                       : Number(registration.completado) === 1
+                                         ? 100
+                                         : 0;
+                                 const isCompleted =
+                                    Number(registration.completado) === 1 ||
+                                    percentage >= 100;
+
+                                 return (
+                                    <TableRow
+                                       key={registration.id}
+                                       hover
+                                       sx={{
+                                          '& td': {
+                                             color: '#E2E8F0',
+                                             borderColor:
+                                                'rgba(255,255,255,0.06)',
+                                          },
+                                       }}
+                                    >
+                                       <TableCell>
+                                          {registration.curso.titulo}
+                                       </TableCell>
+                                       <TableCell>
+                                          {registration.curso.autor}
+                                       </TableCell>
+                                       <TableCell>
+                                          <Box sx={{ minWidth: 170 }}>
+                                             <Typography
+                                                sx={{
+                                                   color: isCompleted
+                                                      ? '#FCD34D'
+                                                      : '#E2E8F0',
+                                                   fontSize: '12px',
+                                                   mb: 0.5,
+                                                   fontWeight: 600,
+                                                }}
+                                             >
+                                                {percentage}% ({progressCount}/
+                                                {totalModules || 0})
+                                             </Typography>
+                                             <LinearProgress
+                                                variant="determinate"
+                                                value={percentage}
+                                                sx={{
+                                                   height: 8,
+                                                   borderRadius: 999,
+                                                   backgroundColor:
+                                                      'rgba(148,163,184,0.2)',
+                                                   '& .MuiLinearProgress-bar': {
+                                                      borderRadius: 999,
+                                                      backgroundColor:
+                                                         isCompleted
+                                                            ? '#D4AF37'
+                                                            : '#22C55E',
+                                                   },
+                                                }}
+                                             />
+                                          </Box>
+                                       </TableCell>
+                                       <TableCell>
+                                          <Typography
+                                             sx={{
+                                                color: isCompleted
+                                                   ? '#FCD34D'
+                                                   : '#94A3B8',
+                                                fontWeight: 700,
+                                             }}
+                                          >
+                                             {isCompleted
+                                                ? 'Completado'
+                                                : 'En progreso'}
+                                          </Typography>
+                                       </TableCell>
+                                    </TableRow>
+                                 );
+                              })}
+                           </TableBody>
+                        </Table>
+                     </TableContainer>
+
+                     <TablePagination
+                        component="div"
+                        count={userCourseRegistrations.length}
+                        page={registrationsPage}
+                        onPageChange={(_, newPage) =>
+                           setRegistrationsPage(newPage)
+                        }
+                        rowsPerPage={registrationsRowsPerPage}
+                        rowsPerPageOptions={[5]}
+                        sx={{
+                           color: '#CBD5E1',
+                           '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows':
+                              {
+                                 color: '#94A3B8',
+                              },
+                           '.MuiIconButton-root': {
+                              color: '#CBD5E1',
+                           },
+                        }}
+                     />
+                  </Box>
+               ) : null}
+            </Box>
+         )}
 
          <Stack
             direction="row"
