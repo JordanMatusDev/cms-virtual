@@ -315,6 +315,10 @@ function UsersForm() {
       });
    };
 
+   const handleOpenCourseForm = (courseId: number) => {
+      navigate(ROUTES_PATHS.ADMIN_COURSES_FORM.replace(':id', String(courseId)));
+   };
+
    const handleCancel = () => handleGoBack();
 
    if (isFetchingUser) {
@@ -734,11 +738,21 @@ function UsersForm() {
                                     <TableRow
                                        key={registration.id}
                                        hover
+                                       onClick={() =>
+                                          handleOpenCourseForm(
+                                             registration.curso_id
+                                          )
+                                       }
                                        sx={{
+                                          cursor: 'pointer',
                                           '& td': {
                                              color: '#E2E8F0',
                                              borderColor:
                                                 'rgba(255,255,255,0.06)',
+                                          },
+                                          '&:hover td': {
+                                             backgroundColor:
+                                                'rgba(79,70,229,0.08)',
                                           },
                                        }}
                                     >
