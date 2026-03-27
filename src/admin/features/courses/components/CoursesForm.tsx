@@ -346,6 +346,10 @@ function CoursesForm() {
       });
    };
 
+   const handleOpenUserForm = (userId: number) => {
+      navigate(ROUTES_PATHS.ADMIN_USERS_FORM.replace(':id', String(userId)));
+   };
+
    if (isFetchingCourse) {
       return <AdminPageLoader message="Cargando información del curso..." />;
    }
@@ -870,11 +874,21 @@ function CoursesForm() {
                                     <TableRow
                                        key={registration.id}
                                        hover
+                                       onClick={() =>
+                                          handleOpenUserForm(
+                                             registration.estudiante_id
+                                          )
+                                       }
                                        sx={{
+                                          cursor: 'pointer',
                                           '& td': {
                                              color: '#E2E8F0',
                                              borderColor:
                                                 'rgba(255,255,255,0.06)',
+                                          },
+                                          '&:hover td': {
+                                             backgroundColor:
+                                                'rgba(79,70,229,0.08)',
                                           },
                                        }}
                                     >
