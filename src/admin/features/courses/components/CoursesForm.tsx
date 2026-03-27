@@ -93,6 +93,7 @@ function CoursesForm() {
    const { id } = useParams();
    const navigate = useNavigate();
    const handleGoBack = () => navigate(-1);
+   const handleCancel = () => navigate(ROUTES_PATHS.ADMIN_COURSES);
 
    const isEditMode = id && id !== 'nuevo';
    const [isEditable, setIsEditable] = useState(!isEditMode);
@@ -986,7 +987,7 @@ function CoursesForm() {
             sx={{ mt: 1 }}
          >
             <Button
-               onClick={handleGoBack}
+               onClick={handleCancel}
                sx={{ color: '#94A3B8', textTransform: 'none' }}
                disabled={isSaving}
             >

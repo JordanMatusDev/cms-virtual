@@ -319,7 +319,7 @@ function UsersForm() {
       navigate(ROUTES_PATHS.ADMIN_COURSES_FORM.replace(':id', String(courseId)));
    };
 
-   const handleCancel = () => handleGoBack();
+   const handleCancel = () => navigate(ROUTES_PATHS.ADMIN_USERS);
 
    if (isFetchingUser) {
       return (
