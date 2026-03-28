@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
     Lock, Download,
-    Users, Star, Unlock, BookOpen, Loader2, Trophy, Sparkles, Play, Target, CheckCircle2, Info
+    Users, Unlock, BookOpen, Loader2, Trophy, Sparkles, Play, Target, CheckCircle2, Info
 } from 'lucide-react';
 import { useCoursePlayer } from '../hooks/pages/useCoursePlayer';
 import LoginModal from '../components/auth/LoginModal';
@@ -403,7 +403,7 @@ const CoursePlayer = () => {
                                 </div>
 
                                 {/* Un simple contador tipo pastilla (Pill) súper limpio */}
-                                <div className="flex items-center gap-1.5 text-xs font-medium bg-black/40 border border-white/10 px-2.5 py-1 rounded-lg text-gray-300">                                  
+                                <div className="flex items-center gap-1.5 text-xs font-medium bg-black/40 border border-white/10 px-2.5 py-1 rounded-lg text-gray-300">
                                     <span>{lessons.length} Lecciones</span>
                                 </div>
                             </div>
@@ -486,20 +486,19 @@ const CoursePlayer = () => {
                         </div>
                     </div>
 
-                    {/*INFO DEL CURSO  */}
+                    {/*INFO DEL CURSO */}
                     <div className="lg:col-span-2 lg:col-start-1">
-                        <h1 className="font-bold text-white mb-2 text-[20px] lg:text-3xl">
-                            {course.nombre}
+
+                        <h1 className="font-bold text-white mb-2 text-base lg:text-xl">
+                            {course.titulo || course.nombre || "Título no disponible"}
                         </h1>
+
                         <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
                             <span className="flex items-center gap-1 text-cyan-400">
                                 <Users size={16} /> {typeof course.autor === 'object' ? (course.autor?.username || course.autor?.nombre || 'Autor') : (course.autor || course.instructor || 'Autor')}
                             </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1"><Star size={14} className="text-yellow-500" /> {course.puntuacion || '4.8'}</span>
                         </div>
 
-                        {/* TABS */}
                         <div className="border-b border-white/10 flex gap-6 mb-6">
                             {['descripcion', 'progreso'].map((tab) => (
                                 <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-3 text-sm font-medium border-b-2 transition-colors capitalize ${activeTab === tab ? 'border-cyan-400 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
