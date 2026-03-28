@@ -316,7 +316,9 @@ function UsersList() {
             sx={{
                display: 'flex',
                justifyContent: 'space-between',
-               alignItems: 'flex-start',
+               alignItems: { xs: 'flex-start', md: 'center' },
+               flexDirection: { xs: 'column', md: 'row' },
+               gap: 2,
                mb: 3,
             }}
          >
@@ -332,7 +334,12 @@ function UsersList() {
                </Typography>
             </Box>
 
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack
+               direction={{ xs: 'column', sm: 'row' }}
+               spacing={1.5}
+               alignItems={{ xs: 'stretch', sm: 'center' }}
+               sx={{ width: { xs: '100%', md: 'auto' } }}
+            >
                <Tooltip
                   title="Recargar lista de usuarios"
                   placement="left"
@@ -342,30 +349,42 @@ function UsersList() {
                      color="inherit"
                      disabled={isLoading || isFetching}
                      onClick={() => refetch()}
-                     sx={{ color: '#94A3B8', minWidth: 'auto', p: 1 }}
+                     sx={{
+                        color: '#94A3B8',
+                        minWidth: 'auto',
+                        p: 1,
+                        alignSelf: { xs: 'flex-end', sm: 'center' },
+                     }}
                   >
                      <IoReloadCircle size={28} />
                   </Button>
                </Tooltip>
 
-               <Button
-                  variant="contained"
-                  disabled={isLoading || isFetching}
-                  onClick={handleUserForm}
-                  sx={{
-                     bgcolor: '#4F46E5',
-                     color: 'white',
-                     borderRadius: '8px',
-                     textTransform: 'none',
-                     fontWeight: 600,
-                     px: 3,
-                     py: 1,
-                     '&:hover': { bgcolor: '#4338CA' },
-                  }}
+               <Stack
+                  direction="column"
+                  spacing={1}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                >
-                  <FaPlus size={16} style={{ marginRight: 8 }} />
-                  Nuevo Usuario
-               </Button>
+                  <Button
+                     variant="contained"
+                     disabled={isLoading || isFetching}
+                     onClick={handleUserForm}
+                     sx={{
+                        bgcolor: '#4F46E5',
+                        color: 'white',
+                        borderRadius: '8px',
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        px: 3,
+                        py: 1,
+                        width: { xs: '100%', sm: 'auto' },
+                        '&:hover': { bgcolor: '#4338CA' },
+                     }}
+                  >
+                     <FaPlus size={16} style={{ marginRight: 8 }} />
+                     Nuevo Usuario
+                  </Button>
+               </Stack>
             </Stack>
          </Box>
 
