@@ -282,7 +282,7 @@ const MyCertificates = () => {
                             onClick={handleGoToCourses}
                             className="px-8 py-3 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black font-bold rounded-xl border border-cyan-500/20 hover:border-cyan-500 transition-all flex items-center gap-2"
                         >
-                            Explorar Catálogo de Cursos
+                            Explorar Cursos
                         </button>
                     </div>
                 )}
