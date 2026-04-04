@@ -7,6 +7,7 @@ import { useCourseGrid } from '../hooks/pages/useCourseGrid';
 // Las categorías ahora se obtienen dinámicamente
 
 const particlesOptions = {
+  fullScreen: { enable: false },
   background: {
     color: { value: "transparent" }, 
   },
