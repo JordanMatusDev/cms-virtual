@@ -112,6 +112,19 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
 
 const CourseGrid = () => {
     const { courses, loading, filter, setFilter, isFilterOpen, setIsFilterOpen, availableCategories } = useCourseGrid();
+    const filterMenuRef = useRef<HTMLDivElement>(null);
+
+    // Cerrar el filtro al hacer clic fuera
+    useEffect(() => {
+        if (!isFilterOpen) return;
+        const handleClickOutside = (event: MouseEvent) => {
+            if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
+                setIsFilterOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isFilterOpen, setIsFilterOpen]);
 
     if (loading) {
         return (
@@ -148,8 +161,7 @@ const CourseGrid = () => {
                         </button>
 
                         {isFilterOpen && (
-                            // AQUI ESTÁ LA MAGIA: left-0 sm:left-auto sm:right-0
-                            <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-56 bg-[#121212] border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl z-20 animate-in fade-in zoom-in-95">
+                            <div ref={filterMenuRef} className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-56 bg-[#121212] border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl z-20 animate-in fade-in zoom-in-95">
                                 <div className="py-2 max-h-64 overflow-y-auto custom-scrollbar">
                                     <button onClick={() => { setFilter('Todas'); setIsFilterOpen(false); }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 text-cyan-400 hover:text-cyan-300 flex justify-between font-bold">
                                         Todas {filter === 'Todas' && <Check size={16} className="text-cyan-400" />}
