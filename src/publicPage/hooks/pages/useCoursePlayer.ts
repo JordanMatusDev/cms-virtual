@@ -255,10 +255,11 @@ export const useCoursePlayer = () => {
 
     // --- FETCH INICIAL ---
     useEffect(() => {
+        setError(null);      // Limpia el error anterior al cambiar de curso
+        setLoading(true);    // Muestra loading mientras busca el nuevo curso
         if (!courseId) { setError('URL inválida'); setLoading(false); return; }
 
         const fetchData = async () => {
-            setLoading(true);
             try {
                 let initialLessons: any[] = [];
                 let cData: any = null;
