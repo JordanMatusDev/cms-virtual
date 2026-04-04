@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowRight, Sparkles} from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import Particles, { initParticlesEngine } from "@tsparticles/react";
-import { loadSlim } from "@tsparticles/slim"; 
+import { loadSlim } from "@tsparticles/slim";
 import { useCourseGrid } from '../hooks/pages/useCourseGrid';
 
 // Las categorías ahora se obtienen dinámicamente
@@ -9,29 +9,29 @@ import { useCourseGrid } from '../hooks/pages/useCourseGrid';
 const particlesOptions = {
   fullScreen: { enable: false },
   background: {
-    color: { value: "transparent" }, 
+    color: { value: "transparent" },
   },
   fpsLimit: 120,
   interactivity: {
     events: {
       onClick: { enable: false },
-      onHover: { enable: true, mode: "grab" }, 
-      resize: { enable: true }, 
+      onHover: { enable: true, mode: "grab" },
+      resize: { enable: true },
     },
     modes: {
       grab: {
-        distance: 180, 
+        distance: 180,
         links: { opacity: 0.5 }
       }
     },
   },
   particles: {
-    color: { value: "#22d3ee" }, 
+    color: { value: "#22d3ee" },
     links: {
-      color: "#9333ea", 
+      color: "#9333ea",
       distance: 150,
       enable: true,
-      opacity: 0.15, 
+      opacity: 0.15,
       width: 2.5,
     },
     move: {
@@ -39,16 +39,16 @@ const particlesOptions = {
       enable: true,
       outModes: { default: "out" as const }, // Flujo infinito y suave
       random: false,
-      speed: 0.5, 
+      speed: 0.5,
       straight: false,
     },
     number: {
       density: { enable: true, area: 800 },
-      value: 100, 
+      value: 100,
     },
-    opacity: { value: 0.3 }, 
+    opacity: { value: 0.3 },
     shape: { type: "circle" as const },
-    size: { value: { min: 2, max: 3 } }, 
+    size: { value: { min: 2, max: 3 } },
   },
   detectRetina: true,
 };
@@ -76,7 +76,7 @@ const Hero = () => {
 
   return (
     <div className="relative bg-[#050505] overflow-hidden min-h-[650px] flex items-center justify-center font-sans">
-      
+
       {/* ================= CAPA 1: FONDO INTERACTIVO DE PARTÍCULAS ================= */}
       {useMemo(() => (
         init && (
@@ -90,18 +90,13 @@ const Hero = () => {
 
       {/* ================= CAPA 2: AMBIENTE LUMINOSO (OPTIMIZADO) ================= */}
       <div className="absolute inset-0 pointer-events-none z-10">
-        {/* Luces usando degradados radiales nativos para eliminar el lag del blur */}
         <div className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(8,145,178,0.2)_0%,transparent_70%)] animate-[pulse_8s_ease-in-out_infinite]"></div>
         <div className="absolute -bottom-1/4 -right-1/4 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(88,28,135,0.2)_0%,transparent_70%)] animate-[pulse_10s_ease-in-out_infinite_reverse]"></div>
-        
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay"></div>
-        
       </div>
 
       {/* ================= CAPA 3: CONTENIDO PRINCIPAL ================= */}
       <div className="relative z-20 max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 text-center pointer-events-none">
-        
-        {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a0a0a] border border-white/10 shadow-[0_0_20px_-5px_rgba(168,85,247,0.4)] text-gray-300 text-sm font-medium mb-8 backdrop-blur-md animate-in fade-in slide-in-from-top-5 duration-1000">
           <Sparkles size={14} className="text-purple-400" />
           <span className="bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">El aprendizaje del futuro, hoy.</span>
@@ -115,7 +110,7 @@ const Hero = () => {
           </span>
         </h1>
 
-        <p className="mt-6 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-12 animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-200">
+        <p className="mt-6 text-base md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-12 animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-200">
           Todo el poder educativo de YouTube, organizado como una plataforma premium. Cero ruido, cero distracciones y acceso gratuito.
         </p>
 
