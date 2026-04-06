@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useCoursePlayer } from '../hooks/pages/useCoursePlayer';
 import LoginModal from '../components/auth/LoginModal';
+import RegisterModal from '../components/auth/RegisterModal';
 declare global {
     interface Window {
         YT?: any;
@@ -28,7 +29,7 @@ const CoursePlayer = () => {
         isEnrolled, currentVideoIndex, currentLesson, isLocked,
         activeTab, setActiveTab,
         handleVideoClick,
-        showLoginModal, setShowLoginModal, handleLoginSuccess,
+        showAuthModal, setShowAuthModal, authView, setAuthView, handleLoginSuccess,
         showConfirmModal, setShowConfirmModal, confirmEnrollment, isLoadingEnroll,
         handleVideoEnd,
         handleStateChange,
@@ -223,7 +224,10 @@ const CoursePlayer = () => {
 
     const handleEnrollClickLocal = () => {
         if (isLoggedIn) setShowConfirmModal(true);
-        else setShowLoginModal(true);
+        else {
+            setAuthView('login');
+            setShowAuthModal(true);
+        }
     };
 
     const sanitizeFileName = (value: string) => {
@@ -667,11 +671,16 @@ const CoursePlayer = () => {
 
             {/* Y agrega tu nuevo LoginModal usando el estado que ya tienes: */}
             < LoginModal
-                isOpen={showLoginModal}
-                onClose={() => setShowLoginModal(false)}
+                isOpen={showAuthModal && authView === 'login'}
+                onClose={() => setShowAuthModal(false)}
                 onSuccess={handleLoginSuccess}
-                onSwitchToRegister={() => setShowLoginModal(false)}
-                onSwitchToForgot={() => setShowLoginModal(false)}
+                onSwitchToRegister={() => setAuthView('register')}
+                onSwitchToForgot={() => setAuthView('login')} // Puedes ajustar si tienes modal de forgot
+            />
+            <RegisterModal
+                isOpen={showAuthModal && authView === 'register'}
+                onClose={() => setShowAuthModal(false)}
+                onSwitchToLogin={() => setAuthView('login')}
             />
 
             {
