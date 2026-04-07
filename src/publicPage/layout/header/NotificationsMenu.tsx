@@ -1,8 +1,8 @@
-// src/components/header/NotificationsMenu.tsx
 import React, { useRef } from 'react';
 import { Award, PartyPopper, BellRing, CheckCircle2, X, Hand, GraduationCap, Trash2, } from 'lucide-react';
 import { useClickOutside } from '../../hooks/header/useClickOutside';
 import { useNotificacion } from '../../context/NotificationContext';
+import { useNavigate } from 'react-router-dom'; 
 
 // Diccionario para saber qué ícono y color pintar según el 'type'
 const ICON_MAP = {
@@ -27,6 +27,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
 
   // EXTRAEMOS LOS DATOS REALES DEL CONTEXTO
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotificacion();
+  const navigate = useNavigate(); // <-- AGREGA ESTO AQUÍ
 
   useClickOutside(containerRef ?? menuRef, () => setIsOpen(false));
 
@@ -70,7 +71,13 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({ isOpen, setIsOpen
             return (
               <div
                 key={notification.id}
-                onClick={() => markAsRead(notification.id)}
+                onClick={() => {
+                  markAsRead(notification.id); // Primero la marca como leída
+                  if (notification.link) {
+                    navigate(notification.link); // Redirige a la página del curso
+                    setIsOpen(false); // Opcional: Cierra el menú de notificaciones
+                  }
+                }}
                 className={`group relative p-4 border-b border-white/5 hover:bg-white/[0.04] transition-colors cursor-pointer flex gap-3 ${!notification.read ? 'bg-white/[0.02]' : ''}`}
               >
                 <div className={`mt-0.5 shrink-0 h-10 w-10 rounded-full border flex items-center justify-center ${style.colorClass}`}>
