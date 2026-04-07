@@ -16,6 +16,7 @@ interface NotificationContextType {
   notifications: AppNotification[];
   unreadCount: number;
   addNotification: (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => void;
+  addMultipleNotifications: (notifs: Omit<AppNotification, 'id' | 'read' | 'time'>[]) => void;
   showToast: (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => void; 
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -55,7 +56,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [notifications, storageKey]);
 
-
   const getCurrentTimeString = () => {
     const now = new Date();
     return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -74,6 +74,52 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setTimeout(() => {
       setActiveToasts(prev => prev.filter(toast => toast.id !== toastId));
     }, 4000);
+  };
+
+  // ---> AQUÍ VA LA FUNCIÓN, ADENTRO DEL COMPONENTE <---
+  const addMultipleNotifications = (newNotifs: Omit<AppNotification, 'id' | 'read' | 'time'>[]) => {
+    if (newNotifs.length === 0) return;
+
+    const formattedNotifs: AppNotification[] = newNotifs.map(notif => ({
+      ...notif,
+      id: crypto.randomUUID(), 
+      read: false,
+      time: getCurrentTimeString()
+    }));
+
+    setNotifications(prev => [...formattedNotifs, ...prev]);
+
+    if (formattedNotifs.length === 1) {
+      const singleNotif = formattedNotifs[0];
+      setActiveToasts(prev => [...prev, singleNotif]);
+      setTimeout(() => {
+        setActiveToasts(prev => prev.filter(toast => toast.id !== singleNotif.id));
+      }, 4000);
+
+    } else if (formattedNotifs.length <= 3) {
+      setActiveToasts(prev => [...prev, ...formattedNotifs]);
+      formattedNotifs.forEach(notif => {
+        setTimeout(() => {
+          setActiveToasts(prev => prev.filter(toast => toast.id !== notif.id));
+        }, 4000);
+      });
+
+    } else {
+      const summaryToastId = crypto.randomUUID();
+      const summaryToast: AppNotification = {
+        id: summaryToastId,
+        title: '¡Nuevos Cursos Disponibles!',
+        message: `Hemos añadido ${formattedNotifs.length} nuevos cursos. ¡Explora el catálogo!`,
+        time: getCurrentTimeString(),
+        read: true, 
+        type: 'promo',
+      };
+
+      setActiveToasts(prev => [...prev, summaryToast]);
+      setTimeout(() => {
+        setActiveToasts(prev => prev.filter(toast => toast.id !== summaryToastId));
+      }, 5000); 
+    }
   };
 
   const showToast = (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => {
@@ -119,7 +165,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, showToast, markAsRead, markAllAsRead, deleteNotification, clearActiveToasts }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, addMultipleNotifications, showToast, markAsRead, markAllAsRead, deleteNotification, clearActiveToasts }}>
       {children}
 
       <div className="fixed top-[85px] right-6 md:right-24 lg:right-[120px] xl:right-[calc(50vw-580px)] z-[99999] flex flex-col gap-3 pointer-events-none">
@@ -129,20 +175,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           return (
             <div
               key={toast.id}
-              // 2. AGREGA 'relative' A LAS CLASES DEL CONTENEDOR PARA QUE LA 'X' SE POSICIONE BIEN
               className="relative bg-[#151515] border border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-4 rounded-xl flex items-start gap-4 w-80 pointer-events-auto transition-all duration-300 animate-in fade-in slide-in-from-top-6"
             >
               <div className={`shrink-0 p-2 rounded-full border ${colorClass}`}>
                 <Icon size={20} />
               </div>
 
-              {/* 3. AÑADIMOS MARGEN DERECHO (pr-4) PARA QUE EL TEXTO NO CHOQUE CON LA X */}
               <div className="flex-1 mt-0.5 pr-4">
                 <h4 className="text-white font-bold text-sm mb-1">{toast.title}</h4>
                 <p className="text-gray-300 text-xs leading-relaxed">{toast.message}</p>
               </div>
 
-              {/* 4. EL BOTÓN DE CERRAR */}
               <button
                 onClick={() => setActiveToasts(prev => prev.filter(t => t.id !== toast.id))}
                 className="absolute top-3 right-3 text-gray-500 hover:text-white transition-colors p-1"

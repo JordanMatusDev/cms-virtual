@@ -9,8 +9,8 @@ export const useCourseGrid = () => {
   const [filter, setFilter] = useState("Todas");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const { addNotification, showToast } = useNotificacion();
-  // Eliminamos const { user } = useAuthSession(); porque usaremos localStorage
+  // ---> 1. EXTRAEMOS LA NUEVA FUNCIÓN AQUÍ <---
+  const { addMultipleNotifications, showToast } = useNotificacion();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -22,7 +22,7 @@ export const useCourseGrid = () => {
         );
 
         // --- CONFIGURACIÓN DE DÍAS ---
-        const DIAS_NUEVO = 7; // Días que durará la etiqueta
+        const DIAS_NUEVO = 7; 
         const ahora = new Date();
 
         const formattedCourses: Course[] = activeCourses.map((c: any) => {
@@ -51,26 +51,35 @@ export const useCourseGrid = () => {
           const newCourses = formattedCourses.filter(c => !knownCourses.includes(c.id));
 
           if (newCourses.length > 0) {
-            newCourses.forEach((curso, index) => {
-              setTimeout(() => {
-                const notif = {
-                  title: '¡Nuevo Curso Disponible!',
-                  message: `Acabamos de publicar "${curso.title}". ¡Ve a descubrirlo!`,
-                  type: 'promo' as const,
-                  link: `/curso/${curso.id}`
-                };
+            
+            // ---> 2. PREPARAMOS TODAS LAS NOTIFICACIONES EN UN ARREGLO <---
+            const notifsArray = newCourses.map(curso => ({
+              title: '¡Nuevo Curso Disponible!',
+              message: `Acabamos de publicar "${curso.title}". ¡Ve a descubrirlo!`,
+              type: 'promo' as const,
+              link: `/curso/${curso.id}`
+            }));
 
-                // VERIFICACIÓN INMEDIATA: Leemos directamente del localStorage 
-                // en el momento exacto en que se va a disparar la notificación
-                const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-                if (isLoggedIn) {
-                  addNotification(notif);
-                } else {
-                  showToast(notif);
-                }
-              }, index * 600);
-            });
+            if (isLoggedIn) {
+              addMultipleNotifications(notifsArray);
+            } else {
+              if (notifsArray.length === 1) {
+                showToast(notifsArray[0]);
+              } else if (notifsArray.length <= 3) {
+                // Si son poquitos, los mostramos escalonados
+                notifsArray.forEach((notif, index) => {
+                  setTimeout(() => showToast(notif), index * 600);
+                });
+              } else {
+                showToast({
+                  title: '¡Nuevos Cursos Disponibles!',
+                  message: `Hemos añadido ${notifsArray.length} nuevos cursos. ¡Inicia sesión para descubrirlos y disfrutarlos!`,
+                  type: 'promo' as const
+                });
+              }
+            }
 
             const allIds = formattedCourses.map(c => c.id);
             localStorage.setItem('known_courses', JSON.stringify(allIds));
@@ -84,7 +93,7 @@ export const useCourseGrid = () => {
     };
 
     fetchCourses();
-  }, []); // <-- AQUÍ ESTABA LA MAGIA: Quitamos el [user] para evitar que se ejecute doble
+  }, []); 
 
   // Lógica de filtrado
   const availableCategories = Array.from(new Set(courses.map(c => c.category))).sort();
