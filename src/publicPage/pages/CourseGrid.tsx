@@ -66,9 +66,20 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
                                     className="absolute inset-0 w-full h-full object-cover transform group-hover/card:scale-110 transition duration-500 z-10" 
                                     loading="lazy" 
                                 />
+                                
+                                {/* Etiqueta de Categoría (La que ya tenías) */}
                                 <div className="absolute top-2 left-2 z-30">
                                     <span className="bg-[#0b1220] backdrop-blur-md border border-[#1e2a3a] px-2 py-1 text-xs font-bold text-slate-300 rounded">{course.category}</span>
                                 </div>
+
+                               {course.isNew && (
+                                    <div className="absolute top-2 right-2 z-30">
+                                        <span className="bg-cyan-500 text-[#04070f] text-[10px] font-bold px-2.5 py-1.5 rounded uppercase tracking-wider shadow-[0_0_15px_rgba(34,211,238,0.4)]">
+                                            Nuevo
+                                        </span>
+                                    </div>
+                                )}
+                                {/* ----------------------------------------------------------- */}
                             </div>
 
                             <div className="p-4 flex-grow flex flex-col">
