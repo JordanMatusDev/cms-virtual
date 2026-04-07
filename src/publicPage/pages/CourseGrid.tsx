@@ -66,9 +66,19 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
                                     className="absolute inset-0 w-full h-full object-cover transform group-hover/card:scale-110 transition duration-500 z-10" 
                                     loading="lazy" 
                                 />
+                                
+                                {/* Etiqueta de Categoría (La que ya tenías) */}
                                 <div className="absolute top-2 left-2 z-30">
                                     <span className="bg-[#0b1220] backdrop-blur-md border border-[#1e2a3a] px-2 py-1 text-xs font-bold text-slate-300 rounded">{course.category}</span>
                                 </div>
+
+                               {course.isNew && (
+                                    <div className="absolute top-2 right-2 z-30">
+                                        <span className="bg-cyan-500 text-[#04070f] text-[10px] font-bold px-2.5 py-1.5 rounded uppercase tracking-wider shadow-[0_0_15px_rgba(34,211,238,0.4)]">
+                                            Nuevo
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="p-4 flex-grow flex flex-col">
@@ -113,8 +123,8 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
 const CourseGrid = () => {
     const { courses, loading, filter, setFilter, isFilterOpen, setIsFilterOpen, availableCategories } = useCourseGrid();
     const filterMenuRef = useRef<HTMLDivElement>(null);
+    const hasNewCourses = courses.some(course => course.isNew);
 
-    // Cerrar el filtro al hacer clic fuera
     useEffect(() => {
         if (!isFilterOpen) return;
         const handleClickOutside = (event: MouseEvent) => {
@@ -163,15 +173,25 @@ const CourseGrid = () => {
                         {isFilterOpen && (
                             <div ref={filterMenuRef} className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-56 bg-[#121212] border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl z-20 animate-in fade-in zoom-in-95">
                                 <div className="py-2 max-h-64 overflow-y-auto custom-scrollbar">
-                                    <button onClick={() => { setFilter('Todas'); setIsFilterOpen(false); }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 text-cyan-400 hover:text-cyan-300 flex justify-between font-bold">
+                                    
+                                    <button onClick={() => { setFilter('Todas'); setIsFilterOpen(false); }} className={`w-full text-left px-4 py-3 text-sm hover:bg-white/5 hover:text-cyan-300 flex justify-between font-bold ${filter === 'Todas' ? 'text-cyan-400' : 'text-gray-300'}`}>
                                         Todas {filter === 'Todas' && <Check size={16} className="text-cyan-400" />}
                                     </button>
+
+                                    {hasNewCourses && (
+                                        <button onClick={() => { setFilter('Recién agregados'); setIsFilterOpen(false); }} className={`w-full text-left px-4 py-3 text-sm hover:bg-white/5 hover:text-cyan-300 flex justify-between font-bold ${filter === 'Recién agregados' ? 'text-cyan-400' : 'text-gray-300'}`}>
+                                            Recién Agregados {filter === 'Recién agregados' && <Check size={16} className="text-cyan-400" />}
+                                        </button>
+                                    )}
+
                                     <div className="h-px bg-white/10 my-1 mx-4"></div>
+                                    
                                     {availableCategories.map((cat) => (
-                                        <button key={cat} onClick={() => { setFilter(cat); setIsFilterOpen(false); }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 text-gray-300 hover:text-cyan-400 flex justify-between">
-                                            <span className={filter === cat ? 'text-cyan-400 font-bold' : ''}>{cat}</span> {filter === cat && <Check size={16} className="text-cyan-400" />}
+                                        <button key={cat} onClick={() => { setFilter(cat); setIsFilterOpen(false); }} className={`w-full text-left px-4 py-3 text-sm hover:bg-white/5 hover:text-cyan-400 flex justify-between ${filter === cat ? 'text-cyan-400 font-bold' : 'text-gray-300'}`}>
+                                            <span>{cat}</span> {filter === cat && <Check size={16} className="text-cyan-400" />}
                                         </button>
                                     ))}
+                                    
                                 </div>
                             </div>
                         )}
@@ -186,13 +206,18 @@ const CourseGrid = () => {
                             <p>No se encontraron cursos activos.</p>
                         </div>
                     ) : (
-                        (filter === 'Todas' ?
+                        filter === 'Todas' ? (
                             availableCategories.map((category) => {
                                 const categoryCourses = courses.filter(course => course.category === category);
                                 if (categoryCourses.length === 0) return null;
                                 return <CategoryRow key={category} category={category} courses={categoryCourses} />;
                             })
-                            :
+                        ) : filter === 'Recién agregados' ? (
+                            (() => {
+                                const newCourses = courses.filter(course => course.isNew);
+                                return <CategoryRow key="nuevos" category="Recién Agregados" courses={newCourses} />;
+                            })()
+                        ) : (
                             (() => {
                                 const categoryCourses = courses.filter(course => course.category === filter);
                                 if (categoryCourses.length === 0) return (
