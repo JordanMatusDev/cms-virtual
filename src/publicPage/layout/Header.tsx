@@ -198,6 +198,7 @@ const Header = () => {
           setIsAuthOpen(false);
         }}
         onSwitchToRegister={() => {
+          // Solo cambiamos la vista, nunca cerramos el modal
           setAuthView('register');
         }}
         onSwitchToForgot={() => {
@@ -208,6 +209,7 @@ const Header = () => {
         isOpen={isAuthOpen && authView === 'register'}
         onClose={() => setIsAuthOpen(false)}
         onSwitchToLogin={() => {
+          // Solo cambiamos la vista, nunca cerramos el modal
           setAuthView('login');
         }}
         initialData={registerData}

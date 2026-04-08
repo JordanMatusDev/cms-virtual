@@ -1,22 +1,30 @@
 import { Outlet } from 'react-router';
 import Header from './Header';
 import Footer from './Footer';
+import { MaintenanceProvider, useMaintenance } from '../context/MaintenanceContext';
+import Maintenance from './Maintenance';
+import '../index.css';
 
-
-import '../index.css'; 
-
-export default function PublicLayout() {
+function PublicLayoutContent() {
+  const { maintenanceMode } = useMaintenance();
+  if (maintenanceMode) {
+    return <Maintenance />;
+  }
   return (
     <div className="bg-[#050505] min-h-screen flex flex-col font-sans">
       <Header />
-      
-      {/* Aquí es donde React Router inyectará mágicamente las páginas 
-          (Hero, CourseGrid, MyCourses, etc.) dependiendo de la URL */}
       <main className="flex-grow">
-        <Outlet /> 
+        <Outlet />
       </main>
-
       <Footer />
     </div>
+  );
+}
+
+export default function PublicLayout() {
+  return (
+    <MaintenanceProvider>
+      <PublicLayoutContent />
+    </MaintenanceProvider>
   );
 }

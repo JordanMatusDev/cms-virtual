@@ -60,7 +60,9 @@ export const useCoursePlayer = () => {
     const isCourseCompleted = lessons.length > 0 && progressState.vistos.length >= lessons.length;
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
     const [activeTab, setActiveTab] = useState('descripcion');
-    const [showLoginModal, setShowLoginModal] = useState(false);
+    // Unificación de modales de autenticación
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authView, setAuthView] = useState<'login' | 'register'>('login');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [isLoadingEnroll, setIsLoadingEnroll] = useState(false);
 
@@ -255,10 +257,11 @@ export const useCoursePlayer = () => {
 
     // --- FETCH INICIAL ---
     useEffect(() => {
+        setError(null);      // Limpia el error anterior al cambiar de curso
+        setLoading(true);    // Muestra loading mientras busca el nuevo curso
         if (!courseId) { setError('URL inválida'); setLoading(false); return; }
 
         const fetchData = async () => {
-            setLoading(true);
             try {
                 let initialLessons: any[] = [];
                 let cData: any = null;
@@ -406,7 +409,10 @@ export const useCoursePlayer = () => {
     const handleEnrollClick = () => {
         const userId = localStorage.getItem('userId');
         if (userId) setShowConfirmModal(true);
-        else setShowLoginModal(true);
+        else {
+            setAuthView('login');
+            setShowAuthModal(true);
+        }
     };
 
     const confirmEnrollment = async () => {
@@ -448,7 +454,7 @@ export const useCoursePlayer = () => {
     };
 
     const handleLoginSuccess = async () => {
-        setShowLoginModal(false);
+        setShowAuthModal(false);
         const userId = localStorage.getItem('userId');
         const enrolled = await updateEnrollmentState(userId, lessonsRef.current);
         if (!enrolled) setTimeout(() => setShowConfirmModal(true), 200);
@@ -490,7 +496,8 @@ export const useCoursePlayer = () => {
         isLocked: !isEnrolled,
         activeTab, setActiveTab,
         handleVideoClick, handleEnrollClick,
-        showLoginModal, setShowLoginModal, handleLoginSuccess,
+        // Nuevos estados y handlers para modales de auth
+        showAuthModal, setShowAuthModal, authView, setAuthView, handleLoginSuccess,
         showConfirmModal, setShowConfirmModal, confirmEnrollment, isLoadingEnroll,
         handleVideoEnd, handleStateChange, handleReady, progressPercentage,
         toggleLessonComplete, isCourseCompleted,

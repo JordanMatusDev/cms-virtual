@@ -1,7 +1,6 @@
-// src/context/NotificationContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuthSession } from '../hooks/header/useAuthSession';
-import { Award, PartyPopper, BellRing, CheckCircle2, Hand, GraduationCap, Trash2, } from 'lucide-react';
+import { Award, PartyPopper, BellRing, CheckCircle2, Hand, GraduationCap, Trash2, X } from 'lucide-react';
 
 export interface AppNotification {
   id: string;
@@ -10,12 +9,14 @@ export interface AppNotification {
   time: string;
   read: boolean;
   type: 'course' | 'system' | 'achievement' | 'promo' | 'welcome' | 'remove' | 'success';
+  link?: string;
 }
 
 interface NotificationContextType {
   notifications: AppNotification[];
   unreadCount: number;
   addNotification: (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => void;
+  addMultipleNotifications: (notifs: Omit<AppNotification, 'id' | 'read' | 'time'>[]) => void;
   showToast: (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => void; 
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -27,13 +28,10 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  // AQUÍ ES DONDE VA EL ESTADO DE LOS TOASTS (dentro del componente)
   const [activeToasts, setActiveToasts] = useState<AppNotification[]>([]);
 
-  // Usamos tu hook
   const { user } = useAuthSession();
 
-  // Usamos el email (o el name) en lugar de un id
   const userIdentifier = user?.email || user?.name;
   const storageKey = userIdentifier ? `virtualz_notifs_${userIdentifier}` : null;
 
@@ -58,8 +56,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [notifications, storageKey]);
 
-
-  // Utilidad para obtener la hora local en formato HH:mm
   const getCurrentTimeString = () => {
     const now = new Date();
     return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -80,7 +76,52 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }, 4000);
   };
 
-  // Función para mostrar Toasts sin guardar en el historial
+  // ---> AQUÍ VA LA FUNCIÓN, ADENTRO DEL COMPONENTE <---
+  const addMultipleNotifications = (newNotifs: Omit<AppNotification, 'id' | 'read' | 'time'>[]) => {
+    if (newNotifs.length === 0) return;
+
+    const formattedNotifs: AppNotification[] = newNotifs.map(notif => ({
+      ...notif,
+      id: crypto.randomUUID(), 
+      read: false,
+      time: getCurrentTimeString()
+    }));
+
+    setNotifications(prev => [...formattedNotifs, ...prev]);
+
+    if (formattedNotifs.length === 1) {
+      const singleNotif = formattedNotifs[0];
+      setActiveToasts(prev => [...prev, singleNotif]);
+      setTimeout(() => {
+        setActiveToasts(prev => prev.filter(toast => toast.id !== singleNotif.id));
+      }, 4000);
+
+    } else if (formattedNotifs.length <= 3) {
+      setActiveToasts(prev => [...prev, ...formattedNotifs]);
+      formattedNotifs.forEach(notif => {
+        setTimeout(() => {
+          setActiveToasts(prev => prev.filter(toast => toast.id !== notif.id));
+        }, 4000);
+      });
+
+    } else {
+      const summaryToastId = crypto.randomUUID();
+      const summaryToast: AppNotification = {
+        id: summaryToastId,
+        title: '¡Nuevos Cursos Disponibles!',
+        message: `Hemos añadido ${formattedNotifs.length} nuevos cursos. ¡Explora el catálogo!`,
+        time: getCurrentTimeString(),
+        read: true, 
+        type: 'promo',
+      };
+
+      setActiveToasts(prev => [...prev, summaryToast]);
+      setTimeout(() => {
+        setActiveToasts(prev => prev.filter(toast => toast.id !== summaryToastId));
+      }, 5000); 
+    }
+  };
+
   const showToast = (notif: Omit<AppNotification, 'id' | 'read' | 'time'>) => {
     const toastId = Date.now().toString();
     const newNotif: AppNotification = { 
@@ -124,29 +165,34 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, showToast, markAsRead, markAllAsRead, deleteNotification, clearActiveToasts }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, addMultipleNotifications, showToast, markAsRead, markAllAsRead, deleteNotification, clearActiveToasts }}>
       {children}
 
-      {/* --- CONTENEDOR FLOTANTE DE TOASTS --- */}
       <div className="fixed top-[85px] right-6 md:right-24 lg:right-[120px] xl:right-[calc(50vw-580px)] z-[99999] flex flex-col gap-3 pointer-events-none">
         {activeToasts.map((toast) => {
-          // Obtenemos el icono y los colores (si no existe el tipo, usamos system por defecto)
           const { icon: Icon, colorClass } = ICON_MAP[toast.type] || ICON_MAP.system;
 
           return (
             <div
               key={toast.id}
-              className="bg-[#151515] border border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-4 rounded-xl flex items-start gap-4 w-80 pointer-events-auto transition-all duration-300 animate-in fade-in slide-in-from-top-6"
+              className="relative bg-[#151515] border border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-4 rounded-xl flex items-start gap-4 w-80 pointer-events-auto transition-all duration-300 animate-in fade-in slide-in-from-top-6"
             >
-              {/* Renderizamos el icono con el fondo y borde que definiste */}
               <div className={`shrink-0 p-2 rounded-full border ${colorClass}`}>
                 <Icon size={20} />
               </div>
 
-              <div className="flex-1 mt-0.5">
+              <div className="flex-1 mt-0.5 pr-4">
                 <h4 className="text-white font-bold text-sm mb-1">{toast.title}</h4>
                 <p className="text-gray-300 text-xs leading-relaxed">{toast.message}</p>
               </div>
+
+              <button
+                onClick={() => setActiveToasts(prev => prev.filter(t => t.id !== toast.id))}
+                className="absolute top-3 right-3 text-gray-500 hover:text-white transition-colors p-1"
+                aria-label="Cerrar notificación"
+              >
+                <X size={14} />
+              </button>
             </div>
           );
         })}
