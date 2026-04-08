@@ -5,8 +5,9 @@ export interface Course {
   image: string;
   description?: string;
   active?: boolean;
-  author?: string;      // NUEVO
-  videoCount?: number;  // NUEVO
+  author?: string;      
+  videoCount?: number; 
+  isNew?: boolean;
 }
 
 export interface CategoryRowProps {

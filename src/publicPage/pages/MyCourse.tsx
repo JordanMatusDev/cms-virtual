@@ -261,7 +261,7 @@ const MyCourses = () => {
                 {filterStatus !== 'all' ? `No hay resultados para el filtro seleccionado.` : "Completa cursos para desbloquear tus diplomas y verlos reflejados en tu muro de éxito."}
               </p>
               <button onClick={handleGoToCourses} className="px-8 py-3 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black font-bold rounded-xl border border-cyan-500/20 hover:border-cyan-500 transition-all">
-                Explorar Catálogo de Cursos
+                Explorar Cursos
               </button>
             </div>
         )}
