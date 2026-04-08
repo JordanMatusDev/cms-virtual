@@ -14,33 +14,36 @@ const Maintenance = () => {
 
     return (
         <div className="min-h-screen bg-[#050505] flex items-center justify-center px-6 font-sans relative overflow-hidden">
-            {/* Luces de fondo estilo Cyberpunk */}
+            {/* Luces de fondo estilo Cyberpunk (Cian y Morado) */}
             <div className="absolute inset-0 pointer-events-none z-0">
-                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(236,72,153,0.1)_0%,transparent_70%)] animate-[pulse_4s_ease-in-out_infinite]"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(34,211,238,0.1)_0%,transparent_70%)] animate-[pulse_6s_ease-in-out_infinite_reverse]"></div>
+                {/* Luz Morada */}
+                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(147,51,234,0.15)_0%,transparent_70%)] animate-[pulse_4s_ease-in-out_infinite]"></div>
+                {/* Luz Cian */}
+                <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(6,182,212,0.15)_0%,transparent_70%)] animate-[pulse_6s_ease-in-out_infinite_reverse]"></div>
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay"></div>
             </div>
 
             <div className="relative z-10 max-w-lg w-full flex flex-col items-center text-center">
                 {/* Icono animado */}
                 <div className="relative mb-8">
-                    <div className="absolute inset-0 bg-pink-500/20 blur-2xl rounded-full"></div>
-                    <div className="w-24 h-24 bg-[#121212] border border-white/10 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(236,72,153,0.3)] relative">
-                        <ServerCrash size={48} className="text-pink-500" />
+                    <div className="absolute inset-0 bg-cyan-500/20 blur-2xl rounded-full"></div>
+                    <div className="w-24 h-24 bg-[#121212] border border-white/10 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.3)] relative">
+                        <ServerCrash size={48} className="text-cyan-400" />
                         <div className="absolute -bottom-2 -right-2 bg-[#050505] rounded-full p-1 border border-white/10">
-                            <AlertCircle size={20} className="text-cyan-400" />
+                            <AlertCircle size={20} className="text-purple-400" />
                         </div>
                     </div>
                 </div>
 
                 <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-xl">
-                    Sistemas en <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">Mantenimiento</span>
+                    Sistemas en <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Mantenimiento</span>
                 </h1>
                 
                 <p className="text-gray-400 text-base md:text-lg mb-10 leading-relaxed">
                     Estamos actualizando nuestros servidores o hemos perdido la conexión con la base de datos. Vuelve a intentarlo en unos minutos.
                 </p>
 
+                {/* Botón transparente original (Ghost Button) con hover en Cian */}
                 <button
                     onClick={handleRetry}
                     disabled={isRetrying}

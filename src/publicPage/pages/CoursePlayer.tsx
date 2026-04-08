@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Lock, Download,
     Users, Unlock, BookOpen, Loader2, Trophy, Sparkles, Play, Target, CheckCircle2, Info,AlertCircle
@@ -14,6 +15,7 @@ declare global {
 }
 
 const CoursePlayer = () => {
+    const navigate = useNavigate();
     const playerRef = useRef<HTMLDivElement>(null);
     const ytContainerRef = useRef<HTMLDivElement>(null);
     const ytPlayerRef = useRef<any>(null);
@@ -329,33 +331,37 @@ const CoursePlayer = () => {
     }
 
  if (error || !course) {
+    // Mismo comportamiento que MyCourses
+    const handleGoToCourses = () => {
+        if (window.location.pathname === '/') {
+            const target = document.getElementById('course-grid');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+        }
+        navigate('/#course-grid');
+    };
     return (
         <div className="min-h-screen bg-[#04070f] flex items-center justify-center p-4">
-            
             <div className="flex flex-col items-center justify-center py-20 px-8 text-center border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02] max-w-2xl w-full">
-                
                 <div className="w-24 h-24 bg-gradient-to-tr from-gray-800 to-gray-900 rounded-full flex items-center justify-center mb-6 shadow-inner border border-white/5">
                     <AlertCircle size={40} className="text-gray-500" />
                 </div>
-                
                 <h3 className="text-2xl font-bold text-white mb-3">
                     {error ? "Algo salió mal" : "Curso no encontrado"}
                 </h3>
-                
                 <p className="text-gray-400 max-w-md mb-8 leading-relaxed">
                     {error || "El curso al que intentas acceder no existe, ha sido eliminado o se encuentra deshabilitado temporalmente."}
                 </p>
-                
                 <button
                     type="button"
-                    onClick={() => window.location.href = '/cursos'}
+                    onClick={handleGoToCourses}
                     className="px-8 py-3 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black font-bold rounded-xl border border-cyan-500/20 hover:border-cyan-500 transition-all flex items-center gap-2"
                 >
                     Explorar Cursos
                 </button>
-                
             </div>
-            
         </div>
     );
 }
