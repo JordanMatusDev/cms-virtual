@@ -9,7 +9,6 @@ export const useCourseGrid = () => {
   const [filter, setFilter] = useState("Todas");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // ---> 1. EXTRAEMOS LA NUEVA FUNCIÓN AQUÍ <---
   const { addMultipleNotifications, showToast } = useNotificacion();
 
   useEffect(() => {
@@ -21,7 +20,6 @@ export const useCourseGrid = () => {
           (typeof c.activo === 'undefined') ? true : (c.activo == 1 || c.activo === true || c.activo === 'true')
         );
 
-        // --- CONFIGURACIÓN DE DÍAS ---
         const DIAS_NUEVO = 7; 
         const ahora = new Date();
 
@@ -52,7 +50,6 @@ export const useCourseGrid = () => {
 
           if (newCourses.length > 0) {
             
-            // ---> 2. PREPARAMOS TODAS LAS NOTIFICACIONES EN UN ARREGLO <---
             const notifsArray = newCourses.map(curso => ({
               title: '¡Nuevo Curso Disponible!',
               message: `Acabamos de publicar "${curso.title}". ¡Ve a descubrirlo!`,
@@ -68,7 +65,6 @@ export const useCourseGrid = () => {
               if (notifsArray.length === 1) {
                 showToast(notifsArray[0]);
               } else if (notifsArray.length <= 3) {
-                // Si son poquitos, los mostramos escalonados
                 notifsArray.forEach((notif, index) => {
                   setTimeout(() => showToast(notif), index * 600);
                 });
