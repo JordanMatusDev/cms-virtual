@@ -48,10 +48,9 @@ export async function registerService(formData: any) {
   }
 }
 
-export async function sendVerificationEmail(email: string, username: string) {
+export async function sendVerificationEmail(email: string) {
   try {
-    // Solo solicita la verificación, el backend envía el email
-    const { data } = await api.post('/api/v1/auth/request-verify-email', { email });
+    await api.post('/api/v1/auth/request-verify-email', { email });
     return true;
   } catch (err) {
     return false;
