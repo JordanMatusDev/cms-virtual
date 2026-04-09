@@ -7,6 +7,7 @@ import {
 import { useCoursePlayer } from '../hooks/pages/useCoursePlayer';
 import LoginModal from '../components/auth/LoginModal';
 import RegisterModal from '../components/auth/RegisterModal';
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 declare global {
     interface Window {
         YT?: any;
@@ -24,7 +25,6 @@ const CoursePlayer = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
     const [isDownloadingCert, setIsDownloadingCert] = useState(false);
 
-    // Desestructuración del hook personalizado
     const {
         loading, error,
         course, lessons,
@@ -43,13 +43,11 @@ const CoursePlayer = () => {
         isReadyToPlay
     } = useCoursePlayer();
 
-    // Refs para evitar "stale closures" en los eventos de YouTube
     const handleVideoEndRef = useRef(handleVideoEnd);
     const handleStateChangeRef = useRef(handleStateChange);
     const handleReadyRef = useRef(handleReady);
 
 
-    // Sincronizar refs con las funciones del hook
     useEffect(() => {
         handleVideoEndRef.current = handleVideoEnd;
         handleStateChangeRef.current = handleStateChange;
@@ -57,7 +55,6 @@ const CoursePlayer = () => {
     }, [handleVideoEnd, handleStateChange, handleReady]);
 
     useEffect(() => {
-        // Hacer scroll automático SOLO dentro del contenedor de la playlist
         if (isReadyToPlay && currentVideoIndex !== null && lessons.length > 0) {
             const timeoutId = setTimeout(() => {
                 const activeItem = document.getElementById(`lesson-item-${currentVideoIndex}`);
@@ -66,8 +63,6 @@ const CoursePlayer = () => {
                 if (activeItem && playlistContainer) {
                     const container = playlistContainer as HTMLElement;
                     const item = activeItem as HTMLElement;
-
-                    // Cálculo para centrar el item relativo a su contenedor
                     const offset = item.offsetTop - container.offsetTop - (container.clientHeight / 2) + (item.clientHeight / 2);
 
                     container.scrollTo({
@@ -81,7 +76,6 @@ const CoursePlayer = () => {
         }
     }, [currentVideoIndex, isReadyToPlay, lessons.length]);
 
-    // Listener para eventos de autenticación
     useEffect(() => {
         const syncAuthState = () => {
             setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
@@ -98,7 +92,6 @@ const CoursePlayer = () => {
         };
     }, []);
 
-    // Carga de la API de YouTube
     const ensureYouTubeApiReady = () => {
         return new Promise<any>((resolve) => {
             if (window.YT && window.YT.Player) {
@@ -122,7 +115,6 @@ const CoursePlayer = () => {
         });
     };
 
-    // Inicialización y control del reproductor
     useEffect(() => {
         if (isLocked) {
             if (ytPlayerRef.current) {
@@ -154,7 +146,6 @@ const CoursePlayer = () => {
             const onPlayerReady = (event: any) => {
                 ytPlayerRef.current = event.target;
                 handleReadyRef.current(event);
-                // Pausar el video al cargar (no autoplay)
                 try {
                     if (typeof event.target.pauseVideo === 'function') {
                         event.target.pauseVideo();
@@ -205,13 +196,11 @@ const CoursePlayer = () => {
                 try {
                     ytPlayerRef.current.destroy();
                 } catch (e) {
-                    // Ignorar errores de limpieza si la API no está lista
                 }
             }
         };
     }, []);
 
-    // Scroll suave al hacer click en un video
     const handleVideoClickWithScroll = (index: number) => {
         handleVideoClick(index);
         if (playerRef.current) {
@@ -252,10 +241,7 @@ const CoursePlayer = () => {
 
             const token = localStorage.getItem('authToken');
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
             const certificatesService = await import('../services/pages/certificatesService');
-
-            // 1. OBTENER INSCRIPCIONES
             const enrollments = await certificatesService.getUserEnrollments(userId, headers);
             const enrollment = (Array.isArray(enrollments) ? enrollments : []).find(
                 (e: any) => String(e.curso_id ?? e.curso?.id) === String(course.id)
@@ -279,7 +265,6 @@ const CoursePlayer = () => {
             const certId = certData?.id ?? certData?.certificado_id;
             if (!certId) throw new Error("No se pudo obtener el ID del certificado");
 
-            // 3. DESCARGAR EL PDF
             const blob = await certificatesService.downloadCertificate(certId, headers);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -290,7 +275,6 @@ const CoursePlayer = () => {
             document.body.appendChild(a);
             a.click();
 
-            // Limpieza de memoria y DOM
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
 
@@ -301,7 +285,6 @@ const CoursePlayer = () => {
         }
     };
 
-    // Ajuste de altura de la playlist sincronizado con el reproductor
     useEffect(() => {
         if (!playerRef.current) return;
 
@@ -331,7 +314,6 @@ const CoursePlayer = () => {
     }
 
  if (error || !course) {
-    // Mismo comportamiento que MyCourses
     const handleGoToCourses = () => {
         if (window.location.pathname === '/') {
             const target = document.getElementById('course-grid');
@@ -675,16 +657,21 @@ const CoursePlayer = () => {
                 </div>
             </main>
 
-            {/* Y agrega tu nuevo LoginModal usando el estado que ya tienes: */}
-            < LoginModal
+
+            <LoginModal
                 isOpen={showAuthModal && authView === 'login'}
                 onClose={() => setShowAuthModal(false)}
                 onSuccess={handleLoginSuccess}
                 onSwitchToRegister={() => setAuthView('register')}
-                onSwitchToForgot={() => setAuthView('login')} // Puedes ajustar si tienes modal de forgot
+                onSwitchToForgot={() => setAuthView('forgot')}
             />
             <RegisterModal
                 isOpen={showAuthModal && authView === 'register'}
+                onClose={() => setShowAuthModal(false)}
+                onSwitchToLogin={() => setAuthView('login')}
+            />
+            <ForgotPasswordModal
+                isOpen={showAuthModal && authView === 'forgot'}
                 onClose={() => setShowAuthModal(false)}
                 onSwitchToLogin={() => setAuthView('login')}
             />
@@ -692,7 +679,6 @@ const CoursePlayer = () => {
             {
                 showConfirmModal && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-                        {/* Backdrop: Misma oscuridad y desenfoque que el anterior */}
                         <div
                             className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                             onClick={() => setShowConfirmModal(false)}
@@ -701,11 +687,9 @@ const CoursePlayer = () => {
                         {/* Modal Card */}
                         <div className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-[#151515] border border-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
 
-                            {/* Luz superior Cyan (Indica acción positiva/informativa) */}
                             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50" />
 
                             <div className="p-6 relative z-10">
-                                {/* Icono con Glow Cyan */}
                                 <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-cyan-500/10 ring-1 ring-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
                                     <BookOpen size={26} className="text-cyan-400" />
                                 </div>

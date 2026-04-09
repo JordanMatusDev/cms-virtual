@@ -133,6 +133,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin, initialData }: Regist
         onFixEmail={() => {
           setShowUpdateEmail(true);
         }}
+        email={registeredData?.email || formData.email || ''}
       />
     );
   }

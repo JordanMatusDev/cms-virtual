@@ -1,4 +1,3 @@
-// src/components/header/MobileMenu.tsx
 import React from 'react';
 import { Search, Bell, User } from 'lucide-react';
 import { useAuthSession } from '../../hooks/header/useAuthSession';
