@@ -6,8 +6,9 @@ import {
 import { useNavigate, useLocation } from 'react-router';
 import { useCertificates } from '../hooks/pages/useCertificates';
 
+import usePageTitle from '../hooks/usePageTitle';
 const MyCertificates = () => {
-    // 1. Extraemos lógica de negocio
+    usePageTitle('Mis Certificados');
     const {
         loading,
         filteredCerts,
@@ -17,7 +18,6 @@ const MyCertificates = () => {
         downloadingIds, downloadCertificate
     } = useCertificates();
 
-    // Para navegación y scroll
     const navigate = useNavigate();
     const location = useLocation();
 

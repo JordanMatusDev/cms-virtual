@@ -4,8 +4,10 @@ import {
   BookOpen
 } from 'lucide-react';
 import { useMyCourses } from '../hooks/pages/useMyCourses';
+import usePageTitle from '../hooks/usePageTitle';
 
 const MyCourses = () => {
+  usePageTitle('Inscripciones');
     const handleGoToCourses = () => {
       if (window.location.pathname === '/') {
         const target = document.getElementById('course-grid');
@@ -17,7 +19,6 @@ const MyCourses = () => {
       navigate('/#course-grid');
     };
     
-  // Efecto mouse para el banner
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!bannerRef.current) return;
     const rect = bannerRef.current.getBoundingClientRect();
@@ -27,8 +28,8 @@ const MyCourses = () => {
   const {
     userData,
     loading,
-    courses, // Lista completa para conteos
-    filteredCourses, // Lista filtrada para mostrar
+    courses, 
+    filteredCourses, 
     availableCategories,
     filterStatus,
     setFilterStatus,
