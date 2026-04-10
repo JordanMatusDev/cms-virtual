@@ -8,19 +8,18 @@ import {
 import { CircleStencil, ImageRestriction, FixedCropper } from 'react-advanced-cropper';
 import type { FixedCropperRef } from 'react-advanced-cropper';
 import 'react-advanced-cropper/dist/style.css'
-
 import useSettings from '../hooks/pages/useSettings';
 
 
 
 
+import usePageTitle from '../hooks/usePageTitle';
 const Settings = () => {
+    usePageTitle('Configuración');
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const [showPasswordError, setShowPasswordError] = useState(false);
 
-    // --- NUEVOS ESTADOS LOCALES PARA EL RECORTADOR Y ROTACIÓN ---
     const cropperRef = useRef<FixedCropperRef>(null);
-    // ...existing code...
 
     const {
         user, activeTab, loading, resultModal, profileError, fieldErrors,

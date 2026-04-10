@@ -65,7 +65,7 @@ api.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     if ((
-      !error.response || [401, 403, 500, 502, 503, 504].includes(status)
+      !error.response || [500, 502, 503, 504].includes(status)
     ) && maintenanceCallback) {
       maintenanceCallback();
     }

@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import usePageTitle from '../hooks/usePageTitle';
 import { useNavigate } from 'react-router';
 import { User, PlayCircle, Filter, ChevronDown, Check, ChevronLeft, ChevronRight, Loader2, BookOpen } from 'lucide-react';
 import { useCourseGrid } from '../hooks/pages/useCourseGrid';
@@ -42,10 +43,10 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
             </h2>
 
             <div className="relative group/slider">
-                
+
                 {canScrollLeft && (
-                    <button 
-                        onClick={() => slide('left')} 
+                    <button
+                        onClick={() => slide('left')}
                         className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-r border-white/10 rounded-r-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/slider:opacity-100"
                     >
                         <ChevronLeft size={24} className="text-cyan-400" />
@@ -60,19 +61,19 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
 
                             <div className="relative overflow-hidden h-[146px] sm:h-40 w-full shrink-0 rounded-t-2xl [transform:translateZ(0)] bg-[#121212]">
                                 <div className="absolute inset-0 bg-black/20 group-hover/card:bg-transparent transition-all z-20 pointer-events-none"></div>
-                                <img 
-                                    src={course.image || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop"} 
-                                    alt={course.title} 
-                                    className="absolute inset-0 w-full h-full object-cover transform group-hover/card:scale-110 transition duration-500 z-10" 
-                                    loading="lazy" 
+                                <img
+                                    src={course.image || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop"}
+                                    alt={course.title}
+                                    className="absolute inset-0 w-full h-full object-cover transform group-hover/card:scale-110 transition duration-500 z-10"
+                                    loading="lazy"
                                 />
-                                
+
                                 {/* Etiqueta de Categoría (La que ya tenías) */}
                                 <div className="absolute top-2 left-2 z-30">
                                     <span className="bg-[#0b1220] backdrop-blur-md border border-[#1e2a3a] px-2 py-1 text-xs font-bold text-slate-300 rounded">{course.category}</span>
                                 </div>
 
-                               {course.isNew && (
+                                {course.isNew && (
                                     <div className="absolute top-2 right-2 z-30">
                                         <span className="bg-cyan-500 text-[#04070f] text-[10px] font-bold px-2.5 py-1.5 rounded uppercase tracking-wider shadow-[0_0_15px_rgba(34,211,238,0.4)]">
                                             Nuevo
@@ -108,8 +109,8 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
                 </div>
 
                 {canScrollRight && (
-                    <button 
-                        onClick={() => slide('right')} 
+                    <button
+                        onClick={() => slide('right')}
                         className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-l border-white/10 rounded-l-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/slider:opacity-100"
                     >
                         <ChevronRight size={24} className="text-cyan-400" />
@@ -121,6 +122,7 @@ const CategoryRow = ({ category, courses }: CategoryRowProps) => {
 };
 
 const CourseGrid = () => {
+    usePageTitle('Explorar Cursos');
     const { courses, loading, filter, setFilter, isFilterOpen, setIsFilterOpen, availableCategories } = useCourseGrid();
     const filterMenuRef = useRef<HTMLDivElement>(null);
     const hasNewCourses = courses.some(course => course.isNew);
@@ -173,7 +175,7 @@ const CourseGrid = () => {
                         {isFilterOpen && (
                             <div ref={filterMenuRef} className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-56 bg-[#121212] border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl z-20 animate-in fade-in zoom-in-95">
                                 <div className="py-2 max-h-64 overflow-y-auto custom-scrollbar">
-                                    
+
                                     <button onClick={() => { setFilter('Todas'); setIsFilterOpen(false); }} className={`w-full text-left px-4 py-3 text-sm hover:bg-white/5 hover:text-cyan-300 flex justify-between font-bold ${filter === 'Todas' ? 'text-cyan-400' : 'text-gray-300'}`}>
                                         Todas {filter === 'Todas' && <Check size={16} className="text-cyan-400" />}
                                     </button>
@@ -185,13 +187,13 @@ const CourseGrid = () => {
                                     )}
 
                                     <div className="h-px bg-white/10 my-1 mx-4"></div>
-                                    
+
                                     {availableCategories.map((cat) => (
                                         <button key={cat} onClick={() => { setFilter(cat); setIsFilterOpen(false); }} className={`w-full text-left px-4 py-3 text-sm hover:bg-white/5 hover:text-cyan-400 flex justify-between ${filter === cat ? 'text-cyan-400 font-bold' : 'text-gray-300'}`}>
                                             <span>{cat}</span> {filter === cat && <Check size={16} className="text-cyan-400" />}
                                         </button>
                                     ))}
-                                    
+
                                 </div>
                             </div>
                         )}

@@ -6,8 +6,11 @@ import {
 import { useNavigate, useLocation } from 'react-router';
 import { useCertificates } from '../hooks/pages/useCertificates';
 
+import usePageTitle from '../hooks/usePageTitle';
+import { useAuthSession } from '../hooks/header/useAuthSession';
 const MyCertificates = () => {
-    // 1. Extraemos lógica de negocio
+    usePageTitle('Mis Certificados');
+    const { user } = useAuthSession();
     const {
         loading,
         filteredCerts,
@@ -17,7 +20,6 @@ const MyCertificates = () => {
         downloadingIds, downloadCertificate
     } = useCertificates();
 
-    // Para navegación y scroll
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -34,11 +36,11 @@ const MyCertificates = () => {
 
     // 2. Lógica puramente visual (UI State)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-    
+
     // Banner Mouse Effect
     const bannerRef = useRef<HTMLDivElement>(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    
+
     // Carousel Logic
     const rowRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -99,7 +101,6 @@ const MyCertificates = () => {
                     <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-yellow-600/20 rounded-full blur-[80px] animate-pulse"></div>
                     <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-cyan-900/20 rounded-full blur-[80px] animate-pulse delay-700"></div>
 
-                    {/* Elementos flotantes decorativos */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none">
                         <div className="absolute top-3/4 left-1/4 animate-[bounce_3s_infinite] opacity-30"><Star size={12} className="text-yellow-400" /></div>
                         <div className="absolute top-1/2 left-3/4 animate-[bounce_4s_infinite] delay-1000 opacity-20"><div className="w-2 h-2 rounded-full bg-cyan-400"></div></div>
@@ -107,17 +108,22 @@ const MyCertificates = () => {
                     </div>
 
                     <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-8 text-center sm:text-left">
-                        <div className="relative group/icon">
-                            <div className="absolute inset-0 bg-yellow-500/20 blur-xl rounded-full animate-pulse group-hover/icon:bg-yellow-400/40 transition-all duration-500"></div>
-                            <div className="relative p-5 bg-gradient-to-b from-white/10 to-transparent rounded-2xl border border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)] backdrop-blur-md transition-transform duration-500 group-hover/icon:-translate-y-2">
-                                <Trophy size={56} className="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)] animate-[pulse_4s_ease-in-out_infinite] transition-transform duration-500 group-hover/icon:scale-110" />
+                        <div className="relative group/icon cursor-default">
+                            <div className="absolute inset-0 bg-yellow-500/10 blur-xl rounded-full transition-all duration-700 ease-out group-hover/icon:bg-yellow-400/30 group-hover/icon:blur-2xl group-hover/icon:scale-125"></div>
+                            <div className="relative p-5 bg-gradient-to-b from-white/10 to-transparent rounded-2xl border border-white/10 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] backdrop-blur-md transition-all duration-500 ease-out group-hover/icon:-translate-y-2 group-hover/icon:border-yellow-500/30 group-hover/icon:shadow-[inset_0_0_20px_rgba(250,204,21,0.1)]">
+                                <Trophy
+                                    size={56}
+                                    className="text-yellow-500 drop-shadow-[0_0_10px_rgba(250,204,21,0.2)] transition-all duration-500 ease-out group-hover/icon:scale-110 group-hover/icon:text-yellow-400 group-hover/icon:drop-shadow-[0_0_30px_rgba(250,204,21,0.9)]"
+                                />
                             </div>
                         </div>
 
                         <div className="flex-1 space-y-3">
-                            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-200 to-white">Tu Muro de Éxito</h1>
+                            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-200 to-white">
+                                Tu Muro de Éxito
+                            </h1>
                             <p className="text-gray-300 text-lg max-w-2xl leading-relaxed">
-                                Bienvenido a tu salón de la fama. Aquí transformamos horas de estudio en <span className="text-yellow-400 font-semibold">metas cumplidas</span>.
+                                {user?.name}, este es el reflejo de tu dedicación. Aquí transformamos tus horas de estudio en <span className="text-yellow-400 font-semibold">metas alcanzadas</span>.
                             </p>
                             <div className="flex flex-wrap justify-center sm:justify-start gap-3 pt-2">
                                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-default">
@@ -131,7 +137,7 @@ const MyCertificates = () => {
 
                 {/* === TOOLBAR (Sticky) === */}
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mb-10 sticky top-[80px] z-30 bg-[#04070f]/95 backdrop-blur py-4 -mx-2 px-2">
-                    
+
                     {/* Buscador */}
                     <div className="flex p-1 bg-white/5 rounded-xl border border-white/10 w-full md:w-96">
                         <div className="relative w-full group">
@@ -196,12 +202,12 @@ const MyCertificates = () => {
                         <p className="text-gray-500 animate-pulse">Recuperando tus logros...</p>
                     </div>
                 ) : filteredCerts.length > 0 ? (
-                    
+
                     // --- CAROUSEL ---
                     <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-700 group/row">
                         {canScrollLeft && (
-                            <button 
-                                onClick={() => slide('left')} 
+                            <button
+                                onClick={() => slide('left')}
                                 className="absolute -left-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-r border-white/10 rounded-r-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/row:opacity-100"
                             >
                                 <ChevronLeft size={24} className="text-cyan-400" />
@@ -211,7 +217,7 @@ const MyCertificates = () => {
                         <div ref={rowRef} onScroll={checkScroll} className="flex overflow-x-auto gap-8 scrollbar-hide py-4 scroll-smooth" style={{ scrollPaddingLeft: 0 }}>
                             {filteredCerts.map((cert) => (
                                 <div key={cert.id} className="min-w-[280px] w-[280px] sm:min-w-[320px] sm:w-[320px] lg:min-w-[360px] lg:w-[360px] group relative bg-[#0a0a0a] border border-yellow-400/60 hover:border-yellow-400 rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_-5px_rgba(250,204,21,0.25)] flex flex-col">
-                                    
+
                                     {/* DIPLOMA PREVIEW */}
                                     <div className="relative h-56 bg-gradient-to-br from-gray-800 to-[#111] overflow-hidden">
                                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
@@ -256,8 +262,8 @@ const MyCertificates = () => {
                         </div>
 
                         {canScrollRight && (
-                            <button 
-                                onClick={() => slide('right')} 
+                            <button
+                                onClick={() => slide('right')}
                                 className="absolute -right-4 top-0 bottom-0 z-40 bg-black/50 hover:bg-black/80 text-white w-10 flex items-center justify-center backdrop-blur-sm cursor-pointer border-l border-white/10 rounded-l-xl transition-all duration-300 opacity-100 md:opacity-0 md:group-hover/row:opacity-100"
                             >
                                 <ChevronRight size={24} className="text-cyan-400" />
