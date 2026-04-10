@@ -8,6 +8,8 @@ import { useCoursePlayer } from '../hooks/pages/useCoursePlayer';
 import LoginModal from '../components/auth/LoginModal';
 import RegisterModal from '../components/auth/RegisterModal';
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
+import usePageTitle from '../hooks/usePageTitle';
+
 declare global {
     interface Window {
         YT?: any;
@@ -42,6 +44,8 @@ const CoursePlayer = () => {
         initialStartSeconds,
         isReadyToPlay
     } = useCoursePlayer();
+
+    usePageTitle(course?.titulo || course?.nombre || (loading ? 'Cargando curso...' : 'Reproductor'));
 
     const handleVideoEndRef = useRef(handleVideoEnd);
     const handleStateChangeRef = useRef(handleStateChange);

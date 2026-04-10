@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { Info, ShieldCheck, FileText } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 export default function LegalInfo() {
+  usePageTitle('Información Legal');
   const location = useLocation();
 
   useEffect(() => {
