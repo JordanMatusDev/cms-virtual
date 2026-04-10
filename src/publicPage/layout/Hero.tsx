@@ -4,7 +4,6 @@ import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import { useCourseGrid } from '../hooks/pages/useCourseGrid';
 
-// Las categorías ahora se obtienen dinámicamente
 
 const particlesOptions = {
   fullScreen: { enable: false },
@@ -92,7 +91,7 @@ const Hero = () => {
       <div className="absolute inset-0 pointer-events-none z-10">
         <div className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(8,145,178,0.2)_0%,transparent_70%)] animate-[pulse_8s_ease-in-out_infinite]"></div>
         <div className="absolute -bottom-1/4 -right-1/4 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(88,28,135,0.2)_0%,transparent_70%)] animate-[pulse_10s_ease-in-out_infinite_reverse]"></div>
-        <div className="absolute inset-0 bg-[url('/assets/noise.svg')] opacity-10 mix-blend-overlay"></div>
+        {/* <div className="absolute inset-0 bg-[url('/assets/noise.svg')] opacity-10 mix-blend-overlay"></div> */}
       </div>
 
       {/* ================= CAPA 3: CONTENIDO PRINCIPAL ================= */}
