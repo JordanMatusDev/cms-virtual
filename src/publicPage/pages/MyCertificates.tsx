@@ -9,7 +9,7 @@ import { useCertificates } from '../hooks/pages/useCertificates';
 import usePageTitle from '../hooks/usePageTitle';
 import { useAuthSession } from '../hooks/header/useAuthSession';
 const MyCertificates = () => {
-    usePageTitle('Mis Certificados');
+    usePageTitle('Certificados');
     const { user } = useAuthSession();
     const {
         loading,
@@ -97,7 +97,7 @@ const MyCertificates = () => {
                         className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         style={{ background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(250, 204, 21, 0.15), transparent 40%)` }}
                     />
-                    <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
+                    <div className="absolute inset-0 opacity-20 bg-[url('/assets/noise.svg')] mix-blend-overlay"></div>
                     <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-yellow-600/20 rounded-full blur-[80px] animate-pulse"></div>
                     <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-cyan-900/20 rounded-full blur-[80px] animate-pulse delay-700"></div>
 

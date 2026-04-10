@@ -16,7 +16,7 @@ const Maintenance = () => {
             <div className="absolute inset-0 pointer-events-none z-0">
                 <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(147,51,234,0.15)_0%,transparent_70%)] animate-[pulse_4s_ease-in-out_infinite]"></div>
                 <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(6,182,212,0.15)_0%,transparent_70%)] animate-[pulse_6s_ease-in-out_infinite_reverse]"></div>
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-[url('/assets/noise.svg')] opacity-5 mix-blend-overlay"></div>
             </div>
 
             <div className="relative z-10 max-w-lg w-full flex flex-col items-center text-center">
