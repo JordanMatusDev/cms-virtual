@@ -95,7 +95,7 @@ export function useRegister(initialData?: any): UseRegisterReturn {
       }
       const newUserId = result.data.id || result.data.usuario?.id;
       if (newUserId) {
-        await sendVerificationEmail(formData.email, formData.username);
+        await sendVerificationEmail(formData.email);
       }
       if (onRegisterSuccess) onRegisterSuccess(formData);
     } catch (err: any) {
