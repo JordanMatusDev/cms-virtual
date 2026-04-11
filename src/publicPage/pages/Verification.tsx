@@ -11,8 +11,10 @@ import {
     ArrowRight 
 } from 'lucide-react';
 import { useVerification } from '../hooks/pages/useVerification';
+import usePageTitle from '../hooks/usePageTitle';
+
 const Verification = () => {
-    // Extraemos la lógica del hook
+    usePageTitle('Verificación de Certificados');
     const { 
         code, 
         setCode, 

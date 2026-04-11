@@ -1,5 +1,4 @@
 // src/hooks/header/useCourseSearch.ts
-// Hook para lógica de búsqueda, filtrado y teclado de cursos
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { getCourses } from '../../services/pages/courseGridService';
@@ -16,7 +15,6 @@ export function useCourseSearch() {
 
   useEffect(() => {
     getCourses().then((data) => {
-      // Filtrar activos y mapear igual que useCourseGrid
       const activeCourses = data.filter((c: any) =>
         (typeof c.activo === 'undefined') ? true : (c.activo == 1 || c.activo === true || c.activo === 'true')
       );
@@ -33,18 +31,26 @@ export function useCourseSearch() {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    if (value.length > 0) {
+
+    const cleanValue = value.trim();
+
+    if (cleanValue.length > 0) {
       setIsSearching(true);
       setShowSuggestions(true);
+
       setTimeout(() => {
-        const filtered = allCourses.filter(course =>
-          (course.title || '').toLowerCase().includes(value.toLowerCase())
-        );
-        const nextSuggestions = filtered.slice(0, 5);
-        setSuggestions(nextSuggestions);
-        setActiveSuggestionIndex(nextSuggestions.length > 0 ? 0 : -1);
+        const searchWords = cleanValue.toLowerCase().split(/\s+/);
+
+        const filtered = allCourses.filter(course => {
+          const title = (course.title || '').toLowerCase();
+          return searchWords.every(word => title.includes(word));
+        });
+
+        setSuggestions(filtered);
+        setActiveSuggestionIndex(-1);
         setIsSearching(false);
-      }, 200);
+      }, 150);
+
     } else {
       setSuggestions([]);
       setActiveSuggestionIndex(-1);
