@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import { useSearchParams } from 'react-router';
 import { Lock, Eye, EyeOff, ArrowRight, CheckCircle, Loader2, AlertCircle, Ban } from 'lucide-react';
-
 import logoImg from '../assets/virtualz.png';
 import { confirmPasswordReset, checkActionToken } from '../services/email/resetPasswordService';
+import usePageTitle from '../hooks/usePageTitle';
 
 // --- PANTALLA DE ENLACE EXPIRADO (Estilo Glass + Neón Rojo) ---
 function ExpiredLinkModal() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      
+
       {/* Fondo Ambiental (Glow dinámico rojo) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[120px] transition-colors duration-700 bg-red-600/10" />
 
       {/* Tarjeta Principal Glass - AQUI SE APLICO EL EFECTO */}
       <div className="w-full max-w-sm bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out">
-        
+
         {/* Logo */}
         <div className="text-center mb-6">
           <img src={logoImg} alt="Virtual+" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
         </div>
-        
+
         {/* Línea Superior de Color Rojo */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-80" />
 
@@ -57,27 +57,22 @@ function ExpiredLinkModal() {
 
 // --- COMPONENTE PRINCIPAL ---
 export default function ResetPassword() {
+  usePageTitle('Restablecer Contraseña');
   const [searchParams] = useSearchParams();
-
-  // Estados de validación inicial
   const [isValidating, setIsValidating] = useState(true);
-
-  // Estados para los inputs y visibilidad
   const [passwords, setPasswords] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  // Estados de la interfaz y errores
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'expired'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [showFieldErrors, setShowFieldErrors] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ new: string; confirm: string }>({ new: '', confirm: '' });
 
-  // Efecto para validar el token al cargar la página
+
   useEffect(() => {
     const verifyToken = async () => {
       const token = searchParams.get('token') || searchParams.get('id') || searchParams.get('reset_token');
-      
+
       if (!token) {
         setStatus('expired');
         setIsValidating(false);
@@ -85,11 +80,11 @@ export default function ResetPassword() {
       }
 
       const isValid = await checkActionToken(token);
-      
+
       if (!isValid) {
         setStatus('expired');
       }
-      
+
       setIsValidating(false);
     };
 
@@ -99,7 +94,7 @@ export default function ResetPassword() {
   // Función para validar los campos internamente
   const validateFields = (newPass: string, confirmPass: string) => {
     let errors = { new: '', confirm: '' };
-    
+
     if (!newPass) {
       errors.new = 'Este campo es obligatorio.';
     } else if (newPass.length < 8) {
@@ -118,7 +113,7 @@ export default function ResetPassword() {
   // Manejar cambios en inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    
+
     setPasswords(prev => ({ ...prev, [id]: value }));
     setErrorMsg('');
 
@@ -152,7 +147,7 @@ export default function ResetPassword() {
 
     try {
       const result = await confirmPasswordReset(token, passwords.new);
-      
+
       const elapsed = Date.now() - startTime;
       if (elapsed < minDelay) {
         await new Promise(res => setTimeout(res, minDelay - elapsed));
@@ -205,27 +200,27 @@ export default function ResetPassword() {
 
         {/* Tarjeta Principal Glass - AQUI SE APLICO EL EFECTO */}
         <div className="w-full max-w-sm bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-10 text-center shadow-2xl relative z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out">
-           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-80" />
-           
-           <div className="mb-6 relative inline-flex items-center justify-center">
-              <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse"></div>
-              <div className="relative w-20 h-20 bg-black/40 border border-green-500/30 rounded-full flex items-center justify-center shadow-lg">
-                <CheckCircle className="w-10 h-10 text-green-400" />
-              </div>
-           </div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-80" />
 
-           <h2 className="text-2xl font-bold text-white mb-2">¡Contraseña Actualizada!</h2>
-           <p className="text-gray-400 text-sm mb-8">Tu contraseña ha sido cambiada correctamente.</p>
-           
-           <button 
-             onClick={() => {
-               sessionStorage.setItem('openLoginModal', '1');
-               window.location.href = '/';
-             }}
-             className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
-           >
-             Ir al Inicio ahora
-           </button>
+          <div className="mb-6 relative inline-flex items-center justify-center">
+            <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="relative w-20 h-20 bg-black/40 border border-green-500/30 rounded-full flex items-center justify-center shadow-lg">
+              <CheckCircle className="w-10 h-10 text-green-400" />
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-bold text-white mb-2">¡Contraseña Actualizada!</h2>
+          <p className="text-gray-400 text-sm mb-8">Tu contraseña ha sido cambiada correctamente.</p>
+
+          <button
+            onClick={() => {
+              sessionStorage.setItem('openLoginModal', '1');
+              window.location.href = '/';
+            }}
+            className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
+          >
+            Ir al Inicio ahora
+          </button>
         </div>
       </div>
     );
@@ -234,24 +229,24 @@ export default function ResetPassword() {
   // 4. Formulario (Solo llega aquí si el token es válido)
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
-      
+
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px]" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px]" />
 
       {/* Tarjeta Principal Glass - AQUI SE APLICO EL EFECTO */}
       <div className="w-full max-w-md bg-[#121212]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out">
-        
+
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-70"></div>
 
         <div className="text-center mb-8">
           <img src={logoImg} alt="Virtual+" className="h-12 mx-auto mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
-          
+
           <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Restablecer Contraseña</h1>
           <p className="text-gray-400 text-sm">Ingresa tu nueva clave para recuperar el acceso.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-          
+
           {/* Input: Nueva Contraseña */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-400 ml-1 tracking-wider">Nueva Contraseña</label>
@@ -265,8 +260,8 @@ export default function ResetPassword() {
                 value={passwords.new}
                 onChange={handleChange}
                 className={`w-full bg-black/40 border rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-1 transition-all duration-300 
-                  ${showFieldErrors && fieldErrors.new 
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' 
+                  ${showFieldErrors && fieldErrors.new
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50'
                     : 'border-white/10 focus:border-purple-500/50 focus:ring-purple-500/50'}`}
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -301,8 +296,8 @@ export default function ResetPassword() {
                 value={passwords.confirm}
                 onChange={handleChange}
                 className={`w-full bg-black/40 border rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-1 transition-all duration-300 
-                  ${showFieldErrors && fieldErrors.confirm 
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' 
+                  ${showFieldErrors && fieldErrors.confirm
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50'
                     : 'border-white/10 focus:border-purple-500/50 focus:ring-purple-500/50'}`}
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -333,7 +328,7 @@ export default function ResetPassword() {
           )}
 
           {/* Botón Submit */}
-          <button 
+          <button
             type="submit"
             disabled={status === 'loading'}
             className="w-full bg-white text-black font-bold py-3.5 rounded-xl mt-4 hover:bg-gray-200 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"

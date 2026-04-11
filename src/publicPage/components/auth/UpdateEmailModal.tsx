@@ -55,7 +55,7 @@ const UpdateEmailModal = ({ isOpen, onClose, onEmailUpdated, initialEmail, usern
       const updatedId = await updatePendingUserEmail(currentEmail, email);
       if (!updatedId) throw new Error('No se pudo actualizar el correo en el servidor.');
       if (username) {
-        await sendVerificationEmail(email, username);
+        await sendVerificationEmail(email);
       }
       setCurrentEmail(email);
       onEmailUpdated(email);

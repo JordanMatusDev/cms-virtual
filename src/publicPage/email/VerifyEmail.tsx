@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react';
 import logoImg from '../assets/virtualz.png';
 import { CheckCircle, AlertTriangle, Ban, Loader2 } from 'lucide-react';
 import { useSearchParams } from 'react-router';
-// Asumimos que esta función la crearemos en el siguiente paso
 import { verifyAndActivateUser } from '../services/email/verifyService';
+import usePageTitle from '../hooks/usePageTitle';
 
 type VerificationStatus = 'loading' | 'success' | 'already' | 'error';
 
 export default function VerifyEmail() {
+  usePageTitle('Verificación de Cuenta');
   const [status, setStatus] = useState<VerificationStatus>('loading');
   const [errorMessage] = useState('Enlace no válido o expirado.');
   const [searchParams] = useSearchParams();
+
 
   useEffect(() => {
     const verifyAccount = async () => {

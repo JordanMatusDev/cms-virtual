@@ -48,15 +48,11 @@ export async function registerService(formData: any) {
   }
 }
 
-export async function sendVerificationEmail(email: string, username: string) {
+export async function sendVerificationEmail(email: string) {
   try {
-    console.log('[sendVerificationEmail] Iniciando envío de email de verificación:', { email, username });
-    // Solo solicita la verificación, el backend envía el email
-    const { data } = await api.post('/api/v1/auth/request-verify-email', { email });
-    console.log('[sendVerificationEmail] Respuesta backend request-verify-email:', data);
+    await api.post('/api/v1/auth/request-verify-email', { email });
     return true;
   } catch (err) {
-    console.error('[sendVerificationEmail] Error enviando email:', err);
     return false;
   }
 }
